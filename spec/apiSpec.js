@@ -2,9 +2,7 @@ const request = require('supertest');
 const fs = require('fs');
 const timestamp = require('time-stamp');
 
-
 const app = require('../app');
-
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -44,7 +42,6 @@ describe('POST image/', () => {
   });
 
   it('responds with 201 on successful receipt of base64 image', done => {
-
     request(app)
       .post('/image')
       .send({ base64Image: base64Image })
@@ -60,7 +57,6 @@ describe('POST image/', () => {
   });
 
   it('writes the base64 image to the disk', done => {
-
     request(app)
       .post('/image')
       .send({ base64Image: base64Image })
@@ -83,6 +79,4 @@ describe('POST image/', () => {
         });
     });
   });
-
-
 });
