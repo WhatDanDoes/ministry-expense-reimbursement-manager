@@ -6,6 +6,7 @@ basic-photo-server
 ## Setup
 
 ```
+cp .env.example .env
 npm install
 ```
 
