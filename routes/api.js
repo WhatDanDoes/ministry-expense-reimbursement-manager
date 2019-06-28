@@ -1,10 +1,17 @@
-var express = require('express');
-var router = express.Router();
+const timestamp = require('time-stamp');
+const base64Img = require('base64-img');
+
+const router = require('express').Router();
 
 router.post('/', function(req, res, next) {
-  console.log('POSTING');
+  base64Img.img(req.body.base64Image, './public/images/uploads', timestamp.utc('YYMMDDHHmmss'), (err, filepath) => {
+    if (err) {
+      return res.status(500).json({ message: err.message });
+    }
 
-  res.status(201).json({ message: 'Image received' });
+    res.status(201).json({ message: 'Image received' });
+  });
+
 });
 
 module.exports = router;
