@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= process.env.TITLE %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <h1><%= process.env.TITLE %></h1>
+    <main>
+      <% if (!images.length) { %>
+        <h2>No images</h2>
+      <% } else { %>
+        <% for (let image of images) { %>
+          <section>
+            <img src='/images/uploads/<%= image %>' />
+          </section>
+        <% } %>
+      <% } %>
+    </main>
   </body>
 </html>
