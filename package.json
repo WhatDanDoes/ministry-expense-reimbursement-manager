@@ -7,6 +7,7 @@
     "test": "./node_modules/.bin/jasmine"
   },
   "dependencies": {
+    "base64-img": "^1.0.4",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
