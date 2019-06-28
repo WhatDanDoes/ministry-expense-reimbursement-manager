@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
     if (err) {
       return res.render('error', { error: err });
     }
-    res.render('index', { images: files });
+    res.render('index', { images: files.reverse() });
   });
 });
 

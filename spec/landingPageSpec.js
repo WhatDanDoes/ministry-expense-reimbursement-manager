@@ -20,6 +20,10 @@ describe('landing page', () => {
     done();
   });
 
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('displays the page title set in .env', done => { 
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
@@ -30,6 +34,11 @@ describe('landing page', () => {
   });
 
   it('displays a message if there are no images to view', done => {
+    mock({ 
+      'public/images/uploads': {},
+      'views/index.ejs': fs.readFileSync('views/index.ejs')
+    });
+ 
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
