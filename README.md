@@ -16,5 +16,18 @@ npm install
 npm test
 ```
 
+## Production
 
+In the application directory:
+
+```
+cd basic-photo-server 
+NODE_ENV=production npm install
+```
+
+The _Dockerized_ production is meant to be deployed behind an `nginx-proxy`/`lets-encrypt` combo:
+
+```
+docker-compose -f docker-compose.prod.yml up -d
+```
 
