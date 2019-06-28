@@ -19,6 +19,7 @@
   "devDependencies": {
     "jasmine": "^3.4.0",
     "mock-fs": "^4.10.1",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "zombie": "^6.1.4"
   }
 }
