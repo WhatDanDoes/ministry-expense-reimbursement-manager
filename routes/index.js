@@ -1,9 +1,14 @@
-var express = require('express');
-var router = express.Router();
+const router = require('express').Router();
+const fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  fs.readdir('public/images/uploads', (err, files) => {
+    if (err) {
+      return res.render('error', { error: err });
+    }
+    res.render('index', { images: files });
+  });
 });
 
 module.exports = router;
