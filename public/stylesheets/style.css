@@ -1,6 +1,5 @@
 body {
   margin: 0;
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -8,10 +7,19 @@ a {
   color: #00B7FF;
 }
 
+main, section, img {
+  width: 100%;
+}
+
+section {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
 @media (min-width: 750px) {
   main {
-    margin-left: 25%;
-    margin-right: 25%;
+    margin: auto;
+    width: 50%;
   }
 }
 
