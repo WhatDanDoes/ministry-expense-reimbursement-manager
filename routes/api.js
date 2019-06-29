@@ -11,7 +11,6 @@ router.post('/', function(req, res, next) {
 
     res.status(201).json({ message: 'Image received' });
   });
-
 });
 
 module.exports = router;
