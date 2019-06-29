@@ -10,6 +10,11 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
+// Squelch 413s, 2019-6-28 https://stackoverflow.com/a/36514330
+var bodyParser = require('body-parser');
+app.use(bodyParser.json({limit: "50mb"}));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
