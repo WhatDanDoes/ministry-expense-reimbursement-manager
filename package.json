@@ -16,6 +16,7 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "mongoose-findorcreate": "^3.0.0",
     "morgan": "~1.9.1",
     "time-stamp": "^2.2.0"
   },
