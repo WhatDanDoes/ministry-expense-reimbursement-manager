@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app.js",
-    "test": "./node_modules/.bin/jasmine"
+    "test": "NODE_ENV=test node_modules/.bin/jasmine"
   },
   "dependencies": {
     "base64-img": "^1.0.4",
@@ -18,6 +18,7 @@
     "http-errors": "~1.6.3",
     "mongoose-findorcreate": "^3.0.0",
     "morgan": "~1.9.1",
+    "nodemailer": "^6.2.1",
     "time-stamp": "^2.2.0"
   },
   "devDependencies": {
