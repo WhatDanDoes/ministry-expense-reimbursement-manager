@@ -1,0 +1,28 @@
+{
+  "development": {
+    "username": "accountant",
+    "password": "secret",
+    "database": "accountant_development",
+    "host": "localhost"
+  },
+  "test": {
+    "username": "accountant",
+    "password": "secret",
+    "database": "accountant_test",
+    "host": "localhost"
+  },
+  "staging": {
+    "username": "accountant",
+    "password": "secret",
+    "database": "accountant_staging",
+    "host": "mongo",
+    "dialect": "mongodb"
+  },
+  "production": {
+    "username": "accountant",
+    "password": "secret",
+    "database": "accountant_production",
+    "host": "mongo",
+    "dialect": "mongodb"
+  }
+}
