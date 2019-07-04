@@ -1,21 +1,89 @@
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const models = require('./models');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
-
-// Squelch 413s, 2019-6-28 https://stackoverflow.com/a/36514330
-var bodyParser = require('body-parser');
+/**
+ * Squelch 413s, 2019-6-28 https://stackoverflow.com/a/36514330
+ */
+const bodyParser = require('body-parser');
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 
-// view engine setup
+/**
+ * Sessions
+ */
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/config/config.json')[env];
+
+const sessionConfig = {
+  secret: 'supersecretkey',
+  resave: false,
+  saveUninitialized: false
+};
+
+if (env == 'production') {
+  sessionConfig.store = new MongoStore({ mongooseConnection: models });
+}
+
+app.use(session(sessionConfig));
+
+
+/**
+ * Passport authentication
+ */
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy({
+    usernameField: 'email'
+  },
+  function(email, password, done) {
+    models.Agent.findOne({ email: email }).then(function(agent) {
+      if (!agent) {
+        return done(null, false);
+      }
+      models.Agent.validPassword(password, agent.password, function(err, res) {
+        if (err) {
+          console.log(err);
+        }
+        return done(err, res);
+      }, agent);
+    }).catch(function(err) {
+      return done(err);
+    });
+  }
+));
+passport.serializeUser(function(agent, done) {
+  done(null, agent._id);
+});
+passport.deserializeUser(function(id, done) {
+  models.Agent.findById(id).then(function(agent) {
+    done(null, agent);
+  }).catch(function(err) {
+    return done(err);
+  });
+});
+
+/**
+ * Flash messages
+ */
+const flash = require('connect-flash');
+app.use(flash());
+
+
+/**
+ * view engine setup
+ */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -25,9 +93,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', require('./routes/index'));
 app.use('/image', require('./routes/api'));
+app.use('/login', require('./routes/login'));
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
