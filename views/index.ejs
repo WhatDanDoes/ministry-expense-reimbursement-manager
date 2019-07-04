@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= process.env.TITLE %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= process.env.TITLE %></h1>
-    <main>
+<% include _partials/header %>
+  <% include _partials/messages %>
+  <main>
+    <% if (!agent) { %>
+      <% include _partials/login %>
+    <% } else {%>
       <% if (!images.length) { %>
         <h2>No images</h2>
       <% } else { %>
@@ -17,6 +13,7 @@
           </section>
         <% } %>
       <% } %>
-    </main>
-  </body>
-</html>
+    <% } %>
+  </main> 
+<% include _partials/footer %>
+
