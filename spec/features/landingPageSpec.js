@@ -2,7 +2,6 @@ const Browser = require('zombie');
 const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
 Browser.localhost('example.com', PORT);
 const fs = require('fs');
-
 const app = require('../../app');
 
 /**
@@ -13,26 +12,10 @@ const app = require('../../app');
  * problem.
  */
 const mock = require('mock-fs');
+const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('landing page', () => {
   const browser = new Browser();
-
-  /**
-   * There has got to be a better way... what am I missing?
-   */
-  function mockAndUnmock(mocks) {
-    mock({ 
-      ...mocks, 
-      'views/index.ejs': fs.readFileSync('views/index.ejs'),
-      'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
-      'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
-      'views/_partials/navbar.ejs': fs.readFileSync('views/_partials/navbar.ejs'),
-      'views/_partials/messages.ejs': fs.readFileSync('views/_partials/messages.ejs'),
-      'views/_partials/login.ejs': fs.readFileSync('views/_partials/login.ejs'),
-      'views/_partials/footer.ejs': fs.readFileSync('views/_partials/footer.ejs'),
-      'views/error.ejs': fs.readFileSync('views/error.ejs')
-    });
-  };
 
   beforeEach(done => {
     done();
