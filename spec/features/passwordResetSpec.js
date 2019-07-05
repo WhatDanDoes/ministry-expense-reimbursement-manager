@@ -142,76 +142,73 @@ describe('password reset', function() {
             });
           });
 
-//          describe('PATCH /reset/:token', () => {
-//            it('changes agent\'s password', (done) => {
-//              browser
-//                .fill('password', 'newpassword')
-//                .fill('confirm', 'newpassword')
-//                .pressButton('Reset', function(err) {
-//                  if (err) done.fail(err);
-//                  browser.assert.success();
-//                  browser.assert.url({ pathname: '/' });
-//                  browser
-//                    .fill('email', agent.email)
-//                    .fill('password', 'newpassword')
-//                    .pressButton('Login', function(err) {
-//                      browser.assert.success();
-//                      done();
-//                    });
-//                });
-//            });
-//
-//            it('displays an error if passwords don\'t match', (done) => {
-//              browser
-//                .fill('password', 'password')
-//                .fill('confirm', 'newpassword')
-//                .pressButton('Reset', function(err) {
-//                  if (err) done.fail(err);
-//                  browser.assert.success();
-//                  browser.assert.url({ pathname: '/reset/' + agent.resetPasswordToken });
-//                  browser.assert.text('.alert.alert-danger', 'Passwords don\'t match');
-//                  done();
-//                });
-//            });
-//
-//            it('redirects if token has expired', (done) => {
-//              agent.resetPasswordExpires = Date.now() - 3600000; // 1 hour go
-//              models.Agent.findByIdAndUpdate(agent._id, agent, {new: true}).then((agent) => {
-//                request(app)
-//                  .patch('/reset/' + agent.resetPasswordToken)
-//                  .send({ password: 'newPassword', confirm: 'newPassword' })
-//                  .expect('Location', /\/reset/)
-//                  .end(function(err, res) {
-//                    if (err) done.fail(err);
-//                    done();        
-//                  });
-//              }).catch((err) => {
-//                done.fail(err);
-//              });
-//            });
-//          });
-//        });
-//      });
-//
-//      describe('unknown agent', function() {
-//        beforeEach(function(done) {
-//           browser
-//             .fill('email', 'nosuchagent@example.com')
-//             .pressButton('Reset', function(err) {
-//               if (err) done.fail(err);
-//               browser.assert.success();
-//               done();
-//             });
-//        }); 
-//
-//        it('displays error message', function(done) {
-//          browser.assert.text('.alert.alert-danger', 'No account with that email address has been registered');
-//          done();
-//        });
-//
-//        it('does not send an email', function(done) {
-//          expect(mailer.transport.sentMail.length).toEqual(0);
-//          done();
+          describe('PATCH /reset/:token', () => {
+            it('changes agent\'s password', (done) => {
+              browser.fill('password', 'newpassword');
+              browser.fill('confirm', 'newpassword');
+              browser.pressButton('Reset', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+                browser.assert.url({ pathname: '/' });
+                browser.fill('email', agent.email);
+                browser.fill('password', 'newpassword')
+                browser.pressButton('Login', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+                  done();
+                });
+              });
+            });
+
+            it('displays an error if passwords don\'t match', (done) => {
+              browser.fill('password', 'password');
+              browser.fill('confirm', 'newpassword')
+              browser.pressButton('Reset', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+                browser.assert.url({ pathname: '/reset/' + agent.resetPasswordToken });
+                browser.assert.text('.alert.alert-danger', 'Passwords don\'t match');
+                done();
+              });
+            });
+
+            it('redirects if token has expired', (done) => {
+              agent.resetPasswordExpires = Date.now() - 3600000; // 1 hour go
+              models.Agent.findByIdAndUpdate(agent._id, agent, {new: true}).then((agent) => {
+                request(app)
+                  .patch('/reset/' + agent.resetPasswordToken)
+                  .send({ password: 'newPassword', confirm: 'newPassword' })
+                  .expect('Location', /\/reset/)
+                  .end(function(err, res) {
+                    if (err) done.fail(err);
+                    done();        
+                  });
+              }).catch((err) => {
+                done.fail(err);
+              });
+            });
+          });
+        });
+      });
+
+      describe('unknown agent', function() {
+        beforeEach(function(done) {
+           browser.fill('email', 'nosuchagent@example.com');
+           browser.pressButton('Reset', function(err) {
+             if (err) done.fail(err);
+             browser.assert.success();
+             done();
+           });
+        }); 
+
+        it('displays error message', function(done) {
+          browser.assert.text('.alert.alert-danger', 'No account with that email address has been registered');
+          done();
+        });
+
+        it('does not send an email', function(done) {
+          expect(mailer.transport.sentMail.length).toEqual(0);
+          done();
         });
       });
     });
