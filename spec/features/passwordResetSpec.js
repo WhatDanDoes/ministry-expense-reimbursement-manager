@@ -1,14 +1,14 @@
 'use strict';
 
 const Browser = require('zombie');
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const mailer = require('../../mailer');
 const app = require('../../app'); 
 const request = require('supertest');
 
-// Test server is started in `features/startTestServerSpec.js`
-Browser.localhost('example.com', 3001);
+Browser.localhost('example.com', PORT);
 
 // For when system resources are scarce
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;

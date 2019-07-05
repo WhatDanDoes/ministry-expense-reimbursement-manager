@@ -1,5 +1,6 @@
 const Browser = require('zombie');
-Browser.localhost('example.com', 3001);
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
+Browser.localhost('example.com', PORT);
 const fs = require('fs');
 
 const app = require('../../app');
