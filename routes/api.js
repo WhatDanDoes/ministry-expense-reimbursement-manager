@@ -1,13 +1,6 @@
 const timestamp = require('time-stamp');
 const base64Img = require('base64-img');
 
-require('ejs');
-require('raw-body');
-require('iconv-lite/encodings');
-
-
-
-
 const router = require('express').Router();
 
 router.post('/', function(req, res, next) {
