@@ -118,6 +118,7 @@ app.use('/image', require('./routes/api'));
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
 app.use('/album', require('./routes/album'));
+app.use('/reset', require('./routes/reset'));
 
 
 // catch 404 and forward to error handler
