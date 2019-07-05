@@ -113,6 +113,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+/**
+ * For PUT/PATCH/DELETE
+ */
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
+
+/**
+ * Routes
+ */
 app.use('/', require('./routes/index'));
 app.use('/image', require('./routes/api'));
 app.use('/login', require('./routes/login'));
