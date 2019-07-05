@@ -16,6 +16,24 @@ const mock = require('mock-fs');
 describe('landing page', () => {
   const browser = new Browser();
 
+  /**
+   * There has got to be a better way... what am I missing?
+   */
+  function mockAndUnmock(mocks) {
+    mock({ 
+      ...mocks, 
+      'views/index.ejs': fs.readFileSync('views/index.ejs'),
+      'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
+      'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
+      'views/_partials/navbar.ejs': fs.readFileSync('views/_partials/navbar.ejs'),
+      'views/_partials/nav.ejs': fs.readFileSync('views/_partials/nav.ejs'),
+      'views/_partials/messages.ejs': fs.readFileSync('views/_partials/messages.ejs'),
+      'views/_partials/login.ejs': fs.readFileSync('views/_partials/login.ejs'),
+      'views/_partials/footer.ejs': fs.readFileSync('views/_partials/footer.ejs'),
+      'views/error.ejs': fs.readFileSync('views/error.ejs')
+    });
+  };
+
   beforeEach(done => {
     done();
   });
@@ -34,11 +52,8 @@ describe('landing page', () => {
   });
 
   it('displays a message if there are no images to view', done => {
-    mock({ 
-      'public/images/uploads': {},
-      'views/index.ejs': fs.readFileSync('views/index.ejs')
-    });
- 
+    mockAndUnmock({ 'public/images/uploads': {} });
+
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
@@ -48,13 +63,12 @@ describe('landing page', () => {
   });
 
   it('displays the images in the uploads directory', done => {
-    mock({ 
+    mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image3.jpg': fs.readFileSync('spec/data/troll.jpg'),
-      },
-      'views/index.ejs': fs.readFileSync('views/index.ejs')
+      }
     });
 
     browser.visit('/', (err) => {
@@ -67,13 +81,12 @@ describe('landing page', () => {
   });
 
   it('does not displays non-image files', done => {
-    mock({ 
+    mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.pdf': fs.readFileSync('spec/data/troll.jpg'),
         'image3.doc': fs.readFileSync('spec/data/troll.jpg'),
       },
-      'views/index.ejs': fs.readFileSync('views/index.ejs')
     });
 
     browser.visit('/', (err) => {
@@ -86,13 +99,12 @@ describe('landing page', () => {
   });
 
   it('displays image files with wonky capitalization on the filename extension', done => {
-    mock({ 
+    mockAndUnmock({ 
       'public/images/uploads': {
         'image1.Jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.pdf': fs.readFileSync('spec/data/troll.jpg'),
         'image3.GIF': fs.readFileSync('spec/data/troll.jpg'),
       },
-      'views/index.ejs': fs.readFileSync('views/index.ejs')
     });
 
     browser.visit('/', (err) => {

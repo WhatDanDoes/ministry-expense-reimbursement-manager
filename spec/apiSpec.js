@@ -13,7 +13,7 @@ const app = require('../app');
  */
 const mock = require('mock-fs');
 require('ejs');
-require('iconv-lite/encodings');
+require('../node_modules/raw-body/node_modules/iconv-lite/encodings');
 
 
 describe('POST image/', () => {
