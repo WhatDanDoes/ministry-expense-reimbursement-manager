@@ -1,3 +1,14 @@
+  <header id="page">
+    <h1><a href="/"><%= process.env.TITLE %></a></h1>
+    <% if (agent) { %>
+      <nav>
+        <ul>
+          <li><a href="/logout">Logout</a></li>
+        </ul>
+      </nav>
+    <% } %>
+  </header>
+<!--
   <nav id="menu" class="navbar">
     <div class="navbar-header">
       <a class="navbar-brand main-page-link" href="<%= process.env.SITE_URL || '/' %>">
@@ -14,4 +25,4 @@
       <% } %>
     </div>
   </nav>
-
+-->

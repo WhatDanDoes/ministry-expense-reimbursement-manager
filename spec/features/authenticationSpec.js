@@ -57,7 +57,7 @@ describe('authentication', function() {
   });
 
   it('shows the home page', function() {
-    browser.assert.text('nav .navbar-header a', process.env.TITLE);
+    browser.assert.text('#page h1 a', process.env.TITLE);
   });
 
   it('displays the login form if not logged in', function() {
