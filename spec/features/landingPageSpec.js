@@ -26,7 +26,6 @@ describe('landing page', () => {
       'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
       'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
       'views/_partials/navbar.ejs': fs.readFileSync('views/_partials/navbar.ejs'),
-      'views/_partials/nav.ejs': fs.readFileSync('views/_partials/nav.ejs'),
       'views/_partials/messages.ejs': fs.readFileSync('views/_partials/messages.ejs'),
       'views/_partials/login.ejs': fs.readFileSync('views/_partials/login.ejs'),
       'views/_partials/footer.ejs': fs.readFileSync('views/_partials/footer.ejs'),
@@ -46,7 +45,7 @@ describe('landing page', () => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('h1', process.env.TITLE);
+      browser.assert.text('.navbar-header', process.env.TITLE);
       done();
     });
   });
