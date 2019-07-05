@@ -1,0 +1,17 @@
+<% include ../_partials/head %>
+  <% include ../_partials/nav %>
+  <% include ../_partials/messages %>
+  <main>
+    <% if (agent.images.length) { %>
+      <details>
+        <summary id='images'>Recent images</summary>
+        <section>
+          <% for (let image of agent.images) { %>
+            <% include ../image/image %>
+          <% } %>
+        </section>
+      </details>
+    <% } %>
+  </main> 
+<% include ../_partials/footer %>
+
