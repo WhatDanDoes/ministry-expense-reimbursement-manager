@@ -3,25 +3,25 @@
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const bcrypt = require('bcrypt-nodejs');
-//const accounts = require('./accounts').Account;
+const albums = require('./albums').Album;
 
 exports.Agent = {
   dan: {
     _id: new ObjectId(),
     email: 'daniel@example.com',
     password: 'secret',
-//    submittables: [accounts.store]
+    submittables: [albums.store]
   },
   troy: {
     _id: new ObjectId(),
     email: 'troy@example.com',
     password: 'topsecret',
-//    reviewables: [accounts.store]
+    reviewables: [albums.store]
   },
   lanny: {
     _id: new ObjectId(),
     email: 'lanny@example.com',
     password: 'supersecret',
-//    viewables: [accounts.store]
+    viewables: [albums.store]
   }
 };
