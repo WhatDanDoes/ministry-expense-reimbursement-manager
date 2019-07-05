@@ -10,9 +10,9 @@ router.get('/', function(req, res, next) {
       return res.render('error', { error: err });
     }
     if (req.user) {
-      return res.render('index', { images: files.reverse(), messages: {}, agent: req.user });
+      return res.render('index', { images: files.reverse(), messages: req.flash(), agent: req.user });
     }
-    res.render('index', { images: files.reverse(), messages: {}, agent: null });
+    res.render('index', { images: files.reverse(), messages: req.flash(), agent: null });
   });
 });
 
