@@ -123,7 +123,7 @@ app.use(methodOverride('_method'));
  * Routes
  */
 app.use('/', require('./routes/index'));
-app.use('/image', require('./routes/api'));
+app.use('/image', require('./routes/image'));
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
 app.use('/album', require('./routes/album'));
