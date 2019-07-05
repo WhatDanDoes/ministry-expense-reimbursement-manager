@@ -73,48 +73,98 @@ describe('authentication', function() {
 //  });
 
   describe('login process', function() {
-    beforeEach(function(done) {
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        done();
-      });
-    });
 
-    it('does not display the login form', function() {
-      expect(browser.query("form[action='/login']")).toBeNull();
-    });
-
-    it('displays a friendly greeting', function() {
-      browser.assert.text('.alert', 'Hello, ' + agent.email + '!');
-    });
-
-    it("redirects to the agent's albums", function() {
-      browser.assert.url({ pathname: '/album'});
-    });
-
-
-    it('displays image submission history', function(done) {
-      expect(agent.images.length).toEqual(1);
-      browser.assert.text('#images', 'Recent images');
-      models.Image.count({ agent: agent._id }, function(err, count) {
-        expect(browser.queryAll('.image').length).toEqual(count);
-        done();
-      });
-    });
-
-    describe('logout', function() {
-      it('does not display the logout button if not logged in', function(done) {
-        browser.clickLink('Logout', function(err) {
-          if (err) {
-            done.fail(err);
-          }
-          browser.assert.success();
-          expect(browser.query("a[href='/logout']")).toBeNull();
-          browser.assert.attribute('form', 'action', '/login');
+    describe('unsuccessful', function () {
+      it('shows an error message when password omitted', function(done) {
+        browser.fill('email', agent.email);
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.text('.alert.alert-danger', 'Email or password is wrong');
           done();
+        });
+      });
+
+      it('shows an error message when email is omitted', function(done) {
+        browser.fill('password', agent.password);
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.text('.alert.alert-danger', 'Email or password is wrong');
+          done();
+        });
+      });
+
+      it('shows an error message when password and email are omitted', function(done) {
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.text('.alert.alert-danger', 'Email or password is wrong');
+          done();
+        });
+      });
+
+      it('shows an error message when password is wrong', function(done) {
+        browser.fill('email', agent.email);
+        browser.fill('password', 'wrong');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.text('.alert.alert-danger', 'Email or password is wrong');
+          done();
+        });
+      });
+
+      it('shows an error message when email doesn\'t exist', function(done) {
+        browser.fill('email', 'nosuchguy@example.com');
+        browser.fill('password', 'wrong');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.text('.alert.alert-danger', 'Email or password is wrong');
+          done();
+        });
+      });
+    });
+
+    describe('successful', function () {
+      beforeEach(function(done) {
+        browser.fill('email', agent.email);
+        browser.fill('password', 'secret');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          done();
+        });
+      });
+  
+      it('does not display the login form', function() {
+        expect(browser.query("form[action='/login']")).toBeNull();
+      });
+  
+      it('displays a friendly greeting', function() {
+        browser.assert.text('.alert', 'Hello, ' + agent.email + '!');
+      });
+  
+      it("redirects to the agent's albums", function() {
+        browser.assert.url({ pathname: '/album'});
+      });
+  
+      it('displays image submission history', function(done) {
+        expect(agent.images.length).toEqual(1);
+        browser.assert.text('#images', 'Recent images');
+        models.Image.count({ agent: agent._id }, function(err, count) {
+          expect(browser.queryAll('.image').length).toEqual(count);
+          done();
+        });
+      });
+  
+      describe('logout', function() {
+        it('does not display the logout button if not logged in', function(done) {
+          browser.clickLink('Logout', function(err) {
+            if (err) {
+              done.fail(err);
+            }
+            browser.assert.success();
+            expect(browser.query("a[href='/logout']")).toBeNull();
+            browser.assert.attribute('form', 'action', '/login');
+            done();
+          });
         });
       });
     });
