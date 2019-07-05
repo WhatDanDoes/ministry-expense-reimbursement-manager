@@ -69,9 +69,9 @@ router.post('/', (req, res) => {
 
 router.patch('/:token', function(req, res) {
 
-  if (req.body.password != req.body.confirm) {
+  if (req.body.password !== req.body.confirm) {
     req.flash('error', 'Passwords don\'t match');
-    return res.render('reset', { token: req.params.token, messages: req.flash() });
+    return res.render('reset', { token: req.params.token, messages: req.flash(), agent: null });
   }
 
   models.Agent.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }).then((agent) => {
