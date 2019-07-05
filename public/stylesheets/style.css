@@ -1,14 +1,29 @@
+/**
+ * general
+ */
 body {
   margin: 0;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
+  text-decoration: none;
   color: #00B7FF;
 }
 
-main, section, img {
-  width: 100%;
+a:hover {
+  text-decoration: underline;
+}
+
+main {
+  margin: 1em;
+}
+
+@media (min-width: 750px) {
+  main {
+    margin-left: 25%;
+    margin-right: 25%;
+  }
 }
 
 section {
@@ -16,10 +31,32 @@ section {
   margin-bottom: 2em;
 }
 
-@media (min-width: 750px) {
-  main {
-    margin: auto;
-    width: 50%;
-  }
+
+/**
+ * forms
+ */
+form {
+  font-size: 1.25em;
+}
+
+button[type="submit"] {
+  padding: 0.5em;
+  color: #FFF;
+  background: #1abc9c;
+  font-size: 1em;
+  text-align: center;
+  font-style: normal;
+  width: 100%;
+  border: 1px solid #16a085;
+  border-width: 1px 1px 3px;
+}
+
+.form-group {
+  margin-bottom: 1em;
+}
+
+.form-control {
+  height: 2em;
+  width: 100%;
 }
 
