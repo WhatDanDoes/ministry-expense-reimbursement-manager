@@ -15,7 +15,6 @@ const mock = require('mock-fs');
 require('ejs');
 require('../node_modules/raw-body/node_modules/iconv-lite/encodings');
 
-
 describe('POST image/', () => {
 
   let base64Image;
