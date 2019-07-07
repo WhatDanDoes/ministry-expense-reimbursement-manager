@@ -3,10 +3,10 @@
     <%= image.album.name %>
   </div>
   <% var date = new Date(image.tookPlaceAt.getTimezoneOffset() * 60000 + Date.parse(image.tookPlaceAt)) %>
-  <div class="date>
+  <div class="date">
     <%= date.getFullYear() %>-<%= date.getMonth() + 1 %>-<%= date.getDate() %>
   </div>
   <div class="title">
-    <a href="/image/<%= image._id %>'><%= image.title %></a>
+    <a href="/image/<%= image._id %>"><%= image.title %></a>
   </div>
 </div>
