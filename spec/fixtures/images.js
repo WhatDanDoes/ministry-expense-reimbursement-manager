@@ -10,18 +10,21 @@ exports.Image = {
     _id: new ObjectId(),
     album: albums.store._id,
     agent: agents.dan._id,
-    tookPlaceAt: new Date('2018-1-1')
+    tookPlaceAt: new Date('2018-1-1'),
+    createdAt: new Date('2018-1-1')
   },
   sell: {
     _id: new ObjectId(),
     album: albums.store._id,
     agent: agents.troy._id,
-    tookPlaceAt: new Date('2018-2-1')
+    tookPlaceAt: new Date('2018-2-1'),
+    createdAt: new Date('2018-2-1')
   },
   bill: {
     _id: new ObjectId(),
     album: albums.store._id,
     agent: agents.lanny._id,
-    tookPlaceAt: new Date('2018-3-1')
+    tookPlaceAt: new Date('2018-3-1'),
+    createdAt: new Date('2018-3-1')
   }
 };
