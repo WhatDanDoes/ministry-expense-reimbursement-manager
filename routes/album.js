@@ -42,11 +42,12 @@ router.post('/', function(req, res) {
       req.flash('success', album.name + ' is open');
       res.redirect('/album/' + album._id);
     }).catch(function(err) {
-      if (e) res.status(400).send(e);
+      req.flash('error', err.errors.name.message);
+      res.render('album/index', { agent: req.user, messages: req.flash() });
     });
   }).catch(function(err) {
-    // What is this? Super sketch.
-    res.render('album/index', { agent: req.user, messages: { error: err } });
+    req.flash('error', err.errors.name.message);
+    res.render('album/index', { agent: req.user, messages: req.flash() });
   });
 });
 

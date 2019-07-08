@@ -207,9 +207,6 @@ describe("GET '/'", () => {
           browser.fill('name', 'Fun Pics');
           browser.pressButton('Open New', (err) => {
             if (err) done.fail(err);
-//            browser.visit('/', (err) => {
-//              if (err) done.fail(err);
-//              browser.assert.success();
             browser.assert.elements('#album-list .album', 2);
             models.Album.findOne({ name: 'Fun Pics' }).then((album) => {
               browser.assert.link('.album a', album.name, '/album/' + album._id);
