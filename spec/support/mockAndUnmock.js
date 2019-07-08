@@ -2,6 +2,10 @@
  * There has got to be a better way... what am I missing?
  */
 const fs = require('fs');
+
+require('../../node_modules/raw-body/node_modules/iconv-lite/encodings');
+require('../../node_modules/negotiator/lib/mediaType');
+
 module.exports = function(mock) {
   return function(mocks) {
     mock({ 
