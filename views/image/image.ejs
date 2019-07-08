@@ -7,6 +7,6 @@
     <%= date.getFullYear() %>-<%= date.getMonth() + 1 %>-<%= date.getDate() %>
   </div>
   <div class="title">
-    <a href="/image/<%= image._id %>"><%= image.title %></a>
+    <a href="/image/<%= image._id %>"><%= image.title || 'untitled' %></a>
   </div>
 </div>
