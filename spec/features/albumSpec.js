@@ -165,7 +165,7 @@ describe("GET '/'", () => {
       describe('successful album submission by member agent', () => {
         it('lands on new album page with a success message', (done) => {
           browser.fill('name', 'TaxReformYYC');
-          browser.pressButton('Open New', (err) => {
+          browser.pressButton('Create New', (err) => {
             if (err) done.fail(err);
             models.Agent.findById(agent._id).then((agent) => {
               if (err) done.fail(err);
@@ -189,7 +189,7 @@ describe("GET '/'", () => {
           expect(agent.submittables.length).toEqual(1);
           expect(agent.viewables.length).toEqual(0);
           browser.fill('name', 'TaxReformYYC');
-          browser.pressButton('Open New', (err) => {
+          browser.pressButton('Create New', (err) => {
             if (err) done.fail(err);
             browser.assert.success();
 
@@ -217,7 +217,7 @@ describe("GET '/'", () => {
         it('displays the submitted album on the home page and allows agent to submit image', (done) => {
           browser.assert.elements('#album-list .album', 1);
           browser.fill('name', 'Fun Pics');
-          browser.pressButton('Open New', (err) => {
+          browser.pressButton('Create New', (err) => {
             if (err) done.fail(err);
             browser.assert.elements('#album-list .album', 2);
             models.Album.findOne({ name: 'Fun Pics' }).then((album) => {
@@ -255,7 +255,7 @@ describe("GET '/'", () => {
         it('does not create an album unless a name is provided', (done) => {
           browser.assert.elements('#album-list .album', 1);
           browser.fill('name', '   ');
-          browser.pressButton('Open New', (err) => {
+          browser.pressButton('Create New', (err) => {
             if (err) done.fail(err);
             browser.assert.success();
             browser.assert.elements('#album-list .album', 1);
