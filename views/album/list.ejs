@@ -11,12 +11,13 @@
     <% for (let album of albums) { %>
       <% include ./list_item %>
     <% } %>
-    <i class="fa fa-plus-circle closed form-reveal id="add-album" onclick="toggleDiv("new-album-form")">
-    <form id="new-album-form" role="form" action="/album" method="post">
-      <input type="text" name="name" placeholder="My New Account">
-      <input type="submit" value="Open New">
+    <i class="fa fa-plus-circle closed form-reveal" id="add-album" onClick="toggleDiv('new-album-form', 'new-album-name')"></i>
+    <form id="new-album-form" role="form" action="/album" method="post" style="display: none">
+      <input id="new-album-name" type="text" name="name" placeholder="My New Album">
+      <input type="submit" value="Create New">
     </form>
   </section>
+
 </details>
 
 
