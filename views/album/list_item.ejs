@@ -1,0 +1,23 @@
+<div class="album">
+  <a href="/album/<%= album._id %>"><%= album.name %></a>
+  <% let isReviewer = agent.reviewables.findIndex(function(a) { return a._id.toString() == album._id.toString() }) != -1; %>
+  <% let isSubmitter = agent.submittables.findIndex(function(a) { return a._id.toString() == album._id.toString() }) != -1; %>
+  <% let isViewer = agent.viewables.findIndex(function(a) { return a._id.toString() == album._id.toString() }) != -1; %>
+  <span class="permissions">
+    <% if (isReviewer) { %>
+      <i class="fa fa-edit tooltip">
+        <span class="tooltiptext">Reviewer</span>
+      </i>
+    <% } %>
+    <% if (isSubmitter || isReviewer) { %>
+      <i class="fa fa-upload tooltip">
+        <span class="tooltiptext">Submitter</span>      
+      </i>
+    <% } %>
+    <% if (isViewer || isReviewer) { %>
+      <i class="fa fa-eye tooltip">      
+        <span class="tooltiptext">Viewer</span>
+      </i>
+    <% } %>
+  </span>
+</div>
