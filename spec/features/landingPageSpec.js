@@ -35,7 +35,7 @@ describe('landing page', () => {
   });
 
   it('displays a message if there are no images to view', done => {
-    mockAndUnmock({ 'public/images/uploads': {} });
+    mockAndUnmock({ 'uploads': {} });
 
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
@@ -47,7 +47,7 @@ describe('landing page', () => {
 
   it('displays the images in the uploads directory', done => {
     mockAndUnmock({ 
-      'public/images/uploads': {
+      'uploads': {
         'image1.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image3.jpg': fs.readFileSync('spec/data/troll.jpg'),
@@ -65,7 +65,7 @@ describe('landing page', () => {
 
   it('does not displays non-image files', done => {
     mockAndUnmock({ 
-      'public/images/uploads': {
+      'uploads': {
         'image1.jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.pdf': fs.readFileSync('spec/data/troll.jpg'),
         'image3.doc': fs.readFileSync('spec/data/troll.jpg'),
@@ -83,7 +83,7 @@ describe('landing page', () => {
 
   it('displays image files with wonky capitalization on the filename extension', done => {
     mockAndUnmock({ 
-      'public/images/uploads': {
+      'uploads': {
         'image1.Jpg': fs.readFileSync('spec/data/troll.jpg'),
         'image2.pdf': fs.readFileSync('spec/data/troll.jpg'),
         'image3.GIF': fs.readFileSync('spec/data/troll.jpg'),
