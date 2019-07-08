@@ -6,6 +6,6 @@ const ObjectId = mongoose.Types.ObjectId;
 exports.Album = {
   store: {
     _id: new ObjectId(),
-    name: 'Little Feet'
+    name: 'Summer Memories'
   }
 };
