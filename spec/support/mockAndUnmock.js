@@ -7,6 +7,10 @@ module.exports = function(mock) {
     mock({ 
       ...mocks, 
       'views/index.ejs': fs.readFileSync('views/index.ejs'),
+      'views/album/index.ejs': fs.readFileSync('views/album/index.ejs'),
+      'views/album/list.ejs': fs.readFileSync('views/album/list.ejs'),
+      'views/album/list_item.ejs': fs.readFileSync('views/album/list_item.ejs'),
+      'views/image/image.ejs': fs.readFileSync('views/image/image.ejs'),
       'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
       'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
       'views/_partials/navbar.ejs': fs.readFileSync('views/_partials/navbar.ejs'),
