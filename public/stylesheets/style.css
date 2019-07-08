@@ -165,20 +165,20 @@ details section {
 }
 
 /**
- * accounts
-.account {
+ * albums
+.album {
   margin-left: 1em;
   margin-right: 1em;
 }
  */
 .stakeholder .quantity,
 .agent .permissions,
-.account .permissions {
+.album .permissions {
   float: right;
 }
 
 .agent .permissions .fa,
-.account .permissions .fa {
+.album .permissions .fa {
   margin-right: 0.5em;
 }
 
@@ -273,7 +273,7 @@ textarea {
  */
 
 /**
- * show invoices
+ * show images
  */
 h2 {
   font-size: 1.25em;
@@ -288,7 +288,7 @@ h2 {
 .agent,
 .series,
 .stakeholder,
-.invoice {
+.image {
   padding: 0.5em 1em 0.5em 1em;
   border-bottom-style: solid; 
   border-width: 1px; 
@@ -311,7 +311,7 @@ h2 {
   color: #32ff32;
 }
 
-.invoice .account {
+.image .album {
   float: left;
 /*
   width: 70%;
@@ -319,15 +319,15 @@ h2 {
 }
 
 /*
-.invoice .date {
+.image .date {
   margin-left: 70%;
 }
 */
 
 /**
- * Delete invoice
+ * Delete image
  */
-#delete-invoice button[type="submit"] {
+#delete-image button[type="submit"] {
   padding: 0.5em;
   background: #ff4c4c;
   font-size: 0.5em;
@@ -377,7 +377,7 @@ h2 {
 }
 
 /**
- * New account, agent, stake forms
+ * New album, agent, stake forms
  */
 .form-reveal {
   margin-top: 0.5em;
