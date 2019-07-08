@@ -5,6 +5,7 @@ describe('ImageFile', function() {
   const fs = require('fs');
   const path = require('path');
   const mock = require('mock-fs');
+  const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
   const db = require('../../models');
   const ImageFile = db.ImageFile;
@@ -21,7 +22,7 @@ describe('ImageFile', function() {
         if (err) done.fail(err);
         db.Image.findOne().then(function(results) {
           image = results;
-          mock({
+          mockAndUnmock({
             '/tmp/00000-receipt.jpg': fs.readFileSync('spec/files/receipt.jpg'),
             'uploads': { /* empty directory */ }
           });
@@ -130,7 +131,7 @@ describe('ImageFile', function() {
     var savePath;
 
     beforeEach(function() {
-      savePath = 'uploads/LittleFeet'  + '/' + date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate() + '/' + _filename
+      savePath = 'uploads/SummerMemories'  + '/' + date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate() + '/' + _filename
     });
 
     it('moves the file into the proper directory when record is saved', function(done) {
