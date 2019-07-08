@@ -8,6 +8,10 @@ const path = require('path');
 const app = require('../../app'); 
 const request = require('supertest');
 
+const mock = require('mock-fs');
+const mockAndUnmock = require('../support/mockAndUnmock')(mock);
+const fs = require('fs');
+
 const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
 Browser.localhost('example.com', PORT);
 
@@ -20,6 +24,7 @@ describe("GET '/'", () => {
 
   beforeEach((done) => {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
+
 
     // browser.debug();
     fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, (err) => {
@@ -44,6 +49,12 @@ describe("GET '/'", () => {
                     browser.visit('/', (err) => {
                       if (err) done.fail(err);
                       browser.assert.success();
+
+                      mockAndUnmock({
+                        'spec/files/receipt.jpg': fs.readFileSync('spec/files/receipt.jpg'),
+                        'uploads': {}
+                      });
+
                       done();
                     });
                   }).catch((err) => {
@@ -68,6 +79,7 @@ describe("GET '/'", () => {
 
   afterEach((done) => {
     models.mongoose.connection.db.dropDatabase().then((err, result) => {
+      mock.restore();
       done();
     }).catch((err) => {
       done.fail(err);         
