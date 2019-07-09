@@ -1,6 +1,5 @@
 const request = require('supertest');
 const fs = require('fs');
-const timestamp = require('time-stamp');
 const fixtures = require('pow-mongoose-fixtures');
 
 const Browser = require('zombie');
@@ -10,34 +9,10 @@ Browser.localhost('example.com', PORT);
 const app = require('../../app');
 const models = require('../../models');
 
-/**
- * `mock-fs` stubs the entire file system. So if a module hasn't
- * already been `require`d the tests will fail because the 
- * module doesn't exist in the mocked file system. `ejs` and
- * `iconv-lite/encodings` are required here to solve that 
- * problem.
- */
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('POST image/', () => {
-
-  beforeEach(done => {
-//    spyOn(timestamp, 'utc').and.returnValue('20190628114032');
-//
-//    fs.readFile(`${__dirname}/../data/troll.base64`, 'utf8', (err, data) => {
-//      if (err) {
-//        return done.fail(err);
-//      }
-//      base64Image = data;
-//
-//      mockAndUnmock({ 
-//        'uploads': mock.directory({}),
-//      });
-//
-      done();
-//    });
-  });
 
   describe('unauthenticated access', () => {
     it('returns 403 error', done => {
@@ -82,7 +57,6 @@ describe('POST image/', () => {
           });
       });
     });
-
   });
 
   describe('authenticated access', () => {
@@ -104,12 +78,10 @@ describe('POST image/', () => {
               if (err) done.fail(err);
               browser.assert.success();
 
-              spyOn(timestamp, 'utc').and.returnValue('20190628114032');
-          
               mockAndUnmock({ 
                 'uploads': mock.directory({}),
               });
-        
+
               done();
             });
           });
@@ -117,13 +89,11 @@ describe('POST image/', () => {
           done.fail(error);
         });
       });
-
     });
 
     afterEach(() => {
       mock.restore();
     });
-
 
     it('responds with 201 on successful receipt of file', done => {
       request(app)
@@ -266,8 +236,5 @@ describe('POST image/', () => {
           done();
         });
     });
-
-
   });
-
 });

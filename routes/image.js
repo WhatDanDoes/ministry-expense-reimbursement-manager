@@ -60,7 +60,6 @@ router.post('/', upload.array('docs', 8), (req, res) => {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-console.log("HERE", req.files);
   // No image provided
   if (!req.files || !req.files.length) {
     return res.status(400).json({ message: 'No image provided' });
@@ -71,12 +70,25 @@ console.log("HERE", req.files);
     savePaths.push({curr: file.path, dest: `uploads/${req.user.getAgentDirectory()}/${file.filename}` });
   }
 
-  mv(savePaths[0].curr, savePaths[0].dest, { mkdirp: true }, function(err) {
+  function recursiveSave(done) {
+    if (!savePaths.length) {
+      return done();
+    }
+    let path = savePaths.pop();
+    mv(path.curr, path.dest, { mkdirp: true }, function(err) {
+      if (err) {
+        done(err);
+      }
+      recursiveSave(done);
+    });   
+  };
+
+  recursiveSave((err) => {
     if (err) {
       return res.status(500).json({ message: err.message });
     }
     res.status(201).json({ message: 'Image received' });
-  });
+  }) 
 });
 
 /**
