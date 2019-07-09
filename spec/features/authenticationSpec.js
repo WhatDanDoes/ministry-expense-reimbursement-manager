@@ -21,26 +21,10 @@ describe('authentication', function() {
     fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
       models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
         agent = results;
-        fixtures.load(__dirname + '/../fixtures/albums.js', models.mongoose, function(err) {
-          if (err) done.fail(err);
-          fixtures.load(__dirname + '/../fixtures/images.js', models.mongoose, function(err) {
-            models.Image.findOne().then(function(results) {
-              if (err) done.fail(err);
-              agent.images.push(results);
-              models.Agent.findOneAndUpdate({ '_id': agent._id }, agent, { new: true }).then(function(results){
-                agent = results;
-                browser.visit('/', function(err) {
-                  if (err) done.fail(err);
-                  browser.assert.success();
-                  done();
-                });
-              }).catch(function(error) {
-                done.fail(error);
-              });
-            }).catch(function(error) {
-              done.fail(error);
-            });
-          });
+        browser.visit('/', function(err) {
+          if (err) return done.fail(err);        
+          browser.assert.success();       
+          done();      
         });
       }).catch(function(error) {
         done.fail(error);
@@ -141,18 +125,18 @@ describe('authentication', function() {
         browser.assert.text('.alert', 'Hello, ' + agent.email + '!');
       });
   
-      it("redirects to the agent's albums", function() {
-        browser.assert.url({ pathname: '/album'});
+      it("redirects to the landing page", function() {
+        browser.assert.url({ pathname: '/'});
       });
   
-      it('displays image submission history', function(done) {
-        expect(agent.images.length).toEqual(1);
-        browser.assert.text('#images', 'Recent images');
-        models.Image.count({ agent: agent._id }, function(err, count) {
-          expect(browser.queryAll('.image').length).toEqual(count);
-          done();
-        });
-      });
+//      it('displays image submission history', function(done) {
+//        expect(agent.images.length).toEqual(1);
+//        browser.assert.text('#images', 'Recent images');
+//        models.Image.count({ agent: agent._id }, function(err, count) {
+//          expect(browser.queryAll('.image').length).toEqual(count);
+//          done();
+//        });
+//      });
   
       describe('logout', function() {
         it('does not display the logout button if not logged in', function(done) {

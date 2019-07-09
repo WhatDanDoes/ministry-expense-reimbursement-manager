@@ -32,10 +32,6 @@ module.exports = function(mongoose) {
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    images: [{ type: Schema.Types.ObjectId, ref: 'Image' }],
-    reviewables: [{ type: Schema.Types.ObjectId, ref: 'Album' }],
-    submittables: [{ type: Schema.Types.ObjectId, ref: 'Album' }],
-    viewables: [{ type: Schema.Types.ObjectId, ref: 'Album' }],
   }, {
     timestamps: true
   });

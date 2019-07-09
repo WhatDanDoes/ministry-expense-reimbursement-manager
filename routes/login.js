@@ -11,7 +11,7 @@ const redirects = {
 
 router.post('/', passport.authenticate('local', redirects), function(req, res) {
   req.flash('info', 'Hello, ' + req.user.email + '!');
-  res.redirect('/album');
+  res.redirect('/');
 });
 
 module.exports = router;

@@ -69,26 +69,7 @@ passport.serializeUser(function(agent, done) {
 });
 passport.deserializeUser(function(id, done) {
   models.Agent.findById(id).then(function(agent) {
-    agent.populate('images submittables reviewables viewables', function(err, agent) {
-      if (err) {
-        return done(err);
-      }
-
-      // Can't sort images on populate for some reason
-      // 2016-11-22
-      // http://stackoverflow.com/questions/8837454/sort-array-of-objects-by-single-key-with-date-value
-      agent.images.sort(function(a, b){
-        var keyA = new Date(a.createdAt),
-            keyB = new Date(b.createdAt);
-        if(keyA > keyB) return -1;
-        if(keyA < keyB) return 1;
-        return 0;
-      });
-
-      models.Album.populate(agent.images, { path: 'album', select: 'name' }, function(err, images) {
-        return done(err, agent);
-      });
-    });
+    return done(null, agent);
   }).catch(function(error) {
     return done(error);
   });
@@ -123,10 +104,8 @@ app.use(methodOverride('_method'));
  * Routes
  */
 app.use('/', require('./routes/index'));
-app.use('/image', require('./routes/image'));
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
-app.use('/album', require('./routes/album'));
 app.use('/reset', require('./routes/reset'));
 
 
