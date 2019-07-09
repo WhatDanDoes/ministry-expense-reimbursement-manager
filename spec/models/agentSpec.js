@@ -136,5 +136,12 @@ describe('Agent', function() {
         }, agent);
       });
     });
+
+    describe('.getAgentDirectory', function() {
+      it('returns a directory path based on the agent\'s email address', () => {
+        expect(agent.email).toEqual('someguy@example.com');
+        expect(agent.getAgentDirectory()).toEqual('example.com/someguy');
+      });
+    });
   });
 });

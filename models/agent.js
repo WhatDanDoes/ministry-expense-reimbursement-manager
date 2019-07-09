@@ -66,6 +66,12 @@ module.exports = function(mongoose) {
     });
   };
 
+  AgentSchema.methods.getAgentDirectory = function() {
+    let parts = this.email.split('@');
+    return `${parts[1]}/${parts[0]}` ;
+  };
+
+
 //  AgentSchema.plugin(findOrCreate);
   return AgentSchema;
 };
