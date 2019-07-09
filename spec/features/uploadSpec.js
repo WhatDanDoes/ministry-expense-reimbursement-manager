@@ -2,7 +2,7 @@ const request = require('supertest');
 const fs = require('fs');
 const timestamp = require('time-stamp');
 
-const app = require('../app');
+const app = require('../../app');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -12,8 +12,7 @@ const app = require('../app');
  * problem.
  */
 const mock = require('mock-fs');
-require('ejs');
-require('../node_modules/raw-body/node_modules/iconv-lite/encodings');
+const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('POST image/', () => {
 
@@ -21,7 +20,7 @@ describe('POST image/', () => {
   beforeEach(done => {
     spyOn(timestamp, 'utc').and.returnValue('20190628114032');
 
-    fs.readFile(`${__dirname}/data/troll.base64`, 'utf8', (err, data) => {
+    fs.readFile(`${__dirname}/../data/troll.base64`, 'utf8', (err, data) => {
       if (err) {
         return done.fail(err);
       }
@@ -40,42 +39,78 @@ describe('POST image/', () => {
     mock.restore();
   });
 
-  it('responds with 201 on successful receipt of base64 image', done => {
-    request(app)
-      .post('/image')
-      .send({ base64Image: base64Image })
-      .expect('Content-Type', /json/)
-      .expect(201)
-      .end(function(err, res) {
-        if (err) {
-          return done.fail(err);
-        }
-        expect(res.body.message).toEqual('Image received');
-        done();
-      });
-  });
-
-  it('writes the base64 image to the disk', done => {
-    request(app)
-      .post('/image')
-      .send({ base64Image: base64Image })
-      .expect(201)
-      .end(function(err, res) {
-        if (err) {
-          //console.log(res);
-          return done.fail(err);
-        }
-        expect(res.body.message).toEqual('Image received');
-
-        fs.readFile('public/images/uploads/20190628114032.jpg', (err, data) => {
-
+  describe('unauthenticated access', () => {
+    it('returns 403 error', done => {
+      request(app)
+        .post('/image')
+        .send({ base64Image: base64Image })
+        .expect('Content-Type', /json/)
+        .expect(403)
+        .end(function(err, res) {
           if (err) {
             return done.fail(err);
           }
-          expect(data).toBeDefined();
+          expect(res.body.message).toEqual('Unauthorized');
+          done();
+        });
 
+    });
+
+    it('does not write a file to the file system', done => {
+      done.fail();
+    });
+
+  });
+
+  describe('authenticated access', () => {
+
+    describe('agent previously unknown', () => {
+
+    });
+
+    describe('known agent', () => {
+
+    });
+
+
+    it('responds with 201 on successful receipt of base64 image', done => {
+      request(app)
+        .post('/image')
+        .send({ base64Image: base64Image })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .end(function(err, res) {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(res.body.message).toEqual('Image received');
           done();
         });
     });
+  
+    it('writes the base64 image to the disk', done => {
+      request(app)
+        .post('/image')
+        .send({ base64Image: base64Image })
+        .expect(201)
+        .end(function(err, res) {
+          if (err) {
+            //console.log(res);
+            return done.fail(err);
+          }
+          expect(res.body.message).toEqual('Image received');
+  
+          fs.readFile('public/images/uploads/20190628114032.jpg', (err, data) => {
+  
+            if (err) {
+              return done.fail(err);
+            }
+            expect(data).toBeDefined();
+  
+            done();
+          });
+      });
+    });
   });
+
 });
