@@ -5,11 +5,15 @@ const fs = require('fs');
 
 require('../../node_modules/raw-body/node_modules/iconv-lite/encodings');
 require('../../node_modules/negotiator/lib/mediaType');
+require('../../node_modules/iconv-lite/encodings');
+require('ejs');
 
 module.exports = function(mock) {
   return function(mocks) {
     mock({ 
       ...mocks, 
+      'spec/files/troll.jpg': fs.readFileSync('spec/files/troll.jpg'),
+      'spec/files/troll.png': fs.readFileSync('spec/files/troll.png'),
       'views/index.ejs': fs.readFileSync('views/index.ejs'),
       'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
       'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
