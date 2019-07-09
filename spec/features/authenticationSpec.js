@@ -6,6 +6,10 @@ const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 
+const fs = require('fs');
+const mock = require('mock-fs');
+const mockAndUnmock = require('../support/mockAndUnmock')(mock);
+
 Browser.localhost('example.com', PORT);
       
 // For when system resources are scarce
@@ -108,6 +112,14 @@ describe('authentication', function() {
 
     describe('successful', function () {
       beforeEach(function(done) {
+        mockAndUnmock({ 
+          'uploads': {
+            'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          }
+        });
+
         browser.fill('email', agent.email);
         browser.fill('password', 'secret');
         browser.pressButton('Login', function(err) {
@@ -117,6 +129,10 @@ describe('authentication', function() {
         });
       });
   
+      afterEach(function() {
+        mock.restore();
+      });
+
       it('does not display the login form', function() {
         expect(browser.query("form[action='/login']")).toBeNull();
       });
@@ -129,14 +145,9 @@ describe('authentication', function() {
         browser.assert.url({ pathname: '/'});
       });
   
-//      it('displays image submission history', function(done) {
-//        expect(agent.images.length).toEqual(1);
-//        browser.assert.text('#images', 'Recent images');
-//        models.Image.count({ agent: agent._id }, function(err, count) {
-//          expect(browser.queryAll('.image').length).toEqual(count);
-//          done();
-//        });
-//      });
+      it('displays image submission history', function() {
+        expect(browser.queryAll('.image').length).toEqual(3);
+      });
   
       describe('logout', function() {
         it('does not display the logout button if not logged in', function(done) {
