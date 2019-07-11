@@ -197,7 +197,7 @@ describe('authentication', function() {
           .send({ email: agent.email, password: 'secret' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
-          .expect(200)
+          .expect(201)
           .end(function(err, res) {
             if (err) done.fail(err);
             expect(res.headers['set-cookie']).toBeDefined();
@@ -234,7 +234,7 @@ describe('authentication', function() {
             .send({ email: agent.email, password: 'secret' })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(200)
+            .expect(201)
             .end(function(err, res) {
               if (err) done.fail(err);
               expect(res.headers['set-cookie']).toBeDefined();
