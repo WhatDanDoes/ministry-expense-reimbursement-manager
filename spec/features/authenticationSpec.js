@@ -62,9 +62,9 @@ describe('authentication', function() {
   //  it('does not display any images if not logged in', function() {
   //    expect(browser.queryAll('.image').length).toEqual(0);
   //  });
-  
+
     describe('login process', function() {
-  
+
       describe('unsuccessful', function () {
         it('shows an error message when password omitted', function(done) {
           browser.fill('email', agent.email);
@@ -83,7 +83,7 @@ describe('authentication', function() {
             done();
           });
         });
-  
+
         it('shows an error message when password and email are omitted', function(done) {
           browser.pressButton('Login', function(err) {
             if (err) done.fail(err);
@@ -91,7 +91,7 @@ describe('authentication', function() {
             done();
           });
         });
-  
+
         it('shows an error message when password is wrong', function(done) {
           browser.fill('email', agent.email);
           browser.fill('password', 'wrong');
@@ -101,7 +101,7 @@ describe('authentication', function() {
             done();
           });
         });
-  
+
         it('shows an error message when email doesn\'t exist', function(done) {
           browser.fill('email', 'nosuchguy@example.com');
           browser.fill('password', 'wrong');
@@ -112,7 +112,7 @@ describe('authentication', function() {
           });
         });
       });
-  
+
       describe('successful', function () {
         beforeEach(function(done) {
           mockAndUnmock({ 
@@ -122,7 +122,7 @@ describe('authentication', function() {
               'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
             }
           });
-  
+
           browser.fill('email', agent.email);
           browser.fill('password', 'secret');
           browser.pressButton('Login', function(err) {
@@ -131,27 +131,27 @@ describe('authentication', function() {
             done();
           });
         });
-    
+
         afterEach(function() {
           mock.restore();
         });
-  
+
         it('does not display the login form', function() {
           expect(browser.query("form[action='/login']")).toBeNull();
         });
-    
+
         it('displays a friendly greeting', function() {
           browser.assert.text('.alert', 'Hello, ' + agent.email + '!');
         });
-    
+
         it("redirects to the landing page", function() {
           browser.assert.url({ pathname: '/'});
         });
-    
+
         it('displays image submission history', function() {
           expect(browser.queryAll('.image').length).toEqual(3);
         });
-    
+
         describe('logout', function() {
           it('does not display the logout button if not logged in', function(done) {
             browser.clickLink('Logout', function(err) {
@@ -169,7 +169,7 @@ describe('authentication', function() {
     });
   });
 
-  describe('app', () => {
+  describe('api', () => {
 
     beforeEach(function(done) {
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
@@ -190,33 +190,81 @@ describe('authentication', function() {
       });
     });
 
-    it('returns a cookie on successful sign in', (done) => {
-      request(app)
-        .post('/login')
-        .send({ email: agent.email, password: 'secret' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .end(function(err, res) {
-          if (err) done.fail(err);
-          expect(res.headers['set-cookie']).toBeDefined();
-          done();        
-        });
+    describe('login', () => {
+      it('returns a cookie on successful sign in', (done) => {
+        request(app)
+          .post('/login')
+          .send({ email: agent.email, password: 'secret' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+            expect(res.headers['set-cookie']).toBeDefined();
+            done();
+          });
+      });
+
+      it('returns a 403 json message on unsuccessful sign in', (done) => {
+        request(app)
+          .post('/login')
+          .send({ email: agent.email, password: 'wrong' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(401)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+            expect(res.body.message).toEqual('Invalid email or password');
+            expect(res.headers['set-cookie']).toBeUndefined();
+            done();
+          });
+      });
     });
 
-    it('returns a 403 json message on unsuccessful sign in', (done) => {
-      request(app)
-        .post('/login')
-        .send({ email: agent.email, password: 'wrong' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(401)
-        .end(function(err, res) {
-          if (err) done.fail(err);
-          expect(res.body.message).toEqual('Invalid email or password');
-          expect(res.headers['set-cookie']).toBeUndefined();
-          done();        
+    describe('logout', () => {
+      it('removes the session', done => {
+        models.db.collection('sessions').find().toArray(function(err, sessions) {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(sessions.length).toEqual(0);
+
+          request(app)
+            .post('/login')
+            .send({ email: agent.email, password: 'secret' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function(err, res) {
+              if (err) done.fail(err);
+              expect(res.headers['set-cookie']).toBeDefined();
+
+              models.db.collection('sessions').find().toArray(function(err, sessions) {
+                if (err) {
+                  return done.fail(err);
+                }
+                expect(sessions.length).toEqual(1);
+
+                request(app)
+                  .get('/logout')
+                  .set('Cookie', res.header['set-cookie'])
+                  .set('Accept', 'application/json')
+                  .expect(204)
+                  .end(function(err, res) {
+                    if (err) done.fail(err);
+
+                    models.db.collection('sessions').find().toArray(function(err, sessions) {
+                      if (err) {
+                        return done.fail(err);
+                      }
+                      expect(sessions.length).toEqual(0);
+                      done();
+                    });
+                  });
+              });
+            });
         });
+      });
     });
   });
 });

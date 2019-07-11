@@ -26,12 +26,14 @@ const config = require(__dirname + '/config/config.json')[env];
 const sessionConfig = {
   secret: 'supersecretkey',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  unset: 'destroy',
+  store: new MongoStore({ mongooseConnection: models }),
 };
 
-if (env == 'production') {
-  sessionConfig.store = new MongoStore({ mongooseConnection: models });
-}
+//if (env == 'production') {
+//  sessionConfig.store = new MongoStore({ mongooseConnection: models });
+//}
 
 app.use(session(sessionConfig));
 
