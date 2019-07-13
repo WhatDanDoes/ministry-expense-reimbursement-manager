@@ -2,43 +2,23 @@
   "_dependencies": {
     "bcrypt": "bcrypt-nodejs"
   },
-  "albums": {
-    "_model": "Album",
-    "public": {
-      "name": "Public"
-    }
-  },
   "agents": {
     "_model": "Agent",
     "dan": {
       "email": "daniel@example.com",
-      "password": "secret",
-      "submittables": [
-        "->albums.public"
-      ],
-      "reviewables": [
-        "->albums.public"
-      ]
+      "password": "secret"
     },
     "lyndsay": {
       "email": "lyndsay@example.com",
-      "password": "secret",
-      "submittables": [
-        "->albums.public"
-      ],
-      "viewables": [
-        "->albums.public"
-      ]
+      "password": "secret"
     },
     "darina": {
       "email": "darina@example.com",
-      "password": "secret",
-      "submittables": [
-        "->albums.public"
-      ],
-      "viewables": [
-        "->albums.public"
-      ]
+      "password": "secret"
+    },
+    "someguy": {
+      "email": "someguy@example.com",
+      "password": "secret"
     }
   }
 }
