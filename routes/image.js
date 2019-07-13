@@ -87,7 +87,7 @@ router.post('/', upload.array('docs', 8), (req, res) => {
     let path = savePaths.pop();
     mv(path.curr, path.dest, { mkdirp: true }, function(err) {
       if (err) {
-        done(err);
+        return done(err);
       }
       recursiveSave(done);
     });   
