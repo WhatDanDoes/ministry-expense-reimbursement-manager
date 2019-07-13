@@ -11,6 +11,14 @@ services:
     volumes:
       - .:/home/node
       - /home/node/node_modules
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    command: --smallfiles
+    volumes:
+      - basic_photo_server_data:/data/db
 networks:
   default:
     external:
