@@ -16,7 +16,7 @@ a:hover {
 }
 
 main {
-  margin: 1em;
+  margin: 0;
 }
 
 @media (min-width: 750px) {
@@ -24,6 +24,14 @@ main {
     margin-left: 25%;
     margin-right: 25%;
   }
+}
+
+section {
+  width: 100%;
+  margin-top: 2em;
+}
+section img {
+  width: 100%;
 }
 
 /**
