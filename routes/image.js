@@ -66,8 +66,18 @@ router.post('/', upload.array('docs', 8), (req, res) => {
   }
 
   let savePaths = [];
+  let index = 0;
   for (let file of req.files) {
-    savePaths.push({curr: file.path, dest: `uploads/${req.user.getAgentDirectory()}/${file.filename}` });
+    let newFileName = `${timestamp('YYYY-MM-DD-HHmmssms')}`;
+    if (req.files.length > 1) {
+      newFileName = `${newFileName}-${index++}`;
+    }
+    newFileName = `${newFileName}.${file.path.split('.').pop()}`;
+
+    savePaths.push({
+      curr: file.path,
+      dest: `uploads/${req.user.getAgentDirectory()}/${newFileName}`
+    });
   }
 
   function recursiveSave(done) {
