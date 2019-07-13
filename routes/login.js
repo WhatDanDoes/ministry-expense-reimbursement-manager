@@ -24,7 +24,7 @@ router.post('/', function(req, res, next) {
         req.flash('info', 'Hello, ' + req.user.email + '!');
         return res.redirect('/');
       }
-      return res.status(201).json({message: 'Hello, ' + req.user.email + '!'});
+      return res.status(201).json({message: 'Hello, ' + req.user.email + '!', cookie: req.headers.cookie });
     });
   })(req, res, next);
 });
