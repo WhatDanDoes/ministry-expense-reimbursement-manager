@@ -11,7 +11,7 @@ const router = express.Router();
 const models = require('../models');
 const crypto = require('crypto');
 const mailer = require('../mailer');
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 
 router.get('/', (req, res) => {
   res.render('forgot', { messages: req.flash(), agent: null });
@@ -67,6 +67,8 @@ router.post('/', (req, res) => {
   });
 });
 
+const saltRounds = 10;
+
 router.patch('/:token', function(req, res) {
 
   if (req.body.password !== req.body.confirm) {
@@ -79,23 +81,18 @@ router.patch('/:token', function(req, res) {
       req.flash('error', 'Password reset token is invalid or has expired.');
       return res.redirect('/reset');
     }
-    // Generate a salt
-    bcrypt.genSalt(10, function(err, salt) {
-      if (err) return res.sendStatus(501);
 
-      // Hash the password using our new salt
-      bcrypt.hash(req.body.password, salt, null, function(err, hash) {
-        if (err) return res.sendStatus(501);
-        agent.password = hash;
-        agent.resetPasswordToken = undefined;
-        agent.resetPasswordExpires = undefined;
- 
-        models.Agent.findByIdAndUpdate(agent._id, agent).then((results) => {
-    
-          res.redirect('/');
-        }).catch((err) => {
-          return res.sendStatus(501);
-        });
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+      if (err) return res.sendStatus(501);
+      agent.password = hash;
+      agent.resetPasswordToken = undefined;
+      agent.resetPasswordExpires = undefined;
+
+      models.Agent.findByIdAndUpdate(agent._id, agent).then((results) => {
+  
+        res.redirect('/');
+      }).catch((err) => {
+        return res.sendStatus(501);
       });
     });
   }).catch((err) => {

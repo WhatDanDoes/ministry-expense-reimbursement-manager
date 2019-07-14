@@ -1,6 +1,6 @@
 'use strict';
 
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 //const findOrCreate = require('mongoose-findorcreate');
 
 module.exports = function(mongoose) {
@@ -36,23 +36,26 @@ module.exports = function(mongoose) {
     timestamps: true
   });
 
+  const saltRounds = 10;
+
   AgentSchema.pre('save', function(next) {
-    var agent = this;
-
-    // Only hash the password if it has been modified (or is new)
-    if (!agent.isModified('password')) return next();
-
-    // Generate a salt
-    bcrypt.genSalt(10, function(err, salt) {
-      if (err) return next(err);
-      // Hash the password using our new salt
-      bcrypt.hash(agent.password, salt, null, function(err, hash) {
-        if (err) return next(err);
-        // Override the cleartext password with the hashed one
-        agent.password = hash;
-        next();
+    // Check if document is new or a new password has been set
+    if (this.isNew || this.isModified('password')) {
+      // Saving reference to this because of changing scopes
+      const document = this;
+      bcrypt.hash(document.password, saltRounds,
+        function(err, hashedPassword) {
+        if (err) {
+          next(err);
+        }
+        else {
+          document.password = hashedPassword;
+          next();
+        }
       });
-    });
+    } else {
+      next();
+    }
   });
 
   AgentSchema.statics.validPassword = function(password, hash, done, agent) {

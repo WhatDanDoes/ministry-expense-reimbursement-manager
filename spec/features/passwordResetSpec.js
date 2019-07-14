@@ -147,7 +147,7 @@ describe('password reset', function() {
               browser.fill('password', 'newpassword');
               browser.fill('confirm', 'newpassword');
               browser.pressButton('Reset', function(err) {
-                if (err) done.fail(err);
+                if (err) return done.fail(err);
                 browser.assert.success();
                 browser.assert.url({ pathname: '/' });
                 browser.fill('email', agent.email);

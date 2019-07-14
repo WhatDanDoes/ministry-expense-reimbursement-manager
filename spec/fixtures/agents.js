@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 
 exports.Agent = {
   dan: {
