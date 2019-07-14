@@ -191,7 +191,8 @@ describe('authentication', function() {
     });
 
     describe('login', () => {
-      it('returns a cookie on successful sign in', (done) => {
+      //it('returns a cookie on successful sign in', (done) => {
+      it('returns a jwt on successful sign in', (done) => {
         request(app)
           .post('/login')
           .send({ email: agent.email, password: 'secret' })
@@ -200,7 +201,8 @@ describe('authentication', function() {
           .expect(201)
           .end(function(err, res) {
             if (err) done.fail(err);
-            expect(res.headers['set-cookie']).toBeDefined();
+            expect(res.body.message).toEqual('Hello, ' + agent.email + '!');
+            expect(res.body.token).toBeDefined();
             done();
           });
       });

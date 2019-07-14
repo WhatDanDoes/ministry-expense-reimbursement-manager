@@ -1,3 +1,4 @@
+require('dotenv').config();
 const request = require('supertest');
 const fs = require('fs');
 const fixtures = require('pow-mongoose-fixtures');
@@ -12,10 +13,12 @@ const models = require('../../models');
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
+const jwt = require('jsonwebtoken');
+
 describe('POST image/', () => {
 
   describe('unauthenticated access', () => {
-    it('returns 403 error', done => {
+    it('returns 401 error', done => {
       request(app)
         .post('/image')
         .attach('docs', 'spec/files/troll.jpg')
@@ -25,7 +28,7 @@ describe('POST image/', () => {
           if (err) {
             return done.fail(err);
           }
-          expect(res.body.message).toEqual('Unauthorized');
+          expect(res.body.message).toEqual('Unauthorized: No token provided');
           done();
         });
 
@@ -61,7 +64,7 @@ describe('POST image/', () => {
 
   describe('authenticated access', () => {
 
-    let agent;
+    let agent, token;
 
     beforeEach(done => {
       browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -69,6 +72,8 @@ describe('POST image/', () => {
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
         models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
           agent = results;
+          token = jwt.sign({ email: agent.email }, process.env.SECRET, { expiresIn: '1h' });
+
           browser.visit('/', function(err) {
             if (err) return done.fail(err);        
             browser.assert.success();       
@@ -98,7 +103,8 @@ describe('POST image/', () => {
     it('responds with 201 on successful receipt of file', done => {
       request(app)
         .post('/image')
-        .set('Cookie', browser.cookies)
+        .set('Accept', 'application/json')
+        .field('token', token)
         .attach('docs', 'spec/files/troll.jpg')
         .expect('Content-Type', /json/)
         .expect(201)
@@ -121,6 +127,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .set('Cookie', browser.cookies)
+          .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -150,7 +157,8 @@ describe('POST image/', () => {
         expect(files.length).toEqual(0);
         request(app)
           .post('/image')
-          .set('Cookie', browser.cookies)
+          //.set('Cookie', browser.cookies)
+          .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .attach('docs', 'spec/files/troll.png')
           .expect('Content-Type', /json/)
@@ -181,6 +189,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .set('Cookie', browser.cookies)
+          .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -199,6 +208,7 @@ describe('POST image/', () => {
               request(app)
                 .post('/image')
                 .set('Cookie', browser.cookies)
+                .field('token', token)
                 .attach('docs', 'spec/files/troll.jpg')
                 .expect(201)
                 .end(function(err, res) {
@@ -226,6 +236,7 @@ describe('POST image/', () => {
       request(app)
         .post('/image')
         .set('Cookie', browser.cookies)
+        .field('token', token)
         .expect('Content-Type', /json/)
         .expect(400)
         .end(function(err, res) {

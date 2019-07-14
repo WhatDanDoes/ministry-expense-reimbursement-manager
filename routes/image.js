@@ -7,6 +7,7 @@ const multer  = require('multer');
 const models = require('../models');
 const timestamp = require('time-stamp');
 const mv = require('mv');
+const jwtAuth = require('../lib/jwtAuth');
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -55,7 +56,7 @@ let upload = multer({ storage: storage });
 /**
  * POST /image
  */
-router.post('/', upload.array('docs', 8), (req, res) => {
+router.post('/', upload.array('docs', 8), jwtAuth, (req, res) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
@@ -74,9 +75,11 @@ router.post('/', upload.array('docs', 8), (req, res) => {
     }
     newFileName = `${newFileName}.${file.path.split('.').pop()}`;
 
+    let parts = req.user.email.split('@');
+    const agentDirectory = `${parts[1]}/${parts[0]}` ;
     savePaths.push({
       curr: file.path,
-      dest: `uploads/${req.user.getAgentDirectory()}/${newFileName}`
+      dest: `uploads/${agentDirectory}/${newFileName}`
     });
   }
 
