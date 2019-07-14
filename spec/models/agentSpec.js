@@ -1,7 +1,6 @@
 'use strict';
 
 describe('Agent', function() {
-  const fixtures = require('pow-mongoose-fixtures');
   const db = require('../../models');
   const Agent = db.Agent;
 
