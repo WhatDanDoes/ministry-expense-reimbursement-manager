@@ -11,6 +11,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 
 Browser.localhost('example.com', PORT);
       
@@ -191,7 +192,6 @@ describe('authentication', function() {
     });
 
     describe('login', () => {
-      //it('returns a cookie on successful sign in', (done) => {
       it('returns a jwt on successful sign in', (done) => {
         request(app)
           .post('/login')
@@ -266,6 +266,66 @@ describe('authentication', function() {
               });
             });
         });
+      });
+    });
+
+    describe('token refresh', () => {
+      it('returns the same payload with a refreshed expiry', done => {
+        const token = jwt.sign({ email: agent.email, iat: Math.floor(Date.now() / 1000) - (60 * 30) }, process.env.SECRET, { expiresIn: '1h' });
+        jwt.verify(token, process.env.SECRET, function(err, decoded) {
+          if (err) {
+            done.fail(err);
+          }
+          expect(decoded.email).toEqual(agent.email);
+
+          request(app)
+            .post('/login/refresh')
+            .send({ token: token })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(201)
+            .end(function(err, res) {
+              if (err) done.fail(err);
+              jwt.verify(res.body.token, process.env.SECRET, function(err, newDecoded) {
+                if (err) {
+                  done.fail(err);
+                }
+                expect(token).not.toEqual(res.body.token);
+                expect(newDecoded.email).toEqual(decoded.email);
+                expect(newDecoded.exp).toBeGreaterThan(decoded.exp);
+                done();
+              });
+            });
+        });
+      });
+
+      it('returns 401 if provided an expired token', done => {
+        const expiredToken = jwt.sign({ email: agent.email, iat: Math.floor(Date.now() / 1000) - (60 * 60) }, process.env.SECRET, { expiresIn: '1h' });
+        request(app)
+          .post('/login/refresh')
+          .send({ token: expiredToken})
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(401)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+              expect(res.body.message).toEqual('Unauthorized: Invalid token');
+              done();
+            });
+      });
+
+      it('returns 401 if provided no token', done => {
+        request(app)
+          .post('/login/refresh')
+          .send({})
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(401)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+              expect(res.body.message).toEqual('Unauthorized: No token provided');
+              done();
+            });
       });
     });
   });
