@@ -165,6 +165,33 @@ describe('authentication', function() {
               done();
             });
           });
+
+          it('removes the session', done => {
+            models.db.collection('sessions').find().toArray(function(err, sessions) {
+              if (err) {
+                return done.fail(err);
+              }
+              expect(sessions.length).toEqual(1);
+
+              // Can't click logout because it will create a new empty session
+              request(app)
+                .get('/logout')
+                .set('Cookie', browser.cookies)
+                .set('Accept', 'application/json')
+                .expect(302)
+                .end(function(err, res) {
+                  if (err) done.fail(err);
+      
+                  models.db.collection('sessions').find().toArray(function(err, sessions) {
+                    if (err) {
+                      return done.fail(err);
+                    }
+                    expect(sessions.length).toEqual(0);
+                    done();
+                  });
+              });
+            });
+          });
         });
       });
     });
@@ -194,7 +221,7 @@ describe('authentication', function() {
     describe('login', () => {
       it('returns a jwt on successful sign in', (done) => {
         request(app)
-          .post('/login')
+          .post('/login/api')
           .send({ email: agent.email, password: 'secret' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
@@ -209,7 +236,7 @@ describe('authentication', function() {
 
       it('returns a 403 json message on unsuccessful sign in', (done) => {
         request(app)
-          .post('/login')
+          .post('/login/api')
           .send({ email: agent.email, password: 'wrong' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
@@ -220,52 +247,6 @@ describe('authentication', function() {
             expect(res.headers['set-cookie']).toBeUndefined();
             done();
           });
-      });
-    });
-
-    describe('logout', () => {
-      it('removes the session', done => {
-        models.db.collection('sessions').find().toArray(function(err, sessions) {
-          if (err) {
-            return done.fail(err);
-          }
-          expect(sessions.length).toEqual(0);
-
-          request(app)
-            .post('/login')
-            .send({ email: agent.email, password: 'secret' })
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .expect(201)
-            .end(function(err, res) {
-              if (err) done.fail(err);
-              expect(res.headers['set-cookie']).toBeDefined();
-
-              models.db.collection('sessions').find().toArray(function(err, sessions) {
-                if (err) {
-                  return done.fail(err);
-                }
-                expect(sessions.length).toEqual(1);
-
-                request(app)
-                  .get('/logout')
-                  .set('Cookie', res.header['set-cookie'])
-                  .set('Accept', 'application/json')
-                  .expect(204)
-                  .end(function(err, res) {
-                    if (err) done.fail(err);
-
-                    models.db.collection('sessions').find().toArray(function(err, sessions) {
-                      if (err) {
-                        return done.fail(err);
-                      }
-                      expect(sessions.length).toEqual(0);
-                      done();
-                    });
-                  });
-              });
-            });
-        });
       });
     });
 

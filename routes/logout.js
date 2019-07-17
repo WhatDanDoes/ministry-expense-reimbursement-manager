@@ -6,10 +6,7 @@ const models = require('../models');
 router.get('/', function(req, res) {
   req.logout();
   req.session = null;
-  if (req.accepts('text/html')) {
-    return res.redirect('/');
-  }
-  return res.status(204).send();
+  return res.redirect('/');
 });
 
 

@@ -5,6 +5,8 @@ const passport = require('passport');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const jwtAuth = require('../lib/jwtAuth');
+const models = require('../models');
+
 
 router.post('/', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
@@ -22,17 +24,34 @@ router.post('/', function(req, res, next) {
       if (err) {
         return next(err);
       }
-      if (req.accepts('text/html')) {
-        req.flash('info', 'Hello, ' + req.user.email + '!');
-        return res.redirect('/');
-      }
-
-      const payload = { email: user.email };
-      const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-      return res.status(201).json({message: 'Hello, ' + req.user.email + '!', token: token });
+      req.flash('info', 'Hello, ' + req.user.email + '!');
+      res.redirect('/');
     });
   })(req, res, next);
 });
+
+router.post('/api', function(req, res, next) {
+  models.Agent.findOne({ email: req.body.email }).then(function(agent) {
+    if (!agent) {
+      return res.status(401).json({message: 'Invalid email or password'});
+    }
+    models.Agent.validPassword(req.body.password, agent.password, function(err, agent) {
+      if (err) {
+        return res.status(401).json({message: err.message });
+      }
+      if (!agent) {
+        return res.status(401).json({message: 'Invalid email or password' });
+      }
+      const payload = { email: agent.email };
+      const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+      return res.status(201).json({message: 'Hello, ' + agent.email + '!', token: token });
+
+    }, agent);
+  }).catch(function(err) {
+    return done(err);
+  });
+});
+
 
 router.post('/refresh', jwtAuth,  function(req, res, next) {
   const token = jwt.sign({ email: req.user.email }, process.env.SECRET, { expiresIn: '1h' });
