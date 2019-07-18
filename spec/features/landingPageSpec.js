@@ -45,7 +45,7 @@ describe('landing page', () => {
     });
   });
 
-  it('displays the images in the uploads directory', done => {
+  it('displays the images in the public uploads directory', done => {
     mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
@@ -63,7 +63,7 @@ describe('landing page', () => {
     });
   });
 
-  it('does not displays non-image files', done => {
+  it('does not display non-image files', done => {
     mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
