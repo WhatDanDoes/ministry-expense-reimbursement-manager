@@ -117,11 +117,12 @@ describe('authentication', function() {
       describe('successful', function () {
         beforeEach(function(done) {
           mockAndUnmock({ 
-            'public/images/uploads': {
+            [`uploads/${agent.getAgentDirectory()}`]: {
               'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
               'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
               'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            }
+            },
+            'public/images/uploads': {}
           });
 
           browser.fill('email', agent.email);

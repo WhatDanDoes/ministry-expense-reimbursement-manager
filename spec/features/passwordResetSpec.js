@@ -8,6 +8,9 @@ const mailer = require('../../mailer');
 const app = require('../../app'); 
 const request = require('supertest');
 
+const mock = require('mock-fs');
+const mockAndUnmock = require('../support/mockAndUnmock')(mock);
+
 Browser.localhost('example.com', PORT);
 
 // For when system resources are scarce
@@ -143,6 +146,20 @@ describe('password reset', function() {
           });
 
           describe('PATCH /reset/:token', () => {
+            beforeEach(function(done) {
+              mockAndUnmock({ 
+                [`uploads/${agent.getAgentDirectory()}`]: {},
+                'public/images/uploads': {}
+              });
+    
+              done();
+            });
+    
+            afterEach(function() {
+              mock.restore();
+            });
+
+
             it('changes agent\'s password', (done) => {
               browser.fill('password', 'newpassword');
               browser.fill('confirm', 'newpassword');
@@ -153,7 +170,7 @@ describe('password reset', function() {
                 browser.fill('email', agent.email);
                 browser.fill('password', 'newpassword')
                 browser.pressButton('Login', function(err) {
-                  if (err) done.fail(err);
+                  if (err) return done.fail(err);
                   browser.assert.success();
                   done();
                 });

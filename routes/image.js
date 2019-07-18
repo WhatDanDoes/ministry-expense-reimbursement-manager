@@ -8,7 +8,8 @@ const models = require('../models');
 const timestamp = require('time-stamp');
 const mv = require('mv');
 const jwtAuth = require('../lib/jwtAuth');
-const ensureAuthenticated = require('../lib/ensureAuthenticated');
+const ensureAuthorized = require('../lib/ensureAuthorized');
+const fs = require('fs');
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -56,8 +57,15 @@ let upload = multer({ storage: storage });
 /**
  * GET /image/:domain/:agentId
  */
-router.get('/:domain/:agentId', ensureAuthenticated, (req, res) => {
-  res.render('image/index', { images: [], messages: req.flash(), agent: req.user });
+router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
+  fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
+    if (err) {
+      return res.render('error', { error: err });
+    }
+
+    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+    return res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user });
+  });
 });
 
 
