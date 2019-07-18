@@ -25,7 +25,7 @@ router.post('/', function(req, res, next) {
         return next(err);
       }
       req.flash('info', 'Hello, ' + req.user.email + '!');
-      res.redirect('/');
+      res.redirect(`/image/${req.user.getAgentDirectory()}`);
     });
   })(req, res, next);
 });
