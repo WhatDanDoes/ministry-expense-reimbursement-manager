@@ -3,10 +3,6 @@ const request = require('supertest');
 const fs = require('fs');
 const fixtures = require('pow-mongoose-fixtures');
 
-const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
-Browser.localhost('example.com', PORT);
-
 const app = require('../../app');
 const models = require('../../models');
 
@@ -17,7 +13,28 @@ const jwt = require('jsonwebtoken');
 
 describe('POST image/', () => {
 
+  afterEach(function(done) {
+    models.mongoose.connection.db.dropDatabase().then(function(err, result) {
+      done();
+    }).catch(function(err) {
+      done.fail(err);         
+    });
+  });
+ 
   describe('unauthenticated access', () => {
+    beforeEach(done => {
+      mockAndUnmock({ 
+        'uploads': mock.directory({}),
+      });
+
+      done();
+    });
+
+    afterEach(() => {
+      mock.restore();
+    });
+
+
     it('returns 401 error', done => {
       request(app)
         .post('/image')
@@ -31,7 +48,6 @@ describe('POST image/', () => {
           expect(res.body.message).toEqual('Unauthorized: No token provided');
           done();
         });
-
     });
 
     it('does not write a file to the file system', done => {
@@ -67,29 +83,19 @@ describe('POST image/', () => {
     let agent, token;
 
     beforeEach(done => {
-      browser = new Browser({ waitDuration: '30s', loadCss: false });
-
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
+        if (err) {
+          return done.fail(err);
+        }
         models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
           agent = results;
           token = jwt.sign({ email: agent.email }, process.env.SECRET, { expiresIn: '1h' });
 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);        
-            browser.assert.success();       
-            browser.fill('email', agent.email);
-            browser.fill('password', 'secret');
-            browser.pressButton('Login', function(err) {
-              if (err) done.fail(err);
-              browser.assert.success();
-
-              mockAndUnmock({ 
-                'uploads': mock.directory({}),
-              });
-
-              done();
-            });
+          mockAndUnmock({ 
+            'uploads': mock.directory({}),
           });
+
+          done();
         }).catch(function(error) {
           done.fail(error);
         });
@@ -126,7 +132,6 @@ describe('POST image/', () => {
  
         request(app)
           .post('/image')
-          .set('Cookie', browser.cookies)
           .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
@@ -157,7 +162,6 @@ describe('POST image/', () => {
         expect(files.length).toEqual(0);
         request(app)
           .post('/image')
-          //.set('Cookie', browser.cookies)
           .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .attach('docs', 'spec/files/troll.png')
@@ -188,7 +192,6 @@ describe('POST image/', () => {
  
         request(app)
           .post('/image')
-          .set('Cookie', browser.cookies)
           .field('token', token)
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
@@ -207,7 +210,6 @@ describe('POST image/', () => {
 
               request(app)
                 .post('/image')
-                .set('Cookie', browser.cookies)
                 .field('token', token)
                 .attach('docs', 'spec/files/troll.jpg')
                 .expect(201)
@@ -235,7 +237,6 @@ describe('POST image/', () => {
     it('returns a 400 error if no image is defined', done => {
       request(app)
         .post('/image')
-        .set('Cookie', browser.cookies)
         .field('token', token)
         .expect('Content-Type', /json/)
         .expect(400)
