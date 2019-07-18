@@ -117,7 +117,7 @@ describe('authentication', function() {
       describe('successful', function () {
         beforeEach(function(done) {
           mockAndUnmock({ 
-            'uploads': {
+            'public/images/uploads': {
               'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
               'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
               'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),

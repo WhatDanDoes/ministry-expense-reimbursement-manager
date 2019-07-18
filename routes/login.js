@@ -55,7 +55,7 @@ router.post('/api', function(req, res, next) {
 
 router.post('/refresh', jwtAuth,  function(req, res, next) {
   const token = jwt.sign({ email: req.user.email }, process.env.SECRET, { expiresIn: '1h' });
-  return res.status(201).json({message: 'Hello, ' + req.user.email + '!', token: token });
+  return res.status(201).json({message: 'Welcome back, ' + req.user.email + '!', token: token });
 });
 
 module.exports = router;

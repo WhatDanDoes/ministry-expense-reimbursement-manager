@@ -4,7 +4,7 @@ const fs = require('fs');
 /* GET home page. */
 router.get('/', function(req, res, next) {
 
-  fs.readdir('uploads', (err, files) => {
+  fs.readdir('public/images/uploads', (err, files) => {
     files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
     if (err) {
       return res.render('error', { error: err });
