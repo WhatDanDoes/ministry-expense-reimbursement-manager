@@ -1,12 +1,10 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-//const findOrCreate = require('mongoose-findorcreate');
 
 module.exports = function(mongoose) {
   const Schema = mongoose.Schema;
   const arrayUniquePlugin = require('mongoose-unique-array');
-//  const Types = Schema.Types;
 
   const AgentSchema = new Schema({
     email: {
@@ -90,7 +88,6 @@ module.exports = function(mongoose) {
 
 
   AgentSchema.plugin(arrayUniquePlugin);
-//  AgentSchema.plugin(findOrCreate);
   return AgentSchema;
 };
 
