@@ -145,8 +145,8 @@ describe('authentication', function() {
           browser.assert.text('.alert', 'Hello, ' + agent.email + '!');
         });
 
-        it("redirects to the landing page", function() {
-          browser.assert.url({ pathname: '/'});
+        it("redirects to the agent's album page", function() {
+          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
         });
 
         it('displays image submission history', function() {
