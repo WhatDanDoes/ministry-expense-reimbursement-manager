@@ -10,6 +10,8 @@ const mv = require('mv');
 const jwtAuth = require('../lib/jwtAuth');
 const ensureAuthorized = require('../lib/ensureAuthorized');
 const fs = require('fs');
+const mkdirp = require('mkdirp');
+
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -58,6 +60,9 @@ let upload = multer({ storage: storage });
  * GET /image/:domain/:agentId
  */
 router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
+  if (!fs.existsSync(`uploads/${req.params.domain}/${req.params.agentId}`)){
+    mkdirp.sync(`uploads/${req.params.domain}/${req.params.agentId}`);
+  }
   fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
     if (err) {
       return res.render('error', { error: err });

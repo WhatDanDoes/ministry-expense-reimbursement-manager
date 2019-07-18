@@ -57,7 +57,6 @@ describe('imageIndexSpec', () => {
          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
        },
-       [`uploads/${lanny.getAgentDirectory()}`]: {},
        'public/images/uploads': {}
      });
 
@@ -88,6 +87,16 @@ describe('imageIndexSpec', () => {
           if (err) return done.fail(err);
           browser.assert.success();
           browser.assert.text('h2', 'No images');
+          done();
+        });
+      });
+
+      it('creates an agent directory if it does not exist already', done => {
+        expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(false);
+        browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
+          if (err) return done.fail(err);
+          browser.assert.success();
+          expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(true);
           done();
         });
       });
