@@ -146,6 +146,35 @@ describe('Agent', function() {
           done.fail(err);
         });
       });
+
+      it('allows two agents to push the same agent ID', function(done) {
+        expect (agent.canRead.length).toEqual(0);
+        expect (newAgent.canRead.length).toEqual(0);
+
+        let viewableAgent = new Agent({ email: 'vieweableAgent@example.com', password: 'secret' });
+        viewableAgent.save().then(function(result) {
+        
+          agent.canRead.push(viewableAgent._id);
+          newAgent.canRead.push(viewableAgent._id);
+
+          agent.save().then(function(result) {
+            expect(agent.canRead.length).toEqual(1);
+            expect(agent.canRead[0]).toEqual(viewableAgent._id);
+  
+            newAgent.save().then(function(result) {
+              expect(newAgent.canRead.length).toEqual(1);
+              expect(newAgent.canRead[0]).toEqual(viewableAgent._id);
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
     });
 
     /**
