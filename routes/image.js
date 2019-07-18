@@ -64,7 +64,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     }
 
     files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-    return res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user });
+    res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user });
   });
 });
 
