@@ -154,6 +154,11 @@ describe('authentication', function() {
           expect(browser.queryAll('.image').length).toEqual(3);
         });
 
+        it('displays link to the agent\'s images', function() {
+          browser.assert.link('nav ul li a', 'Images', `/image/${agent.getAgentDirectory()}`);
+        });
+
+
         describe('logout', function() {
           it('does not display the logout button if not logged in', function(done) {
             browser.clickLink('Logout', function(err) {

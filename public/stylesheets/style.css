@@ -144,6 +144,10 @@ section img {
   list-style-type: none;
 }
 
+#page nav ul li {
+  display: inline;
+}
+
 #page a {
   color: #d7d7d7;
 }
