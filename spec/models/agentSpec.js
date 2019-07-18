@@ -4,7 +4,7 @@ describe('Agent', function() {
   const db = require('../../models');
   const Agent = db.Agent;
 
-  var agent;
+  let agent;
 
   beforeEach(function(done) {
     agent = new Agent({ email: 'someguy@example.com', password: 'secret' });
@@ -112,6 +112,79 @@ describe('Agent', function() {
     });
 
     /**
+     * canRead relationship
+     */
+    describe('canRead', function() {
+      let newAgent;
+      beforeEach(function(done) {
+        agent.save().then(function(obj) {
+          new Agent({ email: 'anotherguy@example.com', password: 'secret' }).save().then(function(obj) {;
+            newAgent = obj;
+            done();
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      it('does not add a duplicate agent to the canRead field', function(done) {
+        agent.canRead.push(newAgent._id);
+        agent.save().then(function(result) {
+          expect(agent.canRead.length).toEqual(1);
+          expect(agent.canRead[0]).toEqual(newAgent._id);
+
+          agent.canRead.push(newAgent._id);
+          agent.save().then(function(result) {
+            done.fail('This should not have updated');
+          }).catch(err => {
+            expect(err.message).toMatch('Duplicate values in array');
+            done();
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+    });
+
+    /**
+     * #getReadables
+     */
+    describe('#getReadables', function() {
+      let newAgent;
+      beforeEach(function(done) {
+        agent.save().then(function(obj) {
+          new Agent({ email: 'anotherguy@example.com', password: 'secret' }).save().then(function(obj) {;
+            newAgent = obj;
+            agent.canRead.push(newAgent._id);
+            agent.save().then(function(result) {
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      it('retrieve an array containing accessible static directories', function(done) {
+        agent.getReadables(function(err, readables) {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(readables.length).toEqual(2);
+          expect(readables[0]).toEqual(newAgent.getAgentDirectory());
+          expect(readables[1]).toEqual(agent.getAgentDirectory());
+          done();
+        });
+      });
+    });
+
+    /**
      * .validPassword
      */
     describe('.validPassword', function() {
@@ -136,6 +209,9 @@ describe('Agent', function() {
       });
     });
 
+    /**
+     * .validPassword
+     */
     describe('.getAgentDirectory', function() {
       it('returns a directory path based on the agent\'s email address', () => {
         expect(agent.email).toEqual('someguy@example.com');

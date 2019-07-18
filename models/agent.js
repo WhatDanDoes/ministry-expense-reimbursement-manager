@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 
 module.exports = function(mongoose) {
   const Schema = mongoose.Schema;
+  const arrayUniquePlugin = require('mongoose-unique-array');
 //  const Types = Schema.Types;
 
   const AgentSchema = new Schema({
@@ -17,6 +18,7 @@ module.exports = function(mongoose) {
       validate: {
         isAsync: true,
         validator: function(v, cb) {
+          if (!this.isNew) return cb();
           this.model('Agent').count({ email: v }).then(count => {
             cb(!count);
           });
@@ -32,6 +34,7 @@ module.exports = function(mongoose) {
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
   }, {
     timestamps: true
   });
@@ -74,7 +77,19 @@ module.exports = function(mongoose) {
     return `${parts[1]}/${parts[0]}` ;
   };
 
+  AgentSchema.methods.getReadables = function(done) {
+    this.populate('canRead', (err, agent) => {
+      if (err) {
+        return done(err);
+      }
+      let readables = agent.canRead.map(a => a.getAgentDirectory());
+      readables.push(this.getAgentDirectory());
+      done(null, readables);
+    });
+  };
 
+
+  AgentSchema.plugin(arrayUniquePlugin);
 //  AgentSchema.plugin(findOrCreate);
   return AgentSchema;
 };
