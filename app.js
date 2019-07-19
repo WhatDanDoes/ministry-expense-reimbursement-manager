@@ -69,6 +69,7 @@ passport.use(new LocalStrategy({
 passport.serializeUser(function(agent, done) {
   done(null, agent._id);
 });
+
 passport.deserializeUser(function(id, done) {
   models.Agent.findById(id).then(function(agent) {
     return done(null, agent);
@@ -95,6 +96,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+/**
+ * Protected static assets
+ */
+app.use(`/uploads`, [function(req, res, next) {
+  // Not found instead of not authorized
+  if (!req.isAuthenticated()) {
+    return res.sendStatus(404);
+  }
+  req.user.getReadables((err, readables) => {
+    if (err) {
+      return next(err);
+    }
+    for (let readable of readables) {
+      if (RegExp(readable).test(req.path)) {
+        return next();
+      }
+    }
+    return res.sendStatus(403);
+  });
+}, express.static(path.join(__dirname, `/uploads`))]);
 
 /**
  * For PUT/PATCH/DELETE
