@@ -127,7 +127,7 @@ section img {
 
 #page h1 {
   margin: 0;
-  font-size: 1.5em;
+  font-size: 1.25em;
 }
 
 #page nav {
@@ -150,6 +150,23 @@ section img {
 
 #page a {
   color: #d7d7d7;
+}
+
+@media (min-width: 750px) {
+  #page h1 {
+    margin: .5em;
+    font-size: 1.5em;
+  }
+
+  #page nav {
+    font-size: 1.4em;
+  }
+
+  #page nav ul li {
+    margin: .5em;
+  }
+
+
 }
 
 /**
