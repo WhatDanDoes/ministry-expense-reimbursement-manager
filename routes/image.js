@@ -73,6 +73,13 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
   });
 });
 
+/**
+ * GET /image/:domain/:agentId/:imageId
+ */
+router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+  res.render('image/show', { image: `/uploads${req.path}`, messages: req.flash(), agent: req.user, canWrite: canWrite });
+});
 
 /**
  * POST /image

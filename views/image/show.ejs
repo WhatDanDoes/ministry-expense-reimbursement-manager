@@ -1,0 +1,16 @@
+<% include ../_partials/head %>
+  <% include ../_partials/messages %>
+  <main>
+    <section class="image">
+      <img src="<%= image %>" />
+    </section>
+    <% if (canWrite) { %>
+      <section>
+        <form action="<%= `/image/#{image}/?_method=DELETE` %>" method="post" id="delete-image-form">
+          <button type="submit">Delete</button>
+        </form>
+      </section>
+    <% } %>
+  </main> 
+<% include ../_partials/footer %>
+

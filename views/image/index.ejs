@@ -6,7 +6,9 @@
     <% } else { %>
       <% for (let image of images) { %>
         <section class="image">
-          <img src="<%= `/uploads/${agent.getAgentDirectory()}/${image}` %>" />
+          <a href="<%= `/image/${agent.getAgentDirectory()}/${image}` %>">
+            <img src="<%= `/uploads/${agent.getAgentDirectory()}/${image}` %>" />
+          </a>
         </section>
       <% } %>
     <% } %>

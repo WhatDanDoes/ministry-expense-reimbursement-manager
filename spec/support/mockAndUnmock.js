@@ -10,8 +10,8 @@ require('ejs');
 
 module.exports = function(mock) {
   return function(mocks) {
-    mock({ 
-      ...mocks, 
+    mock({
+      ...mocks,
       'spec/files/troll.jpg': fs.readFileSync('spec/files/troll.jpg'),
       'spec/files/troll.png': fs.readFileSync('spec/files/troll.png'),
       'views/index.ejs': fs.readFileSync('views/index.ejs'),
@@ -23,6 +23,7 @@ module.exports = function(mock) {
       'views/_partials/footer.ejs': fs.readFileSync('views/_partials/footer.ejs'),
       'views/agent/index.ejs': fs.readFileSync('views/agent/index.ejs'),
       'views/image/index.ejs': fs.readFileSync('views/image/index.ejs'),
+      'views/image/show.ejs': fs.readFileSync('views/image/show.ejs'),
       'views/error.ejs': fs.readFileSync('views/error.ejs'),
       'views/reset.ejs': fs.readFileSync('views/reset.ejs'),
     });
