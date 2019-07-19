@@ -59,19 +59,54 @@ let upload = multer({ storage: storage });
 /**
  * GET /image/:domain/:agentId
  */
+const MAX_IMGS = 30;
 router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
   if (!fs.existsSync(`uploads/${req.params.domain}/${req.params.agentId}`)){
     mkdirp.sync(`uploads/${req.params.domain}/${req.params.agentId}`);
   }
+
   fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
     if (err) {
       return res.render('error', { error: err });
     }
 
     files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-    res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user });
+    let nextPage = 0;
+    if (files.length > MAX_IMGS) {
+      nextPage = 2;
+      files = files.slice(0, MAX_IMGS);
+    }
+
+    res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0  });
   });
 });
+
+/**
+ * GET /image/:domain/:agentId/page/:num
+ */
+router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => {
+  fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
+    if (err) {
+      return res.render('error', { error: err });
+    }
+
+    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+    let page = parseInt(req.params.num),
+        nextPage = 0,
+        prevPage = page - 1;
+    if (files.length > MAX_IMGS * page) {
+      nextPage = page + 1;
+      files = files.slice(MAX_IMGS * prevPage, MAX_IMGS * page);
+    }
+
+    if (!nextPage && prevPage) {
+      files = files.slice(MAX_IMGS * prevPage);
+    }
+
+    res.render('image/index', { images: files.reverse(), messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage });
+  });
+});
+
 
 /**
  * GET /image/:domain/:agentId/:imageId
