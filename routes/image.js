@@ -78,7 +78,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
  */
 router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-  res.render('image/show', { image: `/uploads${req.path}`, messages: req.flash(), agent: req.user, canWrite: canWrite });
+  res.render('image/show', { image: `${req.path}`, messages: req.flash(), agent: req.user, canWrite: canWrite });
 });
 
 /**
@@ -181,35 +181,24 @@ router.post('/', upload.array('docs', 8), jwtAuth, (req, res) => {
 //  });
 //});
 //
-///**
-// * DELETE /image/:id
-// */
-//router.delete('/:id', function(req, res) {
-//  if (!req.isAuthenticated()) { return res.sendStatus(401); }
-//  // Can only view if a reviewer or submitter
-//  models.Agent.findById(req.user._id).then(function(agent) {
-//    models.Image.findById(req.params.id).then(function(image) {
-//      if (image.approved) return res.sendStatus(403);
-//      var notSubmitter = image.agent != agent._id.toString();
-//      var notReviewer = agent.reviewables.indexOf(image.album.toString()) == -1;
-//      if (notReviewer && notSubmitter) return res.sendStatus(403);
-//
-//      image.remove().then(function(results) {
-//        req.flash('info', 'Image deleted');
-//        if (notReviewer) {
-//          res.redirect('/');
-//        } else {
-//          res.redirect('/album/' + image.album);
-//        }
-//      }).catch(function(error) {
-//        return res.sendStatus(501);
-//      });
-//    }).catch(function(error) {
-//      return res.sendStatus(501);
-//    });
-//  }).catch(function(error) {
-//    return res.sendStatus(501);
-//  });
-//});
+/**
+ * DELETE /image/:domain/:agentId/:imageId
+ */
+router.delete('/:domain/:agentId/:imageId', ensureAuthorized, function(req, res) {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+  if(!canWrite){
+    req.flash('error', 'You are not authorized to delete that resource');
+    return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  }
+
+  fs.unlink(`uploads/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`, (err) => {
+    if (err) {
+      req.flash('info', err.message);
+      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+    }
+    req.flash('info', 'Image deleted');
+    res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  });
+});
 
 module.exports = router;

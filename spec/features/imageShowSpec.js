@@ -51,22 +51,22 @@ describe('imageShowSpec', () => {
 
   describe('authenticated', () => {
     beforeEach(done => {
-     mockAndUnmock({ 
-       [`uploads/${agent.getAgentDirectory()}`]: {
-         'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-         'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-         'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-       },
-       'public/images/uploads': {}
-     });
-
-     browser.fill('email', agent.email);
-     browser.fill('password', 'secret');
-     browser.pressButton('Login', function(err) {
-       if (err) done.fail(err);
-       browser.assert.success();
-       done();
-     });
+      mockAndUnmock({ 
+        [`uploads/${agent.getAgentDirectory()}`]: {
+          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        'public/images/uploads': {}
+      });
+ 
+      browser.fill('email', agent.email);
+      browser.fill('password', 'secret');
+      browser.pressButton('Login', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
+        done();
+      });
     });
   
     afterEach(() => {

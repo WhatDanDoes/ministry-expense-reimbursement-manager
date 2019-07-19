@@ -2,12 +2,12 @@
   <% include ../_partials/messages %>
   <main>
     <section class="image">
-      <img src="<%= image %>" />
+      <img src="/uploads<%= image %>" />
     </section>
     <% if (canWrite) { %>
       <section>
-        <form action="<%= `/image/#{image}/?_method=DELETE` %>" method="post" id="delete-image-form">
-          <button type="submit">Delete</button>
+        <form action="<%= `/image${image}?_method=DELETE` %>" method="post" id="delete-image-form">
+          <button id="delete-image" type="submit">Delete</button>
         </form>
       </section>
     <% } %>
