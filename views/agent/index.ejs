@@ -1,0 +1,13 @@
+<% include ../_partials/head %>
+  <% include ../_partials/messages %>
+  <main>
+    <h2>Hello, <%= agent.email %></h2>
+    <% for (let readable of readables) { %>
+      <h3>Viewable albums:</h3>
+      <section class="agent">
+        <a href="/image/<%= readable %>"><%= readable %></a>
+      </section>
+    <% } %>
+  </main> 
+<% include ../_partials/footer %>
+
