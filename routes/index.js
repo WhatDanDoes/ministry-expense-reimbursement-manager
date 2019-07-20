@@ -11,14 +11,14 @@ router.get('/', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
     let nextPage = 0;
     if (files.length > MAX_IMGS) {
       nextPage = 2;
       files = files.slice(0, MAX_IMGS);
     }
 
-    res.render('index', { images: files.reverse(), messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0 });
+    res.render('index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0 });
   });
 });
 
@@ -28,7 +28,7 @@ router.get('/page/:num', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
     let page = parseInt(req.params.num),
         nextPage = 0,
         prevPage = page - 1;
@@ -41,7 +41,7 @@ router.get('/page/:num', function(req, res, next) {
       files = files.slice(MAX_IMGS * prevPage);
     }
 
-    res.render('index', { images: files.reverse(), messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage });
+    res.render('index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage });
   });
 });
 
