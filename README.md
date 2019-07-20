@@ -86,3 +86,37 @@ Seed database:
 docker-compose -f docker-compose.prod.yml run --rm node node seed.js NODE_ENV=production
 ```
 
+### Database Operations
+
+Connect to DB container like this:
+
+```
+docker-compose -f docker-compose.prod.yml exec mongo mongo basic_photo_server_production
+```
+
+Show databases:
+
+```
+show dbs
+```
+
+Use database:
+
+```
+use accountant_production
+```
+
+Show collections:
+
+```
+show collections
+```
+
+#### Give an agent album reading permission
+
+```
+db.agents.update({ email: 'daniel@example.com' }, { $push: { "canRead": db.agents.findOne({ email: 'lyndsay@example.com' })._id } })
+```
+
+
+
