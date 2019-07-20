@@ -139,12 +139,12 @@ section img {
   font-size: 0.75em;
 }
 
-#page nav ul {
+nav ul {
   margin: 0;
   list-style-type: none;
 }
 
-#page nav ul li {
+nav ul li {
   display: inline;
 }
 
@@ -167,6 +167,24 @@ section img {
   }
 
 
+}
+
+/**
+ * Pagination
+ */
+#pager {
+  width: 100%;
+  text-align: center; 
+}
+#pager ul {
+  width: 100%;
+  padding: 0;
+}
+#next-page {
+  margin-left: 1em;
+}
+#prev-page {
+  margin-right: 1em;
 }
 
 /**
