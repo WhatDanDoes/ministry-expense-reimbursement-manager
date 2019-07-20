@@ -1,27 +1,27 @@
 {
   "development": {
-    "username": "accountant",
+    "username": "basic_photo_server",
     "password": "secret",
-    "database": "accountant_development",
+    "database": "basic_photo_server_development",
     "host": "localhost"
   },
   "test": {
-    "username": "accountant",
+    "username": "basic_photo_server",
     "password": "secret",
-    "database": "accountant_test",
+    "database": "basic_photo_server_test",
     "host": "localhost"
   },
   "staging": {
-    "username": "accountant",
+    "username": "basic_photo_server",
     "password": "secret",
-    "database": "accountant_staging",
+    "database": "basic_photo_server_staging",
     "host": "mongo",
     "dialect": "mongodb"
   },
   "production": {
-    "username": "accountant",
+    "username": "basic_photo_server",
     "password": "secret",
-    "database": "accountant_production",
+    "database": "basic_photo_server_production",
     "host": "mongo",
     "dialect": "mongodb"
   }
