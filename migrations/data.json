@@ -1,6 +1,6 @@
 {
   "_dependencies": {
-    "bcrypt": "bcrypt-nodejs"
+    "bcrypt": "bcrypt"
   },
   "agents": {
     "_model": "Agent",
