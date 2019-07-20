@@ -120,32 +120,32 @@ describe('landing page', () => {
         if (err) return done.fail(err);
         browser.assert.success();
         browser.assert.elements('section img', 30);
-        browser.assert.element('#next-page');
-        browser.assert.link('#next-page', 'Next', '/page/2');
+        browser.assert.elements('#next-page', 2);
+        browser.assert.link('#next-page', 'Next >', '/page/2');
         browser.assert.elements('#previous-page', 0);
 
         browser.clickLink('#next-page', (err) => {
           if (err) return done.fail(err);
           browser.assert.elements('section img', 30);
-          browser.assert.link('#next-page', 'Next', '/page/3');
-          browser.assert.link('#prev-page', 'Previous', '/page/1');
+          browser.assert.link('#next-page', 'Next >', '/page/3');
+          browser.assert.link('#prev-page', '< Previous', '/page/1');
 
           browser.clickLink('#next-page', (err) => {
             if (err) return done.fail(err);
             browser.assert.elements('section img', 10);
             browser.assert.elements('#next-page', 0);
-            browser.assert.link('#prev-page', 'Previous', '/page/2');
+            browser.assert.link('#prev-page', '< Previous', '/page/2');
 
             browser.clickLink('#prev-page', (err) => {
               if (err) return done.fail(err);
               browser.assert.elements('section img', 30);
-              browser.assert.link('#next-page', 'Next', '/page/3');
-              browser.assert.link('#prev-page', 'Previous', '/page/1');
+              browser.assert.link('#next-page', 'Next >', '/page/3');
+              browser.assert.link('#prev-page', '< Previous', '/page/1');
 
               browser.clickLink('#prev-page', (err) => {
                 if (err) return done.fail(err);
                 browser.assert.elements('section img', 30);
-                browser.assert.link('#next-page', 'Next', '/page/2');
+                browser.assert.link('#next-page', 'Next >', '/page/2');
                 browser.assert.elements('#previous-page', 0);
 
                 done();

@@ -160,7 +160,7 @@ describe('imageIndexSpec', () => {
         if (err) return done.fail(err);
         browser.assert.success();
         browser.assert.elements('section img', 30);
-        browser.assert.element('#next-page');
+        browser.assert.elements('#next-page', 2);
         browser.assert.link('#next-page', 'Next', `/image/${agent.getAgentDirectory()}/page/2`);
         browser.assert.elements('#previous-page', 0);
 
