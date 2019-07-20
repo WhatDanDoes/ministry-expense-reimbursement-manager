@@ -212,6 +212,17 @@ details section {
 }
 
 /**
+ * Agent
+ */
+.agent {
+  margin-left: 1em;
+}
+
+h3 {
+ padding: 0.25em;
+}
+
+/**
  * albums
 .album {
   margin-left: 1em;
