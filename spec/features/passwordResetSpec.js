@@ -39,12 +39,12 @@ describe('password reset', function() {
 
   it('displays the password reset link', function() {
     expect(browser.query("a[href='/reset']")).not.toBeNull();
-    browser.assert.text("a[href='/reset']", 'Reset Password');
+    browser.assert.text("a[href='/reset']", 'Reset password');
   });
 
   describe('GET /reset', function() {
     beforeEach(function(done) {
-       browser.clickLink('Reset Password', function(err) {
+       browser.clickLink('Reset password', function(err) {
         if (err) done.fail(err);
         browser.assert.success();
         done();
