@@ -23,39 +23,17 @@ let storage = multer.diskStorage({
 });
 let upload = multer({ storage: storage });
 
-
 /**
- * The show and edit routes are almost identical
- *
- * @param Object
- * @param Object
- * @param Boolean
+ * GET /image
  */
-//let setupImage = function(req, res, editable) {
-//  if (!req.isAuthenticated()) { return res.sendStatus(401); }
-//
-//  // Can only view if a reviewer, submitter, or viewer
-//  models.Agent.findById(req.user._id).then((agent) => {
-//    models.Image.findById(req.params.id).populate('files album').then((image) => {
-//      if ((image.agent != agent._id.toString()) &&
-//         (agent.reviewables.indexOf(image.album._id.toString()) < 0) &&
-//         (agent.viewables.indexOf(image.album._id.toString()) < 0)) return res.sendStatus(403);
-//      res.render('image/show', { image: image, agent: agent, messages: req.flash() });
-//    }).catch((error) => {
-//      return res.sendStatus(501);
-//    });
-//  }).catch((error) => {
-//    return res.sendStatus(501);
-//  });
-//};
-//
-///**
-// * GET /image/:id
-// */
-//router.get('/:id', function(req, res) {
-//  return setupImage(req, res);
-//});
+router.get('/', (req, res) => {
+  if (!req.isAuthenticated()) {
+    req.flash('error', 'You need to login first');
+    return res.redirect('/');
+  }
 
+  res.redirect(`/image/${req.user.getAgentDirectory()}`);
+});
 
 /**
  * GET /image/:domain/:agentId

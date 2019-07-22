@@ -108,6 +108,15 @@ describe('imageIndexSpec', () => {
           done();
         });
       });
+
+      it('redirects /image to agent\'s personal album', done => {
+        browser.visit(`/image`, function(err) {
+          if (err) return done.fail(err);
+          browser.assert.redirected();
+          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+          done();
+        });
+      });
     });
 
     describe('unauthorized', () => {
@@ -133,6 +142,16 @@ describe('imageIndexSpec', () => {
   describe('unauthenticated', () => {
     it('redirects home (which is where the login form is located)', done => {
       browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
+        if (err) return done.fail(err);
+        browser.assert.redirected();
+        browser.assert.url({ pathname: '/'});
+        browser.assert.text('.alert.alert-danger', 'You need to login first');
+        done();
+      });
+    });
+
+    it('redirects /image to home', done => {
+      browser.visit('/image', function(err) {
         if (err) return done.fail(err);
         browser.assert.redirected();
         browser.assert.url({ pathname: '/'});
