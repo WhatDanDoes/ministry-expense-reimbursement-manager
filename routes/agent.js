@@ -5,6 +5,7 @@ const passport = require('passport');
 const router = express.Router();
 const models = require('../models');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 /**
  * GET /agent
@@ -15,7 +16,12 @@ router.get('/', function(req, res) {
     return res.redirect('/');
   }
   req.user.getReadables(function(err, readables) {
-    res.render('agent/index', { messages: req.flash(), agent: req.user, readables: readables});
+
+    // To open deep link with auth token
+    const payload = { email: req.user.email };
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+
+    res.render('agent/index', { messages: req.flash(), agent: req.user, readables: readables, token: token});
   });
 });
 

@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
+const jwt = require('jsonwebtoken');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -59,6 +60,8 @@ describe('agentIndexSpec', () => {
         },
         'public/images/uploads': {}
       });
+
+      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
  
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
@@ -82,6 +85,10 @@ describe('agentIndexSpec', () => {
       it('allows an agent to view his own profile', () => {
         browser.assert.url({ pathname: '/agent'});
         browser.assert.text('h2', `Hello, ${agent.email}`);
+      });
+
+      it('displays an Android deep link with JWT', () => {
+        browser.assert.element('a[href="bpe://somejwtstring"]');
       });
 
       it('shows a list of albums the agent can read', () => {

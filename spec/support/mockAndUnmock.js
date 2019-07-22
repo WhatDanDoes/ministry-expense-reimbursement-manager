@@ -15,6 +15,7 @@ module.exports = function(mock) {
       'spec/files/troll.jpg': fs.readFileSync('spec/files/troll.jpg'),
       'spec/files/troll.png': fs.readFileSync('spec/files/troll.png'),
       'views/index.ejs': fs.readFileSync('views/index.ejs'),
+      'views/_partials/appLink.ejs': fs.readFileSync('views/_partials/appLink.ejs'),
       'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
       'views/_partials/matomo.ejs': fs.readFileSync('views/_partials/matomo.ejs'),
       'views/_partials/navbar.ejs': fs.readFileSync('views/_partials/navbar.ejs'),
