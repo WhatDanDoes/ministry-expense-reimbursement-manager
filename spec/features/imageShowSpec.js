@@ -82,6 +82,7 @@ describe('imageShowSpec', () => {
           browser.assert.success();
           browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
           browser.assert.element('#delete-image-form');
+          browser.assert.element('#publish-image-form');
           done();
         });
       });

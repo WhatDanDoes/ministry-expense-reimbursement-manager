@@ -108,6 +108,29 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
 });
 
 /**
+ * POST /image/:domain/:agentId/:imageId
+ */
+router.post('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+
+  if (!canWrite) {
+    req.flash('info', 'You do not have access to that resource');
+    return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  }
+
+  fs.rename(`uploads/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`, `public/images/uploads/${req.params.imageId}`, err => {
+    if (err) {
+      req.flash('info', err.message);
+      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
+    }
+
+    req.flash('success', 'Image published');
+    res.redirect('/');
+  });
+});
+
+
+/**
  * POST /image
  */
 router.post('/', upload.array('docs', 8), jwtAuth, (req, res) => {
