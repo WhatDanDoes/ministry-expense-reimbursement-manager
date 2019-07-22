@@ -229,12 +229,12 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
               expect(files.includes('troy1.jpg')).toBe(true);
   
               request(app)
-                .delete(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+                .delete(`/image/${troy.getAgentDirectory()}/troy1.jpg`)
                 .set('Cookie', browser.cookies)
                 .end(function(err, res) {
                   if (err) return done.fail(err);
                   expect(res.status).toEqual(302);
-                  expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
+                  expect(res.header.location).toEqual('/');
   
                   fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
