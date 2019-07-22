@@ -381,6 +381,13 @@ h2 {
   margin-left: 70%;
 }
 */
+/**
+ * Image controls
+ */
+#image-controls form {
+  position: relative;
+  display: inline;
+}
 
 /**
  * Delete image
@@ -391,6 +398,18 @@ button[type="submit"]#delete-image  {
   font-size: 1em;
   width: 30%;
   border: 1px solid #ff1919;
+}
+
+/**
+ * Publish image
+ */
+button[type="submit"]#publish-image  {
+  padding: 0.5em;
+  background: green;
+  font-size: 1em;
+  width: 30%;
+  border: 1px solid green;
+  float: right;
 }
 
 /**
