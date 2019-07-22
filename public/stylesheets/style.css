@@ -488,3 +488,17 @@ input[type=checkbox]:checked + label:before { color: green; } /* checked icon */
 #info a {
   color: white;
 }
+
+/**
+ * deep-link
+ */
+.deep-link {
+  width: 100%;
+  text-align: center;
+}
+.deep-link img {
+  width: 30%;
+  border-radius: 1em;
+  box-shadow: .25em .25em rgb(0,0,0,0.2);
+}
+
