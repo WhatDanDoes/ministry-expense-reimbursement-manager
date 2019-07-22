@@ -247,16 +247,21 @@ form {
   font-size: 1.25em;
 }
 
+.login form {
+  width: 80%;
+  margin: auto;
+}
+
 button[type="submit"] {
   padding: 0.5em;
   color: #FFF;
-  background: #1abc9c;
   font-size: 1em;
   text-align: center;
   font-style: normal;
   width: 100%;
-  border: 1px solid #16a085;
-  border-width: 1px 1px 3px;
+  border: 1px solid #4f83cc;
+  border-radius: 25px;
+  background-color: #4f83cc;
 }
 
 .form-group {
