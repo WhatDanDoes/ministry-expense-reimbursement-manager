@@ -7,6 +7,7 @@ const multer  = require('multer');
 const models = require('../models');
 const timestamp = require('time-stamp');
 const mv = require('mv');
+const jwt = require('jsonwebtoken');
 const jwtAuth = require('../lib/jwtAuth');
 const ensureAuthorized = require('../lib/ensureAuthorized');
 const fs = require('fs');
@@ -79,7 +80,11 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
       files = files.slice(0, MAX_IMGS);
     }
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0  });
+    // To open deep link with auth token
+    const payload = { email: req.user.email };
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0, token: token  });
   });
 });
 
@@ -107,7 +112,11 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
       files = files.slice(MAX_IMGS * prevPage);
     }
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage });
+    // To open deep link with auth token
+    const payload = { email: req.user.email };
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage, token: token });
   });
 });
 

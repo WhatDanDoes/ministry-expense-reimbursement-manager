@@ -1,6 +1,9 @@
 <% include ../_partials/head %>
   <% include ../_partials/messages %>
   <main>
+    <section class="deep-link">
+      <a href="bpe://<%= token %>"><img src="/images/bpe-logo.png"></a>
+    </section>
     <% if (!images.length) { %>
       <h2>No images</h2>
     <% } else { %>

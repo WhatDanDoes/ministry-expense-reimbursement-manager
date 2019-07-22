@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
+const jwt = require('jsonwebtoken');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -60,6 +61,8 @@ describe('imageIndexSpec', () => {
        'public/images/uploads': {}
      });
 
+    spyOn(jwt, 'sign').and.returnValue('somejwtstring');
+
      browser.fill('email', agent.email);
      browser.fill('password', 'secret');
      browser.pressButton('Login', function(err) {
@@ -74,9 +77,14 @@ describe('imageIndexSpec', () => {
     });
 
     describe('authorized', () => {
+      it('displays an Android deep link with JWT', () => {
+        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+        browser.assert.element('a[href="bpe://somejwtstring"]');
+      });
+
       it('allows an agent to view his own album', () => {
         browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.elements('section img', 3);
+        browser.assert.elements('section.image img', 3);
       });
 
       it('allows an agent to view an album he can read', done => {
@@ -159,32 +167,32 @@ describe('imageIndexSpec', () => {
       browser.visit(`/image/${agent.getAgentDirectory()}`, (err) => {
         if (err) return done.fail(err);
         browser.assert.success();
-        browser.assert.elements('section img', 30);
+        browser.assert.elements('section.image img', 30);
         browser.assert.elements('#next-page', 2);
         browser.assert.link('#next-page', 'Next', `/image/${agent.getAgentDirectory()}/page/2`);
         browser.assert.elements('#previous-page', 0);
 
         browser.clickLink('#next-page', (err) => {
           if (err) return done.fail(err);
-          browser.assert.elements('section img', 30);
+          browser.assert.elements('section.image img', 30);
           browser.assert.link('#next-page', 'Next', `/image/${agent.getAgentDirectory()}/page/3`);
           browser.assert.link('#prev-page', 'Previous', `/image/${agent.getAgentDirectory()}/page/1`);
 
           browser.clickLink('#next-page', (err) => {
             if (err) return done.fail(err);
-            browser.assert.elements('section img', 10);
+            browser.assert.elements('section.image img', 10);
             browser.assert.elements('#next-page', 0);
             browser.assert.link('#prev-page', 'Previous', `/image/${agent.getAgentDirectory()}/page/2`);
 
             browser.clickLink('#prev-page', (err) => {
               if (err) return done.fail(err);
-              browser.assert.elements('section img', 30);
+              browser.assert.elements('section.image img', 30);
               browser.assert.link('#next-page', 'Next', `/image/${agent.getAgentDirectory()}/page/3`);
               browser.assert.link('#prev-page', 'Previous', `/image/${agent.getAgentDirectory()}/page/1`);
 
               browser.clickLink('#prev-page', (err) => {
                 if (err) return done.fail(err);
-                browser.assert.elements('section img', 30);
+                browser.assert.elements('section.image img', 30);
                 browser.assert.link('#next-page', 'Next', `/image/${agent.getAgentDirectory()}/page/2`);
                 browser.assert.elements('#previous-page', 0);
 
