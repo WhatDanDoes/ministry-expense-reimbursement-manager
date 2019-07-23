@@ -34,6 +34,15 @@ section img {
   width: 100%;
 }
 
+input[type=text],
+input[type=password] {
+  border: 1px solid #4f83cc;
+  background-color: #eeeeee;
+  border-radius: 25px;
+  font-size: 1em;
+  color: #002f6c;
+}
+
 /**
  * Alert boxes stolen from Bootstrap
  */
