@@ -34,7 +34,9 @@
       </section>
     <% } %>
     <% if (!images.length) { %>
-      <h2>Publish your pics here</h2>
+      <section class="copy">
+        <h1>Publish your pics here!!</h1>
+      </section>
     <% } else { %>
       <% include _partials/pager %>
       <% for (let image of images) { %>
