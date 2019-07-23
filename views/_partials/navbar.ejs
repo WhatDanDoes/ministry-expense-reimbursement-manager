@@ -1,11 +1,22 @@
   <header id="page">
+    <% if (agent) { %>
     <h1><a href="/"><%= process.env.TITLE %></a></h1>
+    <% } else { %>
+      <section class="splash">
+        <p>Ministry</p>
+        <p>Expense</p>
+        <p>Reimbursement</p>
+        <p>Manager</p>
+      </section>
+    <% } %>
     <% if (agent) { %>
       <nav>
         <ul>
+          <!--
           <li><a href="/agent">Profile</a></li>
           <li>|</li>
-          <li><a href="/image/<%= agent.getAgentDirectory() %>">Images</a></li>
+          -->
+          <li><a href="/image/<%= agent.getAgentDirectory() %>">Invoices</a></li>
           <li>|</li>
           <li><a href="/logout">Logout</a></li>
         </ul>

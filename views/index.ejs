@@ -3,9 +3,34 @@
   <main>
     <% if (!agent) { %>
       <% include _partials/login %>
+      <section class="copy">
+        <h2>Step 1:</h2>
+        <h1>
+          <a href="/app/app-release.apk">
+            Download the Android app<br><br>
+            <img class="true-size" src="/images/android-6-48.png">
+          </a>
+        </h1>
+      </section>
+      <section class="copy">
+        <h2>Step 2:</h2>
+        <h1>Login through your mobile browser</h1>
+      </section>
+      <section class="copy">
+        <h2>Step 3:</h2>
+        <h1>Open the photo app</h1>
+      </section>
+      <section class="copy">
+        <h2>Step 4:</h2>
+        <h1>Take picture</h1>
+      </section>
+      <section class="copy">
+        <h2>Step 5:</h2>
+        <h1>Send!</h1>
+      </section>
     <% } %>
     <% if (!images.length) { %>
-      <h2>No images</h2>
+      <h2>Publish your pics here</h2>
     <% } else { %>
       <% include _partials/pager %>
       <% for (let image of images) { %>
