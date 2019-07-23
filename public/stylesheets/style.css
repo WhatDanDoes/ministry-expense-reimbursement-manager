@@ -571,3 +571,7 @@ input[type=checkbox]:checked + label:before { color: green; } /* checked icon */
   min-width: 0;
 }
 
+.copy img.small-size {
+  width: 40%;
+  min-width: 0;
+}
