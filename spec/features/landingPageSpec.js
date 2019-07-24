@@ -29,7 +29,7 @@ describe('landing page', () => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('#page h1 a', process.env.TITLE);
+      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
       done();
     });
   });
@@ -40,7 +40,7 @@ describe('landing page', () => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('h2', 'No images');
+      browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
       done();
     });
   });
@@ -58,7 +58,7 @@ describe('landing page', () => {
       mock.restore();
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.elements('section img', 3);
+      browser.assert.elements('section.image img', 3);
 
       // No pagination
       browser.assert.elements('#next-page', 0);
@@ -81,7 +81,7 @@ describe('landing page', () => {
       mock.restore();
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.elements('section img', 1);
+      browser.assert.elements('section.image img', 1);
       done();
     });
   });
@@ -99,7 +99,7 @@ describe('landing page', () => {
       mock.restore();
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.elements('section img', 2);
+      browser.assert.elements('section.image img', 2);
       done();
     });
   });
@@ -119,32 +119,32 @@ describe('landing page', () => {
       browser.visit('/', (err) => {
         if (err) return done.fail(err);
         browser.assert.success();
-        browser.assert.elements('section img', 30);
+        browser.assert.elements('section.image img', 30);
         browser.assert.elements('#next-page', 2);
         browser.assert.link('#next-page', 'Next >', '/page/2');
         browser.assert.elements('#previous-page', 0);
 
         browser.clickLink('#next-page', (err) => {
           if (err) return done.fail(err);
-          browser.assert.elements('section img', 30);
+          browser.assert.elements('section.image img', 30);
           browser.assert.link('#next-page', 'Next >', '/page/3');
           browser.assert.link('#prev-page', '< Previous', '/page/1');
 
           browser.clickLink('#next-page', (err) => {
             if (err) return done.fail(err);
-            browser.assert.elements('section img', 10);
+            browser.assert.elements('section.image img', 10);
             browser.assert.elements('#next-page', 0);
             browser.assert.link('#prev-page', '< Previous', '/page/2');
 
             browser.clickLink('#prev-page', (err) => {
               if (err) return done.fail(err);
-              browser.assert.elements('section img', 30);
+              browser.assert.elements('section.image img', 30);
               browser.assert.link('#next-page', 'Next >', '/page/3');
               browser.assert.link('#prev-page', '< Previous', '/page/1');
 
               browser.clickLink('#prev-page', (err) => {
                 if (err) return done.fail(err);
-                browser.assert.elements('section img', 30);
+                browser.assert.elements('section.image img', 30);
                 browser.assert.link('#next-page', 'Next >', '/page/2');
                 browser.assert.elements('#previous-page', 0);
 
@@ -159,11 +159,11 @@ describe('landing page', () => {
     it('doesn\'t barf if paginating beyond the bounds', done => {
       browser.visit('/page/10', (err) => {
         if (err) return done.fail(err);
-        browser.assert.text('h2', 'No images');
+        browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
 
         browser.visit('/page/0', (err) => {
           if (err) return done.fail(err);
-          browser.assert.text('h2', 'No images');
+          browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
 
           done();
           // Negative page params work, kinda
