@@ -2,12 +2,14 @@
     <% if (agent) { %>
     <h1><a href="/"><%= process.env.TITLE %></a></h1>
     <% } else { %>
-      <section class="splash">
-        <p>Ministry</p>
-        <p>Expense</p>
-        <p>Reimbursement</p>
-        <p>Manager</p>
-      </section>
+      <a href="/">
+        <section class="splash">
+          <p>Ministry</p>
+          <p>Expense</p>
+          <p>Reimbursement</p>
+          <p>Manager</p>
+        </section>
+      </a>
     <% } %>
     <% if (agent) { %>
       <nav>
