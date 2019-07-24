@@ -49,7 +49,7 @@ describe('authentication', function() {
     });
   
     it('shows the home page', function() {
-      browser.assert.text('#page h1 a', process.env.TITLE);
+      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
     });
   
     it('displays the login form if not logged in', function() {
@@ -155,7 +155,7 @@ describe('authentication', function() {
         });
 
         it('displays link to the agent\'s images', function() {
-          browser.assert.link('nav ul li a', 'Images', `/image/${agent.getAgentDirectory()}`);
+          browser.assert.link('nav ul li a', 'Invoices', `/image/${agent.getAgentDirectory()}`);
         });
 
 
