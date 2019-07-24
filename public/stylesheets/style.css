@@ -35,6 +35,7 @@ section img {
 }
 
 input[type=text],
+input[type=email],
 input[type=password] {
   border: 1px solid #4f83cc;
   background-color: #eeeeee;
