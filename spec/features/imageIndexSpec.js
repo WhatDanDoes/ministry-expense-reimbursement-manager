@@ -94,7 +94,7 @@ describe('imageIndexSpec', () => {
         browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
-          browser.assert.text('h2', 'No images');
+          browser.assert.text('h2', 'No invoices');
           done();
         });
       });
@@ -226,11 +226,11 @@ describe('imageIndexSpec', () => {
     it('doesn\'t barf if paginating beyond the bounds', done => {
       browser.visit(`/image/${agent.getAgentDirectory()}/page/10`, (err) => {
         if (err) return done.fail(err);
-        browser.assert.text('h2', 'No images');
+        browser.assert.text('h2', 'No invoices');
 
         browser.visit(`/image/${agent.getAgentDirectory()}/page/0`, (err) => {
           if (err) return done.fail(err);
-          browser.assert.text('h2', 'No images');
+          browser.assert.text('h2', 'No invoices');
 
           done();
           // Negative page params work, kinda
