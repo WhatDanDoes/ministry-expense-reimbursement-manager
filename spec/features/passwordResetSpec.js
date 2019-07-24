@@ -97,7 +97,7 @@ describe('password reset', function() {
           expect(mailer.transport.sentMail.length).toEqual(1);
           expect(mailer.transport.sentMail[0].data.to).toEqual(agent.email);
           expect(mailer.transport.sentMail[0].data.from).toEqual(process.env.FROM);
-          expect(mailer.transport.sentMail[0].data.subject).toEqual('Accountant Password Reset');
+          expect(mailer.transport.sentMail[0].data.subject).toEqual('merman Password Reset');
           models.Agent.findById(agent._id).then(function(agent) {
             expect(mailer.transport.sentMail[0].data.text).
               toContain('https://example.com/reset/' + agent.resetPasswordToken);
