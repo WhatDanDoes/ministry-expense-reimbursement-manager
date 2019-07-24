@@ -4,7 +4,9 @@
 </section>
   <footer id="info">
     <span>
-      <a href="https://www.patreon.com/bePatron?u=16503382" data-patreon-widget-type="become-patron-button">Become a Patron!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+      <% if (process.env.NODE_ENV === 'production') { %>
+        <a href="https://www.patreon.com/bePatron?u=16503382" data-patreon-widget-type="become-patron-button">Become a Patron!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+      <% } %> 
     </span>
     <span>
     </span>
