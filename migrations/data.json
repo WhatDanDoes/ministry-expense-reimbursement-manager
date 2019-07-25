@@ -6,19 +6,23 @@
     "_model": "Agent",
     "dan": {
       "email": "daniel@example.com",
-      "password": "secret"
+      "password": "secret",
+      "name": "Danny B"
     },
     "lyndsay": {
       "email": "lyndsay@example.com",
-      "password": "secret"
+      "password": "secret",
+      "name": "Lyndsay B"
     },
     "darina": {
       "email": "darina@example.com",
-      "password": "secret"
+      "password": "secret",
+      "name": "Darina E"
     },
     "someguy": {
       "email": "someguy@example.com",
-      "password": "secret"
+      "password": "secret",
+      "name": "Some Guy"
     }
   }
 }
