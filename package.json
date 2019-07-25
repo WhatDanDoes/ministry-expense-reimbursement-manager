@@ -7,6 +7,7 @@
     "test": "NODE_ENV=test node_modules/.bin/jasmine"
   },
   "dependencies": {
+    "archiver": "^3.0.3",
     "base64-img": "^1.0.4",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
@@ -35,6 +36,7 @@
     "time-stamp": "^2.2.0"
   },
   "devDependencies": {
+    "adm-zip": "^0.4.13",
     "jasmine": "^3.4.0",
     "mock-fs": "^4.10.1",
     "node-mocks-http": "^1.7.6",
