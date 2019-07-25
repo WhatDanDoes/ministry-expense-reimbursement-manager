@@ -15,7 +15,7 @@ router.get('/', function(req, res) {
     req.flash('error', 'You need to login first');
     return res.redirect('/');
   }
-  req.user.getReadables(function(err, readables) {
+  req.user.getReadablesAndFiles(function(err, readables) {
 
     // To open deep link with auth token
     const payload = { email: req.user.email };

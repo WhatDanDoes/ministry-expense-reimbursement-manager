@@ -7,7 +7,7 @@
       <h3>Viewable albums:</h3>
       <% for (let readable of readables) { %>
         <section class="agent">
-          <a href="/image/<%= readable %>"><%= readable %></a>
+          <a href="/image/<%= readable.path %>"><%= readable.path %></a><span class="count"><%= readable.files.length ? ` (${readable.files.length})` : '' %></span>
         </section>
       <% } %>
     <% } %>
