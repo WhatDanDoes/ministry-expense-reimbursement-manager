@@ -62,7 +62,11 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     const payload = { email: req.user.email };
     const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0, token: token  });
+
+    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+    console.log(req.user.getAgentDirectory());
+    console.log(req.path);
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0, token: token, canWrite: canWrite  });
   });
 });
 
@@ -94,7 +98,8 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
     const payload = { email: req.user.email };
     const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage, token: token });
+    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage, token: token, canWrite: canWrite });
   });
 });
 
