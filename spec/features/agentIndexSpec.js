@@ -87,10 +87,6 @@ describe('agentIndexSpec', () => {
         browser.assert.text('h2', `Hello, ${agent.email}`);
       });
 
-      it('displays an Android deep link with JWT', () => {
-        browser.assert.element('a[href="bpe://somejwtstring"]');
-      });
-
       it('shows a list of albums the agent can read', () => {
         expect(agent.canRead.length).toEqual(1);
         expect(agent.canRead[0]).toEqual(lanny._id);
@@ -103,10 +99,9 @@ describe('agentIndexSpec', () => {
         expect(agent.canRead.length).toEqual(1);
         expect(agent.canRead[0]).toEqual(lanny._id);
         browser.assert.elements('.agent .count', 2);
-        browser.assert.text('section.agent:nth-of-type(2) .count', '');
-        browser.assert.text('section.agent:nth-of-type(3) .count', '(3)');
+        browser.assert.text('section.agent:nth-of-type(1) .count', '');
+        browser.assert.text('section.agent:nth-of-type(2) .count', '(3)');
       });
-
 
       it('lets the agent click and view a link he can read', done => {
         browser.clickLink(lanny.getAgentDirectory(), function(err) {
