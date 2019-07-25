@@ -103,6 +103,19 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
   });
 });
 
+/**
+ * GET /image/:domain/:agentId/zip
+ */
+router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+
+  if (!canWrite) {
+    return res.sendStatus(403);
+  }
+
+  res.render('image/show', { image: `${req.path}`, messages: req.flash(), agent: req.user, canWrite: canWrite });
+});
+
 
 /**
  * GET /image/:domain/:agentId/:imageId

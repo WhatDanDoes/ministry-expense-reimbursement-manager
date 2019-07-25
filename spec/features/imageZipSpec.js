@@ -6,6 +6,7 @@ const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const jwt = require('jsonwebtoken');
+const request = require('supertest');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -58,6 +59,11 @@ describe('imageIndexSpec', () => {
           'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
         },
+        [`uploads/${lanny.getAgentDirectory()}`]: {
+          'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
         'public/images/uploads': {}
       });
  
@@ -91,6 +97,31 @@ describe('imageIndexSpec', () => {
           done();
         });
       });
+
+      it('compresses the image directory and returns a zip file', done => {
+        function binaryParser(res, callback) {
+          res.setEncoding('binary');
+          res.data = '';
+          res.on('data', function (chunk) {
+              res.data += chunk;
+          });
+          res.on('end', function () {
+              callback(null, Buffer.from(res.data, 'binary'));
+          });
+        }
+
+        request(app)
+          .get(`/image/${agent.getAgentDirectory()}/zip`)
+          .set('Cookie', browser.cookies)
+          .expect(200)
+          .expect( 'Content-Type', /application\/zip/ )
+          .parse(binaryParser)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+            expect(Buffer.isBuffer(res.body)).toBe(true);
+            done();
+          });
+      });
     });
 
     describe('unauthorized', () => {
@@ -105,6 +136,17 @@ describe('imageIndexSpec', () => {
           done();
         });
       });
+
+      it('does not return a zip file', done => {
+        request(app)
+          .get(`/image/${lanny.getAgentDirectory()}/zip`)
+          .set('Cookie', browser.cookies)
+          .expect(403)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+            done();
+          });
+      });
     });
   });
 
@@ -117,6 +159,19 @@ describe('imageIndexSpec', () => {
         browser.assert.text('.alert.alert-danger', 'You need to login first');
         done();
       });
+    });
+
+    // This is getting caught by basic auth and redirecting to home
+    it('does not return a zip file', done => {
+      request(app)
+        .get(`/image/${agent.getAgentDirectory()}/zip`)
+        .expect(302)
+        .end(function(err, res) {
+          if (err) done.fail(err);
+
+          expect(res.header.location).toEqual('/');
+          done();
+        });
     });
   });
 });
