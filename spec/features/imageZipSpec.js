@@ -7,6 +7,7 @@ const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
+const AdmZip = require('adm-zip');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -103,10 +104,10 @@ describe('imageIndexSpec', () => {
           res.setEncoding('binary');
           res.data = '';
           res.on('data', function (chunk) {
-              res.data += chunk;
+            res.data += chunk;
           });
           res.on('end', function () {
-              callback(null, Buffer.from(res.data, 'binary'));
+            callback(null, Buffer.from(res.data, 'binary'));
           });
         }
 
@@ -119,6 +120,14 @@ describe('imageIndexSpec', () => {
           .end(function(err, res) {
             if (err) done.fail(err);
             expect(Buffer.isBuffer(res.body)).toBe(true);
+
+            let zip = new AdmZip(res.body);
+            let zipEntries = zip.getEntries();
+            expect(zipEntries.length).toEqual(3);
+            expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length}.zip`);
+            expect(zipEntries[0].name).toEqual(`${agent.getBaseFilename()} #1`);
+            expect(zipEntries[1].name).toEqual(`${agent.getBaseFilename()} #2`);
+            expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #3`);
             done();
           });
       });
