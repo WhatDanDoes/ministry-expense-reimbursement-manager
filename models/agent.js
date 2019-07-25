@@ -8,6 +8,7 @@ module.exports = function(mongoose) {
   const arrayUniquePlugin = require('mongoose-unique-array');
 
   const AgentSchema = new Schema({
+
     email: {
       type: String,
       trim: true,
@@ -31,6 +32,13 @@ module.exports = function(mongoose) {
       required: [true, 'No password supplied'],
       empty: [false, 'No password supplied'],
     },
+    name: {
+      type: String,
+      trim: true,
+      required: [true, 'No name supplied'],
+      empty: [false, 'No name supplied'],
+    },
+
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
