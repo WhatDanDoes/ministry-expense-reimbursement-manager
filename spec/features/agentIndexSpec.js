@@ -99,6 +99,15 @@ describe('agentIndexSpec', () => {
         browser.assert.link('.agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
       });
 
+      it('counts the number of unprocessed invoices in an account', () => {
+        expect(agent.canRead.length).toEqual(1);
+        expect(agent.canRead[0]).toEqual(lanny._id);
+        browser.assert.elements('.agent a .count', 2);
+        browser.assert.text('.agent:first-child a .count', '');
+        browser.assert.text('.agent:last-child a .count', '3');
+      });
+
+
       it('lets the agent click and view a link he can read', done => {
         browser.clickLink(lanny.getAgentDirectory(), function(err) {
           if (err) return done.fail(err);
