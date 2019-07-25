@@ -380,5 +380,18 @@ describe('Agent', function() {
         expect(agent.getAgentDirectory()).toEqual('example.com/someguy');
       });
     });
+
+    /**
+     * #getBaseFilename
+     */
+    describe('#getBaseFilename', function() {
+      it('returns a filename in the proper Wycliffe-friendly format', () => {
+        spyOn(Date, 'now').and.returnValue(Date.parse('02 Feb 2019 00:12:00 GMT'));
+
+        expect(agent.name).toEqual('Some Guy');
+
+        expect(agent.getBaseFilename()).toEqual('Guy, Some 2019 02 Feb Reimb Receipt');
+      });
+    });
   });
 });

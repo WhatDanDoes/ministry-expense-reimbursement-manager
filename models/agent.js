@@ -171,6 +171,15 @@ module.exports = function(mongoose) {
     });
   };
 
+  AgentSchema.methods.getBaseFilename = function() {
+    let name = this.name.split(/ (.+)/);
+    name = name.filter(n => n.length > 0);
+    let firstname = name[0],
+        lastname = name[1];
+    let date = new Date(Date.now());
+    return `${lastname}, ${firstname} ${date.getFullYear()} ${("0" + (date.getMonth() + 1)).slice(-2)} ${date.toLocaleString('default', { month: 'short' })} Reimb Receipt`;
+  };
+
 
   AgentSchema.plugin(arrayUniquePlugin);
   return AgentSchema;
