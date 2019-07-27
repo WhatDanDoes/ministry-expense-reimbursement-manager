@@ -271,7 +271,7 @@ describe('imageIndexSpec', () => {
           if (err) done.fail(err);
           browser.assert.success();
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-          browser.assert.element('a[href="bpe://somejwtstring"]');
+          browser.assert.element(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`);
           done();
         });
       });
@@ -288,7 +288,7 @@ describe('imageIndexSpec', () => {
           if (err) done.fail(err);
           browser.assert.success();
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-          browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
   
           browser.assert.text('h2', 'Desktop browser uploads coming soon');
           done();
@@ -328,7 +328,7 @@ describe('imageIndexSpec', () => {
             browser.clickLink('#next-page', function(err) {
               if (err) done.fail(err); browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
-              browser.assert.element('a[href="bpe://somejwtstring"]');
+              browser.assert.element(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`);
               done();
             });
           });
@@ -350,7 +350,7 @@ describe('imageIndexSpec', () => {
               if (err) done.fail(err);
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
-              browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+              browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
       
               browser.assert.text('h2', 'Desktop browser uploads coming soon');
               done();
