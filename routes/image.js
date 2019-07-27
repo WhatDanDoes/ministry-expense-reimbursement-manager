@@ -12,7 +12,7 @@ const jwtAuth = require('../lib/jwtAuth');
 const ensureAuthorized = require('../lib/ensureAuthorized');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-
+const isMobile = require('is-mobile');
 
 // Set upload destination directory
 let storage = multer.diskStorage({

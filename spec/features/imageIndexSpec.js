@@ -77,11 +77,6 @@ describe('imageIndexSpec', () => {
     });
 
     describe('authorized', () => {
-      it('displays an Android deep link with JWT', () => {
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.element('a[href="bpe://somejwtstring"]');
-      });
-
       it('allows an agent to view his own album', () => {
         browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
         browser.assert.elements('section.image img', 3);
@@ -236,6 +231,105 @@ describe('imageIndexSpec', () => {
           // Negative page params work, kinda
         });
       });
+    });
+  });
+
+  describe('mobile detection', () => {
+    beforeEach(done => {
+      mockAndUnmock({ 
+        [`uploads/${agent.getAgentDirectory()}`]: {
+          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        'public/images/uploads': {}
+      });
+ 
+      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
+ 
+//      browser.fill('email', agent.email);
+//      browser.fill('password', 'secret');
+//      browser.pressButton('Login', function(err) {
+//        if (err) done.fail(err);
+//        browser.assert.success();
+        done();
+//      });
+    });
+  
+    afterEach(() => {
+      mock.restore();
+    });
+
+    it('displays an Android deep link with JWT if browser is mobile', done => {
+      browser.fill('email', agent.email);
+      browser.fill('password', 'secret');
+      browser.pressButton('Login', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
+        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+        browser.assert.element('a[href="bpe://somejwtstring"]');
+        done();
+      });
+    });
+
+    it('does not display an Android deep link if browser is not mobile', done => {
+      browser.fill('email', agent.email);
+      browser.fill('password', 'secret');
+      browser.pressButton('Login', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
+        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+        browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+
+        browser.assert.text('h2', 'Desktop browser uploads coming soon');
+        done();
+      });
+    });
+
+    describe('pagination', () => {
+      beforeEach(done => {
+        let files = {};
+        for (let i = 0; i < 70; i++) {
+          files[`image${i}.jpg`] = fs.readFileSync('spec/files/troll.jpg');
+        }
+        mockAndUnmock({ [`uploads/${agent.getAgentDirectory()}`]: files });
+  
+        browser.fill('email', agent.email);
+        browser.fill('password', 'secret');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          done();
+        });
+      });
+  
+      afterEach(() => {
+        mock.restore();
+      });
+
+
+    it('displays an Android deep link with JWT if browser is mobile', done => {
+      browser.pressButton('Next', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
+        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+        browser.assert.element('a[href="bpe://somejwtstring"]');
+        done();
+      });
+    });
+
+    it('does not display an Android deep link if browser is not mobile', done => {
+      browser.pressButton('Next', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
+        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+        browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+
+        browser.assert.text('h2', 'Desktop browser uploads coming soon');
+        done();
+      });
+    });
+
     });
   });
 });
