@@ -6,6 +6,7 @@ const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const jwt = require('jsonwebtoken');
+const isMobile = require('is-mobile');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -22,6 +23,8 @@ describe('imageIndexSpec', () => {
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
+    browser.headers = {'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36'};
+
     //browser.debug();
     fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
       models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
@@ -247,13 +250,9 @@ describe('imageIndexSpec', () => {
  
       spyOn(jwt, 'sign').and.returnValue('somejwtstring');
  
-//      browser.fill('email', agent.email);
-//      browser.fill('password', 'secret');
-//      browser.pressButton('Login', function(err) {
-//        if (err) done.fail(err);
-//        browser.assert.success();
-        done();
-//      });
+      browser = new Browser({ waitDuration: '30s', loadCss: false });
+
+      done();
     });
   
     afterEach(() => {
@@ -261,28 +260,39 @@ describe('imageIndexSpec', () => {
     });
 
     it('displays an Android deep link with JWT if browser is mobile', done => {
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
+      browser.headers = {'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36'};
+      browser.visit('/', function(err) {
+        if (err) return done.fail(err);
         browser.assert.success();
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.element('a[href="bpe://somejwtstring"]');
-        done();
+            
+        browser.fill('email', agent.email);
+        browser.fill('password', 'secret');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+          browser.assert.element('a[href="bpe://somejwtstring"]');
+          done();
+        });
       });
     });
 
     it('does not display an Android deep link if browser is not mobile', done => {
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
+      browser.visit('/', function(err) {
+        if (err) return done.fail(err);
         browser.assert.success();
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
-
-        browser.assert.text('h2', 'Desktop browser uploads coming soon');
-        done();
+ 
+        browser.fill('email', agent.email);
+        browser.fill('password', 'secret');
+        browser.pressButton('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+          browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+  
+          browser.assert.text('h2', 'Desktop browser uploads coming soon');
+          done();
+        });
       });
     });
 
@@ -292,44 +302,62 @@ describe('imageIndexSpec', () => {
         for (let i = 0; i < 70; i++) {
           files[`image${i}.jpg`] = fs.readFileSync('spec/files/troll.jpg');
         }
-        mockAndUnmock({ [`uploads/${agent.getAgentDirectory()}`]: files });
-  
-        browser.fill('email', agent.email);
-        browser.fill('password', 'secret');
-        browser.pressButton('Login', function(err) {
-          if (err) done.fail(err);
-          browser.assert.success();
-          done();
+        mockAndUnmock({ 
+          [`uploads/${agent.getAgentDirectory()}`]: files,
+          'public/images/uploads': {}
         });
+        done();
       });
-  
+
       afterEach(() => {
         mock.restore();
       });
 
-
-    it('displays an Android deep link with JWT if browser is mobile', done => {
-      browser.pressButton('Next', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.element('a[href="bpe://somejwtstring"]');
-        done();
+      it('displays an Android deep link with JWT if browser is mobile', done => {
+        browser.headers = {'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36'};
+        browser.visit('/', function(err) {
+          if (err) return done.fail(err);
+          browser.assert.success();
+  
+          browser.fill('email', agent.email);
+          browser.fill('password', 'secret');
+          browser.pressButton('Login', function(err) {
+            if (err) done.fail(err);
+            browser.assert.success();
+   
+            browser.clickLink('#next-page', function(err) {
+              if (err) done.fail(err); browser.assert.success();
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
+              browser.assert.element('a[href="bpe://somejwtstring"]');
+              done();
+            });
+          });
+        });
       });
-    });
 
-    it('does not display an Android deep link if browser is not mobile', done => {
-      browser.pressButton('Next', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
-
-        browser.assert.text('h2', 'Desktop browser uploads coming soon');
-        done();
+      it('does not display an Android deep link if browser is not mobile', done => {
+        browser.visit('/', function(err) {
+          if (err) return done.fail(err);
+          browser.assert.success();
+  
+          browser.fill('email', agent.email);
+          browser.fill('password', 'secret');
+          browser.pressButton('Login', function(err) {
+            if (err) done.fail(err);
+            browser.assert.success();
+   
+            browser.clickLink('#next-page', function(err) {
+              if (err) done.fail(err);
+              browser.assert.success();
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
+              browser.assert.elements('a[href="bpe://somejwtstring"]', 0);
+      
+              browser.assert.text('h2', 'Desktop browser uploads coming soon');
+              done();
+            });
+          });
+        });
       });
-    });
-
     });
   });
 });

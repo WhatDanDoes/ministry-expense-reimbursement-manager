@@ -1,6 +1,12 @@
+  <% if (isMobile) { %>
     <section class="deep-link">
       <a href="bpe://<%= token %>">
         <img src="/images/bpe-logo.png">
         <p>Add invoice</p>
       </a>
     </section>
+  <% } else { %>
+    <section class="copy">
+      <h2>Desktop browser uploads coming soon</h2>
+    </section>
+  <% } %>
