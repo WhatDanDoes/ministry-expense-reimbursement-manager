@@ -20,18 +20,21 @@ exports.Agent = {
     _id: danId,
     email: 'daniel@example.com',
     password: 'secret',
+    name: 'Dan',
     canRead: [lannyId],
   },
   troy: {
     _id: troyId,
     email: 'troy@example.com',
     password: 'topsecret',
+    name: 'Troy',
     canRead: [danId],
   },
   lanny: {
     _id: lannyId,
     email: 'lanny@example.com',
     password: 'supersecret',
+    name: 'Lanny',
     canRead: [troyId],
   }
 };

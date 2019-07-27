@@ -5,6 +5,11 @@
     <% if (!images.length) { %>
       <h2>No invoices</h2>
     <% } else { %>
+      <% if (canWrite) { %>
+        <section class="copy">
+          <h1><a href="<%= `/image/${agent.getAgentDirectory()}/zip` %>">Zip and download all invoices</a><h1>
+        </section>
+      <% } %>
       <% include ./_pager %>
       <% for (let image of images) { %>
         <section class="image">

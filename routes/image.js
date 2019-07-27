@@ -13,6 +13,7 @@ const ensureAuthorized = require('../lib/ensureAuthorized');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const isMobile = require('is-mobile');
+const archiver = require('archiver');
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -62,7 +63,8 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     const payload = { email: req.user.email };
     const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0, token: token  });
+    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0, token: token, canWrite: canWrite  });
   });
 });
 
@@ -94,7 +96,65 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
     const payload = { email: req.user.email };
     const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
 
-    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage, token: token });
+    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+    res.render('image/index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: prevPage, token: token, canWrite: canWrite });
+  });
+});
+
+/**
+ * GET /image/:domain/:agentId/zip
+ */
+router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+
+  if (!canWrite) {
+    return res.sendStatus(403);
+  }
+
+  /**
+   * 2019-7-25 https://github.com/archiverjs/node-archiver/blob/master/examples/express.js#L23
+   * Compress uploaded files
+   */
+  const archive = archiver('zip');
+
+  // Catch warnings (e.g. stat failures and other non-blocking errors)
+  // Not sure what to do with all this...
+  archive.on('warning', function(err) {
+    if (err.code === 'ENOENT') {
+      console.log('FILE NOT FOUND');
+      console.log(err);
+    } else {
+      console.log('SOME NON-BLOCKING ERROR');
+      console.log(err);
+    }
+  });
+
+  // Catch this error explicitly
+  archive.on('error', function(err) {
+    req.flash('error', err.message);
+    return redirect('/image');
+  });
+
+  // Request ends on stream close
+  archive.on('end', function() {
+    console.log('Archive wrote %d bytes', archive.pointer());
+  });
+
+  fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
+    if (err) {
+      return res.render('error', { error: err });
+    }
+
+    res.set('Content-Type', 'application/zip');
+    res.attachment(`${req.user.getBaseFilename()} #1-${files.length}.zip`);
+
+    archive.pipe(res);
+
+    files.forEach((file, index) => {
+      archive.file(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, { name: `${req.user.getBaseFilename()} #${index + 1}` });
+    });
+
+    archive.finalize();
   });
 });
 
