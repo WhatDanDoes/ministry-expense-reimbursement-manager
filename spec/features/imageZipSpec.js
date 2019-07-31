@@ -57,8 +57,9 @@ describe('imageIndexSpec', () => {
       mockAndUnmock({ 
         [`uploads/${agent.getAgentDirectory()}`]: {
           'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+          'image4': fs.readFileSync('spec/files/troll.jpg'),
         },
         [`uploads/${lanny.getAgentDirectory()}`]: {
           'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
@@ -123,11 +124,12 @@ describe('imageIndexSpec', () => {
 
             let zip = new AdmZip(res.body);
             let zipEntries = zip.getEntries();
-            expect(zipEntries.length).toEqual(3);
+            expect(zipEntries.length).toEqual(4);
             expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length}.zip`);
-            expect(zipEntries[0].name).toEqual(`${agent.getBaseFilename()} #1`);
-            expect(zipEntries[1].name).toEqual(`${agent.getBaseFilename()} #2`);
-            expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #3`);
+            expect(zipEntries[0].name).toEqual(`${agent.getBaseFilename()} #1.jpg`);
+            expect(zipEntries[1].name).toEqual(`${agent.getBaseFilename()} #2.pdf`);
+            expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #3.gif`);
+            expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #4`);
             done();
           });
       });

@@ -165,7 +165,12 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
     archive.pipe(res);
 
     files.forEach((file, index) => {
-      archive.file(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, { name: `${req.user.getBaseFilename()} #${index + 1}` });
+      let ext = '';
+      if (file.lastIndexOf('.') >= 0) {
+        ext = `.${file.substring(file.lastIndexOf('.') + 1).toLowerCase()}`;
+      }
+      
+      archive.file(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, { name: `${req.user.getBaseFilename()} #${index + 1}${ext}` });
     });
 
     archive.finalize();
