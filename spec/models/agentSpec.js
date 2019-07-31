@@ -392,6 +392,14 @@ describe('Agent', function() {
 
         expect(agent.getBaseFilename()).toEqual('Guy, Some 2019 02 Feb Reimb Receipt');
       });
+
+      it('handles prefixed zeroes on two-digit months', () => {
+        spyOn(Date, 'now').and.returnValue(Date.parse('02 Dec 2019 00:12:00 GMT'));
+
+        expect(agent.name).toEqual('Some Guy');
+
+        expect(agent.getBaseFilename()).toEqual('Guy, Some 2019 12 Dec Reimb Receipt');
+      });
     });
   });
 });

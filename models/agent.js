@@ -171,13 +171,18 @@ module.exports = function(mongoose) {
     });
   };
 
+  
+  // The toLocaleString method returns different results in Ubuntu 18 and 16:
+  // date.toLocaleString('default', { month: 'short' })
+  // This is a brute force solution.
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   AgentSchema.methods.getBaseFilename = function() {
     let name = this.name.split(/ (.+)/);
     name = name.filter(n => n.length > 0);
     let firstname = name[0],
         lastname = name[1];
     let date = new Date(Date.now());
-    return `${lastname}, ${firstname} ${date.getFullYear()} ${("0" + (date.getMonth() + 1)).slice(-2)} ${date.toLocaleString('default', { month: 'short' })} Reimb Receipt`;
+    return `${lastname}, ${firstname} ${date.getFullYear()} ${("0" + (date.getMonth() + 1)).slice(-2)} ${MONTHS[date.getMonth()]} Reimb Receipt`;
   };
 
 
