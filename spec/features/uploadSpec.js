@@ -38,6 +38,7 @@ describe('POST image/', () => {
     it('returns 401 error', done => {
       request(app)
         .post('/image')
+        .set('Accept', 'application/json')
         .attach('docs', 'spec/files/troll.jpg')
         .expect('Content-Type', /json/)
         .expect(401)
@@ -58,6 +59,7 @@ describe('POST image/', () => {
         expect(files.length).toEqual(0);
         request(app)
           .post('/image')
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect('Content-Type', /json/)
           .expect(401)
@@ -133,6 +135,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -163,6 +166,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .attach('docs', 'spec/files/troll.png')
           .expect('Content-Type', /json/)
@@ -193,6 +197,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -211,6 +216,7 @@ describe('POST image/', () => {
               request(app)
                 .post('/image')
                 .field('token', token)
+                .set('Accept', 'application/json')
                 .attach('docs', 'spec/files/troll.jpg')
                 .expect(201)
                 .end(function(err, res) {
@@ -238,6 +244,7 @@ describe('POST image/', () => {
       request(app)
         .post('/image')
         .field('token', token)
+        .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400)
         .end(function(err, res) {

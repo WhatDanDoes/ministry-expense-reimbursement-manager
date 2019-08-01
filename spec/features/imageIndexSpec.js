@@ -98,6 +98,19 @@ describe('imageIndexSpec', () => {
         });
       });
 
+      it('does not display upload form or jwt form if agent can read', done => {
+        expect(agent.canRead.length).toEqual(1);
+        expect(agent.canRead[0]).toEqual(lanny._id);
+
+        browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
+          if (err) return done.fail(err);
+          browser.assert.success();
+          browser.assert.elements('form[action="/image"]', 0);
+          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
+          done();
+        });
+      });
+
       it('creates an agent directory if it does not exist already', done => {
         expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(false);
         browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
@@ -126,8 +139,8 @@ describe('imageIndexSpec', () => {
           if (err) {
             return done.fail(err);
           }
-console.log(files);
-          expect(files.length).toEqual(0);
+          // Three files written in setup
+          expect(files.length).toEqual(3);
 
           request(app)
             .post('/image')
@@ -135,7 +148,7 @@ console.log(files);
             .set('Cookie', browser.cookies)
             .attach('docs', 'spec/files/troll.jpg')
             .expect('Content-Type', /html/)
-            .expect(201)
+            .expect(302) // redirect
             .end(function(err, res) {
               if (err) {
                 return done.fail(err);
@@ -145,7 +158,7 @@ console.log(files);
                 if (err) {
                   return done.fail(err);
                 }
-                expect(files.length).toEqual(1);
+                expect(files.length).toEqual(4);
                 done();
               });
           });
@@ -153,11 +166,13 @@ console.log(files);
       });
 
       it('writes multiple file uploads to disk', done => {
-        fs.readdir('uploads', (err, files) => {
+        fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
           if (err) {
             return done.fail(err);
           }
-          expect(files.length).toEqual(0);
+
+          // Three files written in setup
+          expect(files.length).toEqual(3);
 
           request(app)
             .post('/image')
@@ -166,7 +181,7 @@ console.log(files);
             .attach('docs', 'spec/files/troll.jpg')
             .attach('docs', 'spec/files/troll.png')
             .expect('Content-Type', /html/)
-            .expect(201)
+            .expect(302) // redirect
             .end(function(err, res) {
               if (err) {
                 return done.fail(err);
@@ -176,7 +191,7 @@ console.log(files);
                 if (err) {
                   return done.fail(err);
                 }
-                expect(files.length).toEqual(2);
+                expect(files.length).toEqual(5);
                 done();
               });
           });
@@ -201,20 +216,6 @@ console.log(files);
           done.fail(error);
         });
       });
-
-      it('does not allow posting images', done => {
-        request(app)
-          .post('/image')
-          .attach('docs', 'spec/files/troll.jpg')
-          .set('Accept', 'text/html')
-          .set('Cookie', browser.cookies)
-          .expect('Content-Type', /html/)
-          .end(function(err, res) {
-            if (err) return done.fail(err);
-            expect(res.status).toEqual(302);
-            done();
-          });
-      });
     });
   });
 
@@ -237,19 +238,6 @@ console.log(files);
         browser.assert.text('.alert.alert-danger', 'You need to login first');
         done();
       });
-    });
-
-    it('does not allow posting images', done => {
-      request(app)
-        .post('/invoice')
-        .attach('docs', 'spec/files/troll.jpg')
-        .set('Accept', 'text/html')
-        .expect('Content-Type', /html/)
-        .end(function(err, res) {
-          if (err) return done.fail(err);
-          expect(res.status).toEqual(302);
-          done();
-        });
     });
   });
 

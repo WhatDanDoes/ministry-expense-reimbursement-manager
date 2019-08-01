@@ -1,7 +1,6 @@
 'use strict';
 
 const express = require('express');
-const passport = require('passport');
 const router = express.Router();
 const multer  = require('multer');
 const models = require('../models');
@@ -212,14 +211,33 @@ router.post('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
 /**
  * POST /image
  */
-router.post('/', upload.array('docs', 8), jwtAuth, (req, res) => {
+//upload.array('docs', 8) limits number of files
+router.post('/', upload.array('docs'), (req, res, next) => {
+  if (/json/.test(req.headers['accept'])) {
+    return jwtAuth(req, res, next);
+  }
+  if (!req.isAuthenticated()) { 
+    req.flash('error', 'You need to login first');
+    return res.redirect('/');
+  }
+  next();
+
+}, (req, res) => {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    if (/json/.test(req.headers['accept'])) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    req.flash('error', 'You have to login first');
+    return res.redirect('/');
   }
 
   // No image provided
   if (!req.files || !req.files.length) {
-    return res.status(400).json({ message: 'No image provided' });
+    if (/json/.test(req.headers['accept'])) {
+      return res.status(400).json({ message: 'No image provided' });
+    }
+    req.flash('error', 'No image provided');
+    return res.redirect(`/image/${req.user.getAgentDirectory()}`);
   }
 
   let savePaths = [];
@@ -254,10 +272,18 @@ router.post('/', upload.array('docs', 8), jwtAuth, (req, res) => {
 
   recursiveSave((err) => {
     if (err) {
-      return res.status(500).json({ message: err.message });
+      if (/json/.test(req.headers['accept'])) {
+        return res.status(500).json({ message: err.message });
+      }
+      req.flash('error', err.message);
+      return res.redirect(`/image/${req.user.getAgentDirectory()}`);
     }
-    res.status(201).json({ message: 'Image received' });
-  }) 
+    if (/json/.test(req.headers['accept'])) {
+      return res.status(201).json({ message: 'Image received' });
+    }
+    req.flash('success', 'Received');
+    return res.redirect(`/image/${req.user.getAgentDirectory()}`);
+  });
 });
 
 /**

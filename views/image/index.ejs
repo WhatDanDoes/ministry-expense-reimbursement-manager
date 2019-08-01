@@ -1,9 +1,8 @@
 <% include ../_partials/head %>
   <% include ../_partials/messages %>
   <main>
-    <% include ../_partials/appLink %>
-    <details id="submit-invoice">
-      <summary>Submit a new invoice</summary>
+    <% if (canWrite) { %>
+      <% include ../_partials/appLink %>
       <section>
         <form role="form" action="/image" method="post" enctype="multipart/form-data">
           <div class="form-group">
@@ -16,7 +15,7 @@
           </div>
         </form>
       </section>
-    </details>
+    <% } %>
     <% if (!images.length) { %>
       <h2>No invoices</h2>
     <% } else { %>
