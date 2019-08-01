@@ -2,6 +2,21 @@
   <% include ../_partials/messages %>
   <main>
     <% include ../_partials/appLink %>
+    <details id="submit-invoice">
+      <summary>Submit a new invoice</summary>
+      <section>
+        <form role="form" action="/image" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="docs">Upload files:</label>
+            <input class="form-control" type="file" id="docs" name="docs" multiple=true>
+            <ol id="selected-files"></ol>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-default" type="submit">Submit</button>
+          </div>
+        </form>
+      </section>
+    </details>
     <% if (!images.length) { %>
       <h2>No invoices</h2>
     <% } else { %>

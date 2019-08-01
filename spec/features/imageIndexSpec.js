@@ -7,6 +7,7 @@ const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const jwt = require('jsonwebtoken');
 const isMobile = require('is-mobile');
+const request = require('supertest');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -115,6 +116,72 @@ describe('imageIndexSpec', () => {
           done();
         });
       });
+
+      it('displays an upload-files form', () => {
+        browser.assert.element("form[action='/image']");
+      });
+
+      it('writes a file upload to disk', done => {
+        fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+          if (err) {
+            return done.fail(err);
+          }
+console.log(files);
+          expect(files.length).toEqual(0);
+
+          request(app)
+            .post('/image')
+            .set('Accept', 'text/html')
+            .set('Cookie', browser.cookies)
+            .attach('docs', 'spec/files/troll.jpg')
+            .expect('Content-Type', /html/)
+            .expect(201)
+            .end(function(err, res) {
+              if (err) {
+                return done.fail(err);
+              }
+  
+              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                if (err) {
+                  return done.fail(err);
+                }
+                expect(files.length).toEqual(1);
+                done();
+              });
+          });
+        });
+      });
+
+      it('writes multiple file uploads to disk', done => {
+        fs.readdir('uploads', (err, files) => {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(files.length).toEqual(0);
+
+          request(app)
+            .post('/image')
+            .set('Accept', 'text/html')
+            .set('Cookie', browser.cookies)
+            .attach('docs', 'spec/files/troll.jpg')
+            .attach('docs', 'spec/files/troll.png')
+            .expect('Content-Type', /html/)
+            .expect(201)
+            .end(function(err, res) {
+              if (err) {
+                return done.fail(err);
+              }
+  
+              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                if (err) {
+                  return done.fail(err);
+                }
+                expect(files.length).toEqual(2);
+                done();
+              });
+          });
+        });
+      });
     });
 
     describe('unauthorized', () => {
@@ -133,6 +200,20 @@ describe('imageIndexSpec', () => {
         }).catch(function(error) {
           done.fail(error);
         });
+      });
+
+      it('does not allow posting images', done => {
+        request(app)
+          .post('/image')
+          .attach('docs', 'spec/files/troll.jpg')
+          .set('Accept', 'text/html')
+          .set('Cookie', browser.cookies)
+          .expect('Content-Type', /html/)
+          .end(function(err, res) {
+            if (err) return done.fail(err);
+            expect(res.status).toEqual(302);
+            done();
+          });
       });
     });
   });
@@ -156,6 +237,19 @@ describe('imageIndexSpec', () => {
         browser.assert.text('.alert.alert-danger', 'You need to login first');
         done();
       });
+    });
+
+    it('does not allow posting images', done => {
+      request(app)
+        .post('/invoice')
+        .attach('docs', 'spec/files/troll.jpg')
+        .set('Accept', 'text/html')
+        .expect('Content-Type', /html/)
+        .end(function(err, res) {
+          if (err) return done.fail(err);
+          expect(res.status).toEqual(302);
+          done();
+        });
     });
   });
 
@@ -335,7 +429,7 @@ describe('imageIndexSpec', () => {
         });
       });
 
-      it('does not display an Android deep link if browser is not mobile', done => {
+      it('displays a file upload form if browser is not mobile', done => {
         browser.visit('/', function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
