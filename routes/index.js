@@ -11,7 +11,15 @@ router.get('/', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+    //files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+    files = files.map(item => {
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)) {
+        return { file: item, type: 'image' };
+      }
+      return { file: item, type: 'link' };
+    });
+    files.reverse();
+
     let nextPage = 0;
     if (files.length > MAX_IMGS) {
       nextPage = 2;
@@ -28,7 +36,15 @@ router.get('/page/:num', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+//    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+    files = files.map(item => {
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)) {
+        return { file: item, type: 'image' };
+      }
+      return { file: item, type: 'link' };
+    });
+    files.reverse();
+
     let page = parseInt(req.params.num),
         nextPage = 0,
         prevPage = page - 1;

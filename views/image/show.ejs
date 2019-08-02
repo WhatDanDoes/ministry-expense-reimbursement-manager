@@ -1,15 +1,21 @@
 <% include ../_partials/head %>
   <% include ../_partials/messages %>
   <main>
-    <section class="image">
-      <img src="/uploads<%= image %>" />
-    </section>
+    <% if (image.type === 'image') { %>
+      <section class="image">
+        <img src="/uploads<%= image.file %>" />
+      </section>
+    <% } else { %>
+      <section class="link">
+        <a href="/uploads<%= image.file %>"><%= image.file.split('/')[image.file.split('/').length-1] %></a>
+      </section>
+    <% } %>
     <% if (canWrite) { %>
       <section id="image-controls">
-        <form action="<%= `/image${image}?_method=DELETE` %>" method="post" id="delete-image-form">
+        <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
           <button id="delete-image" type="submit">Delete</button>
         </form>
-        <form action="<%= `/image${image}` %>" method="post" id="publish-image-form">
+        <form action="<%= `/image${image.file}` %>" method="post" id="publish-image-form">
           <button id="publish-image" type="submit">Publish</button>
         </form>
       </section>

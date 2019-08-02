@@ -5,13 +5,16 @@
       <% include ../_partials/appLink %>
       <section>
         <form role="form" action="/image" method="post" enctype="multipart/form-data">
+          <label class="fileContainer upload-link">
+            <p><img src="/images/file-upload.png"></p>
+            <p>Upload file</p>
+            <input type="file" id="docs" name="docs" multiple=true>
+          </label>
           <div class="form-group">
-            <label for="docs">Upload files:</label>
-            <input class="form-control" type="file" id="docs" name="docs" multiple=true>
             <ol id="selected-files"></ol>
           </div>
           <div class="form-group">
-            <button class="btn btn-default" type="submit">Submit</button>
+            <button id="file-upload-button" class="btn btn-default" type="submit">Submit</button>
           </div>
         </form>
       </section>
@@ -20,17 +23,29 @@
       <h2>No invoices</h2>
     <% } else { %>
       <% if (canWrite) { %>
-        <section class="copy">
-          <h1><a href="<%= `/image/${agent.getAgentDirectory()}/zip` %>">Zip and download all invoices</a><h1>
-        </section>
-      <% } %>
-      <% include ./_pager %>
-      <% for (let image of images) { %>
-        <section class="image">
-          <a href="<%= `/image/${image}` %>">
-            <img src="<%= `/uploads/${image}` %>" />
+        <section class="deep-link">
+          <a href="<%= `/image/${agent.getAgentDirectory()}/zip` %>">
+            <img src="/images/zip-download.png">
+            <p>Zip and download all invoices</p>
           </a>
         </section>
+      <% } %>
+      <section class="copy">
+        <h2>Click an image to review</h2>
+      </section>
+      <% include ./_pager %>
+      <% for (let image of images) { %>
+        <% if (image.type === 'image') { %>
+          <section class="image">
+            <a href="<%= `/image/${image.file}` %>">
+              <img src="/uploads/<%= image.file %>" />
+            </a>
+          </section>
+        <% } else { %>
+          <section class="link">
+            <a href="/image/<%= image.file %>"><%= image.file.split('/')[image.file.split('/').length-1] %></a>
+          </section>
+        <% } %>
       <% } %>
       <% include ./_pager %>
     <% } %>

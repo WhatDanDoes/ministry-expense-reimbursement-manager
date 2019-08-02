@@ -58,9 +58,9 @@ describe('imageIndexSpec', () => {
     beforeEach(done => {
       mockAndUnmock({ 
         [`uploads/${agent.getAgentDirectory()}`]: {
-          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image1.pdf': fs.readFileSync('spec/files/troll.jpg'),
           'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.doc': fs.readFileSync('spec/files/troll.jpg'),
         },
         'public/images/uploads': {}
       });
@@ -83,7 +83,8 @@ describe('imageIndexSpec', () => {
     describe('authorized', () => {
       it('allows an agent to view his own album', () => {
         browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.elements('section.image img', 3);
+        browser.assert.elements('section.image img', 1);
+        browser.assert.elements('section.link a', 2);
       });
 
       it('allows an agent to view an album he can read', done => {
@@ -372,7 +373,6 @@ describe('imageIndexSpec', () => {
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
           browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
   
-          browser.assert.text('h2', 'Desktop browser uploads coming soon');
           done();
         });
       });
@@ -434,7 +434,6 @@ describe('imageIndexSpec', () => {
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
               browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
       
-              browser.assert.text('h2', 'Desktop browser uploads coming soon');
               done();
             });
           });

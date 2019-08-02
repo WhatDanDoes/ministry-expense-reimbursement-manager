@@ -68,7 +68,7 @@ describe('landing page', () => {
     });
   });
 
-  it('does not display non-image files', done => {
+  it('provides a link to  non-image files', done => {
     mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
@@ -82,6 +82,7 @@ describe('landing page', () => {
       if (err) return done.fail(err);
       browser.assert.success();
       browser.assert.elements('section.image img', 1);
+      browser.assert.elements('section.link', 2);
       done();
     });
   });
@@ -100,6 +101,7 @@ describe('landing page', () => {
       if (err) return done.fail(err);
       browser.assert.success();
       browser.assert.elements('section.image img', 2);
+      browser.assert.elements('section.link a', 1);
       done();
     });
   });

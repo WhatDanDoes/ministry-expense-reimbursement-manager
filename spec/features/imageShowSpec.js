@@ -55,7 +55,7 @@ describe('imageShowSpec', () => {
         [`uploads/${agent.getAgentDirectory()}`]: {
           'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.pdf': fs.readFileSync('spec/files/troll.jpg'),
         },
         'public/images/uploads': {}
       });
@@ -96,6 +96,16 @@ describe('imageShowSpec', () => {
           browser.assert.success();
           browser.assert.element(`img[src="/uploads/${lanny.getAgentDirectory()}/lanny1.jpg"]`);
           browser.assert.elements('#delete-image-form', 0);
+          done();
+        });
+      });
+
+      it('allows an agent to view his own non-image document', done => {
+        browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
+          if (err) return done.fail(err);
+          browser.assert.success();
+          browser.assert.element(`a[href="/uploads/${agent.getAgentDirectory()}/image3.pdf"]`);
+          browser.assert.elements('#delete-image-form', 1);
           done();
         });
       });

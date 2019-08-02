@@ -49,8 +49,16 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-    files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
+    //files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+    //files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
+    files = files.map(file => {
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
+        return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'image' };
+      }
+      return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link' };
+    });
+    files.reverse();
+
 
     let nextPage = 0;
     if (files.length > MAX_IMGS) {
@@ -83,8 +91,15 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-    files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
+//    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
+//    files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
+    files = files.map(file => {
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
+        return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'image' };
+      }
+      return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link' };
+    });
+    files.reverse();
 
     let page = parseInt(req.params.num),
         nextPage = 0,
@@ -182,7 +197,11 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
  */
 router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-  res.render('image/show', { image: `${req.path}`, messages: req.flash(), agent: req.user, canWrite: canWrite });
+  let file = {file: req.path};
+  if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(req.path)) {
+    file.type = 'image';
+  }
+  res.render('image/show', { image: file, messages: req.flash(), agent: req.user, canWrite: canWrite });
 });
 
 /**
