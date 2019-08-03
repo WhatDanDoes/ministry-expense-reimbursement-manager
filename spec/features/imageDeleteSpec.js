@@ -105,7 +105,6 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
 
     it('renders a form to allow an agent to delete an image', function(done) {
       browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
-console.log(browser.html());
         if (err) return done.fail(err);
         browser.assert.success();
         browser.assert.element('#delete-image-form');
