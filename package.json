@@ -26,6 +26,7 @@
     "method-override": "^3.0.0",
     "mkdirp": "^0.5.1",
     "mongoose": "^5.6.3",
+    "mongoose-currency": "^0.2.0",
     "mongoose-findorcreate": "^3.0.0",
     "mongoose-unique-array": "^0.3.1",
     "morgan": "~1.9.1",
