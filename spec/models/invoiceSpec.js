@@ -227,8 +227,43 @@ describe('Invoice', function() {
         });
       });
     });
+  });
 
+  describe('currency formatting', function() {
+    describe('#formatTotal', function() {
+      it('returns the total property formatted as currency', function(done) {
+        invoice.save().then(function(obj) {
+          expect(invoice.total).toEqual(1269);
+          expect(invoice.formatTotal()).toEqual('12.69');
+          done();
+        }).catch(function(error) {
+          done.fail(error);
+        });
+      });
+    });
 
+    describe('#formatSubtotal', function() {
+      it('returns the subtotal property formatted as currency', function(done) {
+        invoice.save().then(function(obj) {
+          expect(invoice.formatSubtotal()).toEqual('12.06');
+          done();
+        }).catch(function(error) {
+          done.fail(error);
+        });
+      });
+    });
+
+    describe('#formatGst', function() {
+      it('returns the gst property formatted as currency', function(done) {
+        invoice.save().then(function(obj) {
+          expect(invoice.formatGst()).toEqual('0.63');
+          done();
+        }).catch(function(error) {
+          done.fail(error);
+        });
+      });
+    });
+  });
 
 //    it('does not allow an empty name field', function(done) {
 //      _valid.name = '      ';
@@ -494,5 +529,5 @@ describe('Invoice', function() {
 //        expect(invoice.getBaseFilename()).toEqual('Guy, Some 2019 12 Dec Reimb Receipt');
 //      });
 //    });
-  });
+//  });
 });

@@ -78,6 +78,21 @@ module.exports = function(mongoose) {
     timestamps: true
   });
 
+  /**
+   * Get formatted currency strings
+   */
+  InvoiceSchema.methods.formatTotal = function() {
+    return (this.total / 100).toFixed(2);
+  };
+
+  InvoiceSchema.methods.formatSubtotal = function() {
+    return ((this.total/100) - ((this.total/100) * 0.05)).toFixed(2);
+  };
+
+  InvoiceSchema.methods.formatGst = function() {
+    return ((this.total/100) * 0.05).toFixed(2);
+  };
+
   return InvoiceSchema;
 };
 
