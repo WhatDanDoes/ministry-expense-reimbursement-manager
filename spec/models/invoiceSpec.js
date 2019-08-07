@@ -265,6 +265,13 @@ describe('Invoice', function() {
     });
   });
 
+  describe('.getCategories', function() {
+    it('returns the expenditure categories as an object', function() {
+      const obj = Invoice.getCategories();
+      expect(Object.keys(obj).length).toEqual(20);
+    });
+  });
+
 //    it('does not allow an empty name field', function(done) {
 //      _valid.name = '      ';
 //      Invoice.create(_valid).then(function(obj) {

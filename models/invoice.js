@@ -93,6 +93,13 @@ module.exports = function(mongoose) {
     return ((this.total/100) * 0.05).toFixed(2);
   };
 
+  /**
+   * .getCategories
+   */
+  InvoiceSchema.statics.getCategories = function() {
+    return CATEGORIES;
+  };
+
   return InvoiceSchema;
 };
 
