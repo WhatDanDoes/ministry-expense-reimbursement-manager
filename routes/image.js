@@ -201,7 +201,11 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(req.path)) {
     file.type = 'image';
   }
-  res.render('image/show', { image: file, messages: req.flash(), agent: req.user, canWrite: canWrite });
+  res.render('image/show', { image: file,
+                             messages: req.flash(),
+                             agent: req.user,
+                             canWrite: canWrite,
+                             categories: models.Invoice.getCategories() });
 });
 
 /**

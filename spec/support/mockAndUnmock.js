@@ -29,6 +29,9 @@ module.exports = function(mock) {
       'views/image/_pager.ejs': fs.readFileSync('views/image/_pager.ejs'),
       'views/error.ejs': fs.readFileSync('views/error.ejs'),
       'views/reset.ejs': fs.readFileSync('views/reset.ejs'),
+      'public/js/datepicker.js': fs.readFileSync('public/js/datepicker.js'),
+      'public/js/handleFileSelect.js': fs.readFileSync('public/js/handleFileSelect.js'),
+      'public/js/jquery.js': fs.readFileSync('public/js/jquery.js'),
     });
   };
 };

@@ -80,9 +80,23 @@ describe('imageShowSpec', () => {
         browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
           if (err) return done.fail(err);
           browser.assert.success();
+          // Image
           browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
+          // Delete
           browser.assert.element('#delete-image-form');
+          // Publish
           browser.assert.element('#publish-image-form');
+          // Info form
+          // Category selector
+          browser.assert.element('form select[name=category]');
+          browser.assert.elements('form select[name=category] option', 21);
+          // Total
+          browser.assert.input('form input[name=total]', '');
+          // Reason
+          browser.assert.input('form input[name=reason]', '');
+          // Date
+          browser.assert.element(`form input[name=tookPlaceAt][value="${Date(Date.now()).slice(0, 10)}"]` );
+
           done();
         });
       });
