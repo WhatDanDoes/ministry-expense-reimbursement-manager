@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
+const moment = require('moment'); 
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -95,7 +96,7 @@ describe('imageShowSpec', () => {
           // Reason
           browser.assert.input('form input[name=reason]', '');
           // Date
-          browser.assert.element(`form input[name=tookPlaceAt][value="${Date(Date.now()).slice(0, 10)}"]` );
+          browser.assert.element(`form input[name=tookPlaceAt][value="${moment().format('YYYY-MM-DD')}"]` );
 
           done();
         });

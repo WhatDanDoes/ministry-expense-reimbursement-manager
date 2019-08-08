@@ -12,11 +12,15 @@
     <% } %>
     <% if (canWrite) { %>
       <section id="image-controls">
-
         <form action="<%= `/image${image.file}` %>" method="post" id="publish-image-form">
           <div class="form-group date invoice-details">
             <label for="tookPlaceAt">Date of invoice</label>  
-            <input id="datepicker" class="form-control" type="text" name="tookPlaceAt" required=true>
+            <input id="datepicker"
+                   class="form-control"
+                   type="text"
+                   name="tookPlaceAt"
+                   value="<%= today %>"
+                   required=true>
           </div>
           <div class="form-group currency invoice-details">
             <label for="total">Total</label>  
@@ -42,5 +46,5 @@
       </section>
     <% } %>
   </main> 
-<% include ../_partials/footer %>
+  <% include ../_partials/footer %>
 

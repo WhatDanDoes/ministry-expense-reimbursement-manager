@@ -13,6 +13,7 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const isMobile = require('is-mobile');
 const archiver = require('archiver');
+const moment = require('moment'); 
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -205,6 +206,7 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
                              messages: req.flash(),
                              agent: req.user,
                              canWrite: canWrite,
+                             today: moment().format('YYYY-MM-DD'),
                              categories: models.Invoice.getCategories() });
 });
 
