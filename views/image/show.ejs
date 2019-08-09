@@ -10,7 +10,6 @@
         <a href="/uploads<%= image.file %>"><%= image.file.split('/')[image.file.split('/').length-1] %></a>
       </section>
     <% } %>
-    <% if (canWrite) { %>
       <section id="image-controls">
         <form action="<%= `/image${image.file}` %>" method="post" id="publish-image-form">
           <div class="form-group date invoice-details">
@@ -19,15 +18,18 @@
                    class="form-control"
                    type="text"
                    name="tookPlaceAt"
-                   value="<%= today %>"
-                   required=true>
+                   <%= canWrite ? '' : ' disabled=disabled' %>
+                   required=true
+                   value="<%= invoice ? invoice.formatPurchaseDate() : (canWrite ? today : '') %>">
           </div>
           <div class="form-group currency invoice-details">
             <label for="total">Total</label>  
-            <input id="total" class="form-control" type="number" name="total" min="0" step="0.01" required=true>
+            <input id="total" class="form-control" type="number" name="total" min="0" step="0.01" required=true
+                   <%= canWrite ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.formatTotal() : '' %>">
           </div>
           <div class="form-group">
-            <select class="dropdown form-control" name="category" required=true>
+            <select class="dropdown form-control" name="category" required=true
+                    <%= canWrite ? '' : ' disabled=disabled' %>>
               <option value="">--Expense Category--</option>
               <% for (let category in categories) { %>
                 <option value="<%= category %>"><%= `${category} - ${categories[category]}` %></option>
@@ -35,16 +37,20 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="reason">Reason:</label>  
-            <input class="form-control" type="text" name="reason" required=true>
+            <label for="reason">Items:</label>  
+            <input class="form-control" type="text" name="reason" required=true
+                   <%= canWrite ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.reason : '' %>">
           </div>
-          <button id="publish-image" type="submit">Publish</button>
+          <% if (canWrite) { %>
+            <button id="publish-image-button" type="submit">Save</button>
+          <% } %>
         </form>
+      <% if (canWrite) { %>
         <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
           <button id="delete-image" type="submit">Delete</button>
         </form>
+      <% } %>
       </section>
-    <% } %>
   </main> 
   <% include ../_partials/footer %>
 

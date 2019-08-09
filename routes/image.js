@@ -202,12 +202,18 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(req.path)) {
     file.type = 'image';
   }
-  res.render('image/show', { image: file,
-                             messages: req.flash(),
-                             agent: req.user,
-                             canWrite: canWrite,
-                             today: moment().format('YYYY-MM-DD'),
-                             categories: models.Invoice.getCategories() });
+  models.Invoice.findOne({ doc: `${req.params.domain}/${req.params.agentId}/${req.params.imageId}` }).then((invoice) => {
+    res.render('image/show', { image: file,
+                               invoice: invoice,
+                               messages: req.flash(),
+                               agent: req.user,
+                               canWrite: canWrite,
+                               today: moment().format('YYYY-MM-DD'),
+                               categories: models.Invoice.getCategories() });
+  }).catch((error) => {
+    req.flash('error', error.message);
+    res.redirect(`/image/${req.user.getAgentDirectory()}`);
+  });
 });
 
 /**
@@ -227,8 +233,8 @@ router.post('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
       return res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
     }
 
-    req.flash('success', 'Image published');
-    res.redirect('/');
+    req.flash('success', 'Invoice saved');
+    res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   });
 });
 
