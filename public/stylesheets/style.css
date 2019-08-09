@@ -449,9 +449,10 @@ h2 {
  * Delete image
  */
 button[type="submit"]#delete-image  {
+  margin-top: 1em;
   padding: 0.5em;
   background: #ff4c4c;
-  font-size: 1em;
+  font-size: .5em;
   width: 30%;
   border: 1px solid #ff1919;
 }
