@@ -97,7 +97,7 @@ describe('imageShowSpec', () => {
             // Reason
             browser.assert.input('form input[name=reason]', '');
             // Date
-            browser.assert.element(`form input[name=tookPlaceAt][value="${moment().format('YYYY-MM-DD')}"]` );
+            browser.assert.element(`form input[name=purchaseDate][value="${moment().format('YYYY-MM-DD')}"]` );
   
             done();
           });
@@ -133,7 +133,7 @@ describe('imageShowSpec', () => {
               // Reason
               browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
               // Date
-              browser.assert.element(`form input[name=tookPlaceAt][value='2019-08-08']` );
+              browser.assert.element(`form input[name=purchaseDate][value='2019-08-08']` );
     
               done();
             });
@@ -164,7 +164,7 @@ describe('imageShowSpec', () => {
             // Reason
             browser.assert.input('form input[name=reason][disabled=disabled]', '');
             // Date
-            browser.assert.element(`form input[name=tookPlaceAt][value=''][disabled=disabled]` );
+            browser.assert.element(`form input[name=purchaseDate][value=''][disabled=disabled]` );
             done();
           });
         });
@@ -194,12 +194,11 @@ describe('imageShowSpec', () => {
               // Category selector
               browser.assert.element('form select[name=category][disabled=disabled]', '110 - Commercial Travel');
               // Total
-console.log(browser.html());
               browser.assert.input('form input[name=total][disabled=disabled]', '7.90');
               // Reason
               browser.assert.input('form input[name=reason][disabled=disabled]', 'Lime scooter for 2 km');
               // Date
-              browser.assert.element(`form input[name=tookPlaceAt][value='2019-08-08'][disabled=disabled]`);
+              browser.assert.element(`form input[name=purchaseDate][value='2019-08-08'][disabled=disabled]`);
               done();
             });
           }).catch((err) => {

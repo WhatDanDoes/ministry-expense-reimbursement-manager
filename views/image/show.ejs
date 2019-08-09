@@ -11,13 +11,13 @@
       </section>
     <% } %>
       <section id="image-controls">
-        <form action="<%= `/image${image.file}` %>" method="post" id="publish-image-form">
+        <form action="<%= `/image${image.file}?_method=PUT` %>" method="post" id="publish-image-form">
           <div class="form-group date invoice-details">
-            <label for="tookPlaceAt">Date of invoice</label>  
+            <label for="purchaseDate">Date of invoice</label>  
             <input id="datepicker"
                    class="form-control"
                    type="text"
-                   name="tookPlaceAt"
+                   name="purchaseDate"
                    <%= canWrite ? '' : ' disabled=disabled' %>
                    required=true
                    value="<%= invoice ? invoice.formatPurchaseDate() : (canWrite ? today : '') %>">
@@ -38,7 +38,7 @@
           </div>
           <div class="form-group">
             <label for="reason">Items:</label>  
-            <input class="form-control" type="text" name="reason" required=true
+            <input id="reason" class="form-control" type="text" name="reason" required=true
                    <%= canWrite ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.reason : '' %>">
           </div>
           <% if (canWrite) { %>

@@ -217,9 +217,9 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
 });
 
 /**
- * POST /image/:domain/:agentId/:imageId
+ * PUT /image/:domain/:agentId/:imageId
  */
-router.post('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
+router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
 
   if (!canWrite) {
@@ -227,14 +227,15 @@ router.post('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
 
-  fs.rename(`uploads/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`, `public/images/uploads/${req.params.imageId}`, err => {
-    if (err) {
-      req.flash('info', err.message);
-      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
-    }
-
+  let invoice = new models.Invoice(req.body);
+  invoice.agent = req.user._id;
+  invoice.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
+  invoice.save().then((results) => {
     req.flash('success', 'Invoice saved');
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  }).catch((error) => {
+    req.flash('error', error.message);
+    res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
   });
 });
 

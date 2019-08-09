@@ -23,7 +23,6 @@ Browser.localhost('example.com', PORT);
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
-
 // For when system resources are scarce
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
@@ -64,7 +63,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
   describe('unauthenticated', function() {
     it('does not allow publishing an image', function(done) {
       request(app)
-        .post(`/image/${agent.getAgentDirectory()}/image2.jpg`)
+        .put(`/image/${agent.getAgentDirectory()}/image2.jpg`)
         .end(function(err, res) {
           if (err) return done.fail(err);
           expect(res.status).toEqual(302);
@@ -103,16 +102,6 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
       mock.restore();
     });
 
-    it('renders a form to allow an agent to delete an image', function(done) {
-      browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
-        if (err) return done.fail(err);
-        browser.assert.success();
-        browser.assert.element('#publish-image-form');
-        browser.assert.element(`form[action="/image/${agent.getAgentDirectory()}/image1.jpg"][method="post"]`);
-        done();
-      });
-    });
-
     describe('publishing', function() {
       describe('owner resource', function() {
         beforeEach(function(done) {
@@ -122,59 +111,90 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             done();
           });
         });
-  
-        it('redirects to home if the publish is successful', function(done) {
-          browser.pressButton('Publish', function(err) {
-            if (err) return done.fail(err);
-  
-            browser.assert.success();
-            browser.assert.text('.alert.alert-success', 'Image published');
-            browser.assert.url({ pathname: '/' });
-            done();
-          });
+
+        it('renders a form to allow an agent to publish an image', () => {
+          browser.assert.element('#publish-image-form');
+          browser.assert.element(`form[action="/image/${agent.getAgentDirectory()}/image1.jpg?_method=PUT"][method="post"]`);
         });
-  
-        it('deletes the image from the agent\'s directory', function(done) {
-          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-            if (err) return done.fail(err);
-            expect(files.length).toEqual(3);
-            expect(files.includes('image1.jpg')).toBe(true);
-  
-            browser.pressButton('Publish', function(err) {
+ 
+        it('adds an invoice record to the database', function(done) {
+          models.Invoice.find({}).then((invoices) => {
+            expect(invoices.length).toEqual(0);
+
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('.dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
-  
-              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-                if (err) return done.fail(err);
-                expect(files.length).toEqual(2);
-                expect(files.includes('image1.jpg')).toBe(false);
-      
+              models.Invoice.find({}).then((invoices) => {
+                expect(invoices.length).toEqual(1);
                 done();
+              }).catch(function(error) {
+                 done.fail(error);
               });
             });
+          }).catch(function(error) {
+            done.fail(error);
           });
         });
 
-        it('adds the image from to the public/images/uploads directory', function(done) {
-          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+        it('redirects to the agent image route if the publish is successful', function(done) {
+          browser.fill('#datepicker', '2019-08-09');
+          browser.fill('#total', '7.9');
+          browser.select('.dropdown', '110 - Commercial Travel');
+          browser.fill('#reason', 'Lime scooter for 2km');
+          browser.pressButton('Save', function(err) {
             if (err) return done.fail(err);
-            expect(files.length).toEqual(3);
-            expect(files.includes('image1.jpg')).toBe(true);
-  
-            browser.pressButton('Publish', function(err) {
-              if (err) return done.fail(err);
-              browser.assert.success();
-  
-              fs.readdir(`public/images/uploads`, (err, files) => {
-                if (err) return done.fail(err);
-                expect(files.length).toEqual(1);
-                expect(files.includes('image1.jpg')).toBe(true);
-      
-                done();
-              });
-            });
+            browser.assert.success();
+            browser.assert.text('.alert.alert-success', 'Invoice saved');
+            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+            done();
           });
         });
+ 
+//        it('deletes the image from the agent\'s directory', function(done) {
+//          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+//            if (err) return done.fail(err);
+//            expect(files.length).toEqual(3);
+//            expect(files.includes('image1.jpg')).toBe(true);
+//  
+//            browser.pressButton('Publish', function(err) {
+//              if (err) return done.fail(err);
+//              browser.assert.success();
+//  
+//              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+//                if (err) return done.fail(err);
+//                expect(files.length).toEqual(2);
+//                expect(files.includes('image1.jpg')).toBe(false);
+//      
+//                done();
+//              });
+//            });
+//          });
+//        });
+//
+//        it('adds the image from to the public/images/uploads directory', function(done) {
+//          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+//            if (err) return done.fail(err);
+//            expect(files.length).toEqual(3);
+//            expect(files.includes('image1.jpg')).toBe(true);
+//  
+//            browser.pressButton('Publish', function(err) {
+//              if (err) return done.fail(err);
+//              browser.assert.success();
+//  
+//              fs.readdir(`public/images/uploads`, (err, files) => {
+//                if (err) return done.fail(err);
+//                expect(files.length).toEqual(1);
+//                expect(files.includes('image1.jpg')).toBe(true);
+//      
+//                done();
+//              });
+//            });
+//          });
+//        });
       });
 
       describe('readable resource', function() {
@@ -186,8 +206,9 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           });
         });
 
-        it('does not show a publish button', () => {
-          browser.assert.elements('#publish-image-form', 0);
+        it('does not show a publish or delete button', () => {
+          browser.assert.elements('#publish-image-button', 0);
+          browser.assert.elements('#delete-image-form', 0);
         });
 
         it('does not remove the image from the agent\'s directory', function(done) {
@@ -197,7 +218,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             expect(files.includes('lanny1.jpg')).toBe(true);
 
             request(app)
-              .post(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+              .put(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
               .set('Cookie', browser.cookies)
               .end(function(err, res) {
                 if (err) return done.fail(err);
@@ -218,6 +239,34 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                   });
                 });
               });
+          });
+        });
+
+        it('does not add an invoice record to the database', function(done) {
+          models.Invoice.find({}).then((invoices) => {
+            expect(invoices.length).toEqual(0);
+
+            request(app)
+              .put(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+              .set('Cookie', browser.cookies)
+              .field('#datepicker', '2019-08-09')
+              .field('#total', '7.9')
+              .field('#category', 110)
+              .field('#reason', 'Fun and adventure')
+              .end(function(err, res) {
+                if (err) return done.fail(err);
+                expect(res.status).toEqual(302);
+                expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
+
+                models.Invoice.find({}).then((invoices) => {
+                  expect(invoices.length).toEqual(0);
+                  done();
+                }).catch(function(error) {
+                   done.fail(error);
+                });
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         });
       });
@@ -246,40 +295,68 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           browser.assert.text('.alert.alert-danger', 'You are not authorized to access that resource');
         });
 
-        it('does not touch the image on the file system', function(done) {
-          mkdirp(`uploads/${troy.getAgentDirectory()}`, (err) => {
-            fs.writeFileSync(`uploads/${troy.getAgentDirectory()}/troy1.jpg`, fs.readFileSync('spec/files/troll.jpg'));
+        it('does not add an invoice record to the database', function(done) {
+          models.Invoice.find({}).then((invoices) => {
+            expect(invoices.length).toEqual(0);
 
-            fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
-              if (err) return done.fail(err);
-              expect(files.length).toEqual(1);
-              expect(files.includes('troy1.jpg')).toBe(true);
+            request(app)
+              .put(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+              .set('Cookie', browser.cookies)
+              .field('#datepicker', '2019-08-09')
+              .field('#total', '7.9')
+              .field('#category', 110)
+              .field('#reason', 'Fun and adventure')
+              .end(function(err, res) {
+                if (err) return done.fail(err);
+                expect(res.status).toEqual(302);
+                expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
 
-              request(app)
-                .post(`/image/${troy.getAgentDirectory()}/lanny1.jpg`)
-                .set('Cookie', browser.cookies)
-                .end(function(err, res) {
-                  if (err) return done.fail(err);
-                  expect(res.status).toEqual(302);
-                  expect(res.header.location).toEqual('/');
-
-                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
-                    if (err) return done.fail(err);
-                    expect(files.length).toEqual(1);
-                    expect(files.includes('troy1.jpg')).toBe(true);
-
-                    fs.readdir(`public/images/uploads`, (err, files) => {
-                      if (err) return done.fail(err);
-                      expect(files.length).toEqual(0);
-                      expect(files.includes('troy.jpg')).toBe(false);
-
-                      done();
-                    });
-                  });
+                models.Invoice.find({}).then((invoices) => {
+                  expect(invoices.length).toEqual(0);
+                  done();
+                }).catch(function(error) {
+                   done.fail(error);
                 });
             });
+          }).catch(function(error) {
+            done.fail(error);
           });
         });
+
+//        it('does not touch the image on the file system', function(done) {
+//          mkdirp(`uploads/${troy.getAgentDirectory()}`, (err) => {
+//            fs.writeFileSync(`uploads/${troy.getAgentDirectory()}/troy1.jpg`, fs.readFileSync('spec/files/troll.jpg'));
+//
+//            fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+//              if (err) return done.fail(err);
+//              expect(files.length).toEqual(1);
+//              expect(files.includes('troy1.jpg')).toBe(true);
+//
+//              request(app)
+//                .put(`/image/${troy.getAgentDirectory()}/lanny1.jpg`)
+//                .set('Cookie', browser.cookies)
+//                .end(function(err, res) {
+//                  if (err) return done.fail(err);
+//                  expect(res.status).toEqual(302);
+//                  expect(res.header.location).toEqual('/');
+//
+//                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+//                    if (err) return done.fail(err);
+//                    expect(files.length).toEqual(1);
+//                    expect(files.includes('troy1.jpg')).toBe(true);
+//
+//                    fs.readdir(`public/images/uploads`, (err, files) => {
+//                      if (err) return done.fail(err);
+//                      expect(files.length).toEqual(0);
+//                      expect(files.includes('troy.jpg')).toBe(false);
+//
+//                      done();
+//                    });
+//                  });
+//                });
+//            });
+//          });
+//        });
       });
     });
   });
