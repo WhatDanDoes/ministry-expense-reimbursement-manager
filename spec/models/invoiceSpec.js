@@ -272,6 +272,19 @@ describe('Invoice', function() {
     });
   });
 
+  describe('#formatPurchaseDate', function() {
+    it('returns the purchase date in YYYY-MM-DD format', function(done) {
+      invoice.save().then(function(obj) {
+        expect(invoice.total).toEqual(1269);
+        expect(invoice.formatPurchaseDate()).toEqual('2019-09-02');
+        done();
+      }).catch(function(error) {
+        done.fail(error);
+      });
+    });
+  });
+
+
 //    it('does not allow an empty name field', function(done) {
 //      _valid.name = '      ';
 //      Invoice.create(_valid).then(function(obj) {

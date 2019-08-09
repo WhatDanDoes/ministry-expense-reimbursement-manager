@@ -4,6 +4,7 @@
 module.exports = function(mongoose) {
   const Schema = mongoose.Schema;
   require('mongoose-currency').loadType(mongoose);
+  const moment = require('moment');
 
   // Enums only work on strings
   const CATEGORIES = {
@@ -91,6 +92,13 @@ module.exports = function(mongoose) {
 
   InvoiceSchema.methods.formatGst = function() {
     return ((this.total/100) * 0.05).toFixed(2);
+  };
+
+  /**
+   * Get formatted purchase date 
+   */
+  InvoiceSchema.methods.formatPurchaseDate = function() {
+    return moment.utc(this.purchaseDate).format('YYYY-MM-DD');
   };
 
   /**
