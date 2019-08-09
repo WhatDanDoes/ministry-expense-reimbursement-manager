@@ -372,18 +372,23 @@ router.post('/', upload.array('docs'), (req, res, next) => {
  */
 router.delete('/:domain/:agentId/:imageId', ensureAuthorized, function(req, res) {
   const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-  if(!canWrite){
+  if (!canWrite){
     req.flash('error', 'You are not authorized to delete that resource');
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
 
-  fs.unlink(`uploads/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`, (err) => {
-    if (err) {
-      req.flash('info', err.message);
-      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
-    }
-    req.flash('info', 'Image deleted');
-    res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  models.Invoice.deleteOne({ doc: `${req.params.domain}/${req.params.agentId}/${req.params.imageId}` }).then(results => {
+    fs.unlink(`uploads/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`, (err) => {
+      if (err) {
+        req.flash('info', err.message);
+        return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+      }
+      req.flash('info', 'Image deleted');
+      res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+    });
+  }).catch(error => {
+    req.flash('error', error.message);
+    res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
   });
 });
 

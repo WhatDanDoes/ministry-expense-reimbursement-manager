@@ -123,34 +123,106 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
           });
         });
   
-        it('redirects to the origin album if the delete is successful', function(done) {
-          browser.pressButton('Delete', function(err) {
-            if (err) return done.fail(err);
-  
-            browser.assert.success();
-            browser.assert.text('.alert.alert-info', 'Image deleted');
-            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
-            done();
-          });
-        });
-  
-        it('deletes the image from the file system', function(done) {
-          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-            if (err) return done.fail(err);
-            expect(files.length).toEqual(3);
-            expect(files.includes('image1.jpg')).toBe(true);
-  
+        describe('with no associated invoice', () => {
+          it('redirects to the origin album if the delete is successful', function(done) {
             browser.pressButton('Delete', function(err) {
               if (err) return done.fail(err);
+    
               browser.assert.success();
-  
-              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+              done();
+            });
+          });
+    
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(3);
+              expect(files.includes('image1.jpg')).toBe(true);
+    
+              browser.pressButton('Delete', function(err) {
                 if (err) return done.fail(err);
-                expect(files.length).toEqual(2);
-                expect(files.includes('image1.jpg')).toBe(false);
-      
-                done();
+                browser.assert.success();
+    
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(2);
+                  expect(files.includes('image1.jpg')).toBe(false);
+        
+                  done();
+                });
               });
+            });
+          });
+        });
+
+        describe('with associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${agent.getAgentDirectory()}/image1.jpg`,
+              total: '12.69',
+              agent: agent._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+
+          it('redirects to the origin album if the delete is successful', function(done) {
+            browser.pressButton('Delete', function(err) {
+              if (err) return done.fail(err);
+    
+              browser.assert.success();
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+              done();
+            });
+          });
+
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(3);
+              expect(files.includes('image1.jpg')).toBe(true);
+    
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+    
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(2);
+                  expect(files.includes('image1.jpg')).toBe(false);
+        
+                  done();
+                });
+              });
+            });
+          });
+
+          it('deletes the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                models.Invoice.find({}).then((invoices) => {
+                  expect(invoices.length).toEqual(0);
+                  done();
+                }).catch(error => {
+                  done.fail(error);
+                });
+              });
+            }).catch(error => {
+              done.fail(error);
             });
           });
         });
@@ -191,6 +263,49 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                   done();
                 });
               });
+          });
+        });
+
+        describe('associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${lanny.getAgentDirectory()}/lanny1.jpg`,
+              total: '12.69',
+              agent: lanny._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });       
+
+          it('does not delete the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+  
+              request(app)
+                .delete(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+                .set('Cookie', browser.cookies)
+                .end(function(err, res) {
+                  if (err) return done.fail(err);
+                  expect(res.status).toEqual(302);
+                  expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
+  
+                  models.Invoice.find({}).then((invoices) => {
+                    expect(invoices.length).toEqual(1);
+                    done();
+                  }).catch(error => {
+                    done.fail(error);
+                  });
+                });
+            }).catch(error => {
+              done.fail(error);
+            });
           });
         });
       });
@@ -244,6 +359,49 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                     done();
                   });
                 });
+            });
+          });
+        });
+
+        describe('associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${troy.getAgentDirectory()}/troy.jpg`,
+              total: '12.69',
+              agent: troy._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+
+          it('does not delete the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+  
+              request(app)
+                .delete(`/image/${troy.getAgentDirectory()}/troy.jpg`)
+                .set('Cookie', browser.cookies)
+                .end(function(err, res) {
+                  if (err) return done.fail(err);
+                  expect(res.status).toEqual(302);
+                  expect(res.header.location).toEqual(`/`);
+  
+                  models.Invoice.find({}).then((invoices) => {
+                    expect(invoices.length).toEqual(1);
+                    done();
+                  }).catch(error => {
+                    done.fail(error);
+                  });
+                });
+            }).catch(error => {
+              done.fail(error);
             });
           });
         });
