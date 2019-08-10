@@ -227,10 +227,9 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
 
-  let invoice = new models.Invoice(req.body);
-  invoice.agent = req.user._id;
-  invoice.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
-  invoice.save().then((results) => {
+  req.body.agent = req.user._id;
+  req.body.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
+  models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {// , function(error, result) {
     req.flash('success', 'Invoice saved');
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }).catch((error) => {

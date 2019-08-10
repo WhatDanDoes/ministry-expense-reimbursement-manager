@@ -153,48 +153,48 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             done();
           });
         });
- 
-//        it('deletes the image from the agent\'s directory', function(done) {
-//          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-//            if (err) return done.fail(err);
-//            expect(files.length).toEqual(3);
-//            expect(files.includes('image1.jpg')).toBe(true);
-//  
-//            browser.pressButton('Publish', function(err) {
-//              if (err) return done.fail(err);
-//              browser.assert.success();
-//  
-//              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-//                if (err) return done.fail(err);
-//                expect(files.length).toEqual(2);
-//                expect(files.includes('image1.jpg')).toBe(false);
-//      
-//                done();
-//              });
-//            });
-//          });
-//        });
-//
-//        it('adds the image from to the public/images/uploads directory', function(done) {
-//          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-//            if (err) return done.fail(err);
-//            expect(files.length).toEqual(3);
-//            expect(files.includes('image1.jpg')).toBe(true);
-//  
-//            browser.pressButton('Publish', function(err) {
-//              if (err) return done.fail(err);
-//              browser.assert.success();
-//  
-//              fs.readdir(`public/images/uploads`, (err, files) => {
-//                if (err) return done.fail(err);
-//                expect(files.length).toEqual(1);
-//                expect(files.includes('image1.jpg')).toBe(true);
-//      
-//                done();
-//              });
-//            });
-//          });
-//        });
+
+        describe('editing existing invoice', () => {
+          beforeEach(function(done) {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('.dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                done();
+              });
+            });
+          });
+
+          it('redirects to the agent image route if the update is successful', function(done) {
+            browser.fill('#total', '87.89');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.text('.alert.alert-success', 'Invoice saved');
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+
+               browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
+                browser.assert.element('form select[name=category]', '110 - Commercial Travel');
+                browser.assert.elements('form select[name=category] option', 21);
+                browser.assert.input('form input[name=total]', '87.89');
+                browser.assert.input('form input[name=reason]', 'Lime scooter for 2km');
+                browser.assert.element(`form input[name=purchaseDate][value='2019-08-09']` );
+   
+                done();
+              });
+            });
+          });
+        });
       });
 
       describe('readable resource', function() {

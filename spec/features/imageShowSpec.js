@@ -128,6 +128,7 @@ describe('imageShowSpec', () => {
               // Category selector
               browser.assert.element('form select[name=category]', '110 - Commercial Travel');
               browser.assert.elements('form select[name=category] option', 21);
+              browser.assert.element('form select[name=category] option[value="110 - Commercial Travel"][selected=selected]');
               // Total
               browser.assert.input('form input[name=total]', '7.90');
               // Reason
@@ -192,7 +193,8 @@ describe('imageShowSpec', () => {
     
               // Info form
               // Category selector
-              browser.assert.element('form select[name=category][disabled=disabled]', '110 - Commercial Travel');
+              browser.assert.element('form select[name=category][disabled=disabled]');
+              browser.assert.element('form select[name=category] option[value="110 - Commercial Travel"][selected=selected]');
               // Total
               browser.assert.input('form input[name=total][disabled=disabled]', '7.90');
               // Reason
