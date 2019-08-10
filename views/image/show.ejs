@@ -32,7 +32,7 @@
                     <%= canWrite ? '' : ' disabled=disabled' %>>
               <option value="">--Expense Category--</option>
               <% for (let category in categories) { %>
-                <option value="<%= category %>"><%= `${category} - ${categories[category]}` %></option>
+                <option value="<%= category %>"<%= invoice && category === invoice.category ? ' selected=selected': '' %>><%= `${category} - ${categories[category]}` %></option>
               <% } %>
             </select>
           </div>
