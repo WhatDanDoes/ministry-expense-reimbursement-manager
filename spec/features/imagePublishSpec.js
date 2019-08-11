@@ -150,6 +150,8 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.assert.success();
             browser.assert.text('.alert.alert-success', 'Invoice saved');
             browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+console.log(browser.html());
+            browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`);
             done();
           });
         });
@@ -179,11 +181,12 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
               browser.assert.text('.alert.alert-success', 'Invoice saved');
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
 
+              browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`);
               browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
                 if (err) return done.fail(err);
                 browser.assert.success();
 
-               browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
+                browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
                 browser.assert.element('form select[name=category]', '110 - Commercial Travel');
                 browser.assert.elements('form select[name=category] option', 21);
                 browser.assert.input('form input[name=total]', '87.89');
@@ -322,41 +325,6 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             done.fail(error);
           });
         });
-
-//        it('does not touch the image on the file system', function(done) {
-//          mkdirp(`uploads/${troy.getAgentDirectory()}`, (err) => {
-//            fs.writeFileSync(`uploads/${troy.getAgentDirectory()}/troy1.jpg`, fs.readFileSync('spec/files/troll.jpg'));
-//
-//            fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
-//              if (err) return done.fail(err);
-//              expect(files.length).toEqual(1);
-//              expect(files.includes('troy1.jpg')).toBe(true);
-//
-//              request(app)
-//                .put(`/image/${troy.getAgentDirectory()}/lanny1.jpg`)
-//                .set('Cookie', browser.cookies)
-//                .end(function(err, res) {
-//                  if (err) return done.fail(err);
-//                  expect(res.status).toEqual(302);
-//                  expect(res.header.location).toEqual('/');
-//
-//                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
-//                    if (err) return done.fail(err);
-//                    expect(files.length).toEqual(1);
-//                    expect(files.includes('troy1.jpg')).toBe(true);
-//
-//                    fs.readdir(`public/images/uploads`, (err, files) => {
-//                      if (err) return done.fail(err);
-//                      expect(files.length).toEqual(0);
-//                      expect(files.includes('troy.jpg')).toBe(false);
-//
-//                      done();
-//                    });
-//                  });
-//                });
-//            });
-//          });
-//        });
       });
     });
   });

@@ -707,3 +707,16 @@ input[type=checkbox] + label:before {
   font-weight: normal;
 }
 
+.image {
+  position: relative;
+}
+.check-mark {
+  font-size: 3em;
+  color: rgba(0,255,0,0.5);
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  background-color: #fff;
+  border-radius: 50%;
+  border: .25em solid rgba(0,255,0,0.5);
+}

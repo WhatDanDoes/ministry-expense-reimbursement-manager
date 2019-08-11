@@ -50,36 +50,46 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
       return res.render('error', { error: err });
     }
 
-    //files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-    //files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
-    files = files.map(file => {
-      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
-        return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'image' };
+    models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
+      invoices = invoices.map(invoice => invoice.doc);
+
+      files = files.map(file => {
+        let obj = { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link', invoice: false };
+        if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
+          obj.type = 'image';
+        }
+
+        if (invoices.includes(obj.file)) {
+          obj.invoice = true;
+        }
+
+        return obj;
+      });
+      files.reverse();
+  
+      let nextPage = 0;
+      if (files.length > MAX_IMGS) {
+        nextPage = 2;
+        files = files.slice(0, MAX_IMGS);
       }
-      return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link' };
+  
+      // To open deep link with auth token
+      const payload = { email: req.user.email };
+      const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+  
+      const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+      res.render('image/index', { images: files,
+                                  messages: req.flash(),
+                                  agent: req.user,
+                                  nextPage: nextPage,
+                                  prevPage: 0,
+                                  token: token,
+                                  canWrite: canWrite,
+                                  isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
+    }).catch((error) => {
+      req.flash('error', error.message);
+      res.redirect(`/image/${req.user.getAgentDirectory()}`);
     });
-    files.reverse();
-
-
-    let nextPage = 0;
-    if (files.length > MAX_IMGS) {
-      nextPage = 2;
-      files = files.slice(0, MAX_IMGS);
-    }
-
-    // To open deep link with auth token
-    const payload = { email: req.user.email };
-    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-
-    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-    res.render('image/index', { images: files,
-                                messages: req.flash(),
-                                agent: req.user,
-                                nextPage: nextPage,
-                                prevPage: 0,
-                                token: token,
-                                canWrite: canWrite,
-                                isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
   });
 });
 
