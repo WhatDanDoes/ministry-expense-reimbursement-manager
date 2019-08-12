@@ -78,7 +78,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
       mockAndUnmock({ 
         [`uploads/${agent.getAgentDirectory()}`]: {
           'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
           'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
         },
         [`uploads/${lanny.getAgentDirectory()}`]: {
@@ -141,19 +141,58 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         });
 
         it('redirects to the agent image route if the publish is successful', function(done) {
-          browser.fill('#datepicker', '2019-08-09');
-          browser.fill('#total', '7.9');
-          browser.select('.dropdown', '110 - Commercial Travel');
-          browser.fill('#reason', 'Lime scooter for 2km');
-          browser.pressButton('Save', function(err) {
+          browser.visit('/image', err => {
             if (err) return done.fail(err);
             browser.assert.success();
-            browser.assert.text('.alert.alert-success', 'Invoice saved');
-            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
-            browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`);
-            done();
+            browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .edit-mark`);
+            browser.assert.elements(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`, 0);
+            browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+              if (err) return done.fail(err);
+ 
+              browser.fill('#datepicker', '2019-08-09');
+              browser.fill('#total', '7.9');
+              browser.select('.dropdown', '110 - Commercial Travel');
+              browser.fill('#reason', 'Lime scooter for 2km');
+              browser.pressButton('Save', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.text('.alert.alert-success', 'Invoice saved');
+                browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+                browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`);
+                browser.assert.elements(`.link a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .edit-mark`, 0);
+                done();
+              });
+            });
           });
         });
+
+        it('shows a check-mark on a non-image if publish is successful', function(done) {
+          browser.visit('/image', err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.element(`.link a[href="/image/${agent.getAgentDirectory()}/image2.pdf"] + .edit-mark`);
+            browser.assert.elements(`.link a[href="/image/${agent.getAgentDirectory()}/image2.pdf"] + .check-mark`, 0);
+            browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image2.pdf"]`, (err) => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+   
+              browser.fill('#datepicker', '2019-08-09');
+              browser.fill('#total', '7.9');
+              browser.select('.dropdown', '110 - Commercial Travel');
+              browser.fill('#reason', 'Lime scooter for 2km');
+              browser.pressButton('Save', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.text('.alert.alert-success', 'Invoice saved');
+                browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+                browser.assert.element(`.link a[href="/image/${agent.getAgentDirectory()}/image2.pdf"] + .check-mark`);
+                browser.assert.elements(`.link a[href="/image/${agent.getAgentDirectory()}/image2.pdf"] + .edit-mark`, 0);
+                done();
+              });
+            });
+          });
+        });
+
 
         describe('editing existing invoice', () => {
           beforeEach(function(done) {
