@@ -526,57 +526,6 @@ button[type="submit"]#cancel-edit {
 }
 
 /**
- * New album, agent, stake forms
- */
-/*
-.form-reveal {
-  margin-top: 0.5em;
-  margin-right: 0.5em;
-  float: right;
-}
-.closed {
-  color: green;
-}
-.open {
-  color: red;
-  transform: rotate(45deg);
-}
-*/
-
-/*** custom checkboxes ***/
-/* 2017-2-6 https://codepen.io/jamesbarnett/pen/yILjk */
-/*
-input[type=checkbox][class=pic] { display:none; } /* to hide the checkbox itself */
-/*
-input[type=checkbox] + label:before {
-  font-family: FontAwesome;
-  display: inline-block;
-  color: red;
-}
-*/
-
-/* Unchecked icons */
-/*
-#review + label:before { content: "\f044"; }
-#submit + label:before { content: "\f093"; }
-#view  + label:before { content: "\f06e"; }
-*/
-
-/*input[type=checkbox] + label:before { content: "\f096"; } /* unchecked icon */
-/*input[type=checkbox] + label:before { letter-spacing: 10px; } /* space between checkbox and label */
-/*input[type=checkbox]:checked + label:before { content: "\f046"; } /* checked icon */
-/*input[type=checkbox]:checked + label:before { color: green; } /* checked icon */
-/*input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
-
-/*
-#new-agent-form input[type=submit] {
- /* margin: 1em;
-  float: right;*/
-/*
-}
-*/
-
-/**
  * Footer
  */
 #info {
@@ -725,13 +674,21 @@ input[type=checkbox] + label:before {
 .image {
   position: relative;
 }
+
+.edit-mark,
 .check-mark {
   font-size: 3em;
-  color: rgba(0,255,0,0.5);
   position: absolute;
   top: 1em;
   right: 1em;
   background-color: #fff;
   border-radius: 50%;
-  border: .25em solid rgba(0,255,0,0.5);
+}
+.check-mark {
+  color: rgba(0,255,0,0.5);
+  border: .1em solid rgba(0,255,0,0.5);
+}
+.edit-mark {
+  color: rgba(24,24,24,0.25);
+  border: .1em solid rgba(24,24,24,0.25);
 }
