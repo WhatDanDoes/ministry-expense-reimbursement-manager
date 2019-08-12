@@ -395,6 +395,7 @@ h2 {
 .image {
 */
 .link {
+  position: relative;
   padding: 5em 0 5em 0;
   border-color: #CFD8DC;
   background-image: url("/images/document.png");
