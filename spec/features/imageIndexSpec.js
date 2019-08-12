@@ -408,7 +408,8 @@ describe('imageIndexSpec', () => {
             browser.assert.success();
    
             browser.clickLink('#next-page', function(err) {
-              if (err) done.fail(err); browser.assert.success();
+              if (err) done.fail(err);
+              browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
               browser.assert.element(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`);
               done();

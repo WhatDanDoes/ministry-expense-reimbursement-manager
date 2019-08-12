@@ -14,6 +14,7 @@ const mkdirp = require('mkdirp');
 const isMobile = require('is-mobile');
 const archiver = require('archiver');
 const moment = require('moment'); 
+const parseAsync = require('json2csv').parseAsync; 
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -53,6 +54,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
       invoices = invoices.map(invoice => invoice.doc);
 
+
       files = files.map(file => {
         let obj = { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link', invoice: false };
         if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
@@ -85,6 +87,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
                                   prevPage: 0,
                                   token: token,
                                   canWrite: canWrite,
+                                  canZip: files.length && invoices.length,
                                   isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
     }).catch((error) => {
       req.flash('error', error.message);
@@ -101,42 +104,54 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
     if (err) {
       return res.render('error', { error: err });
     }
+    models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
+      invoices = invoices.map(invoice => invoice.doc);
 
-//    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item));
-//    files = files.map(file => `${req.params.domain}/${req.params.agentId}/${file}`).reverse();
-    files = files.map(file => {
-      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
-        return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'image' };
+
+      files = files.map(file => {
+        let obj = { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link', invoice: false };
+        if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(file)) {
+          obj.type = 'image';
+        }
+
+        if (invoices.includes(obj.file)) {
+          obj.invoice = true;
+        }
+
+        return obj;
+      });
+      files.reverse();
+  
+      let page = parseInt(req.params.num),
+          nextPage = 0,
+          prevPage = page - 1;
+      if (files.length > MAX_IMGS * page) {
+        nextPage = page + 1;
+        files = files.slice(MAX_IMGS * prevPage, MAX_IMGS * page);
       }
-      return { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link' };
+  
+      if (!nextPage && prevPage) {
+        files = files.slice(MAX_IMGS * prevPage);
+      }
+  
+      // To open deep link with auth token
+      const payload = { email: req.user.email };
+      const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+  
+      const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+      res.render('image/index', { images: files,
+                                  messages: req.flash(),
+                                  agent: req.user,
+                                  nextPage: nextPage,
+                                  prevPage: prevPage,
+                                  token: token,
+                                  canWrite: canWrite,
+                                  canZip: files.length && invoices.length,
+                                  isMobile: isMobile({ ua: req, tablet: true}) });
+    }).catch((error) => {
+      req.flash('error', error.message);
+      res.redirect(`/image/${req.user.getAgentDirectory()}`);
     });
-    files.reverse();
-
-    let page = parseInt(req.params.num),
-        nextPage = 0,
-        prevPage = page - 1;
-    if (files.length > MAX_IMGS * page) {
-      nextPage = page + 1;
-      files = files.slice(MAX_IMGS * prevPage, MAX_IMGS * page);
-    }
-
-    if (!nextPage && prevPage) {
-      files = files.slice(MAX_IMGS * prevPage);
-    }
-
-    // To open deep link with auth token
-    const payload = { email: req.user.email };
-    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-
-    const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-    res.render('image/index', { images: files,
-                                messages: req.flash(),
-                                agent: req.user,
-                                nextPage: nextPage,
-                                prevPage: prevPage,
-                                token: token,
-                                canWrite: canWrite,
-                                isMobile: isMobile({ ua: req, tablet: true}) });
   });
 });
 
@@ -179,29 +194,70 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
     console.log('Archive wrote %d bytes', archive.pointer());
   });
 
+  // Read agent's upload directory
   fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
     if (err) {
       return res.render('error', { error: err });
     }
 
-    res.set('Content-Type', 'application/zip');
-    res.attachment(`${req.user.getBaseFilename()} #1-${files.length}.zip`);
+    if (!files.length) {
+      return res.status(404).json({ message: 'You have no processed invoices' });
+    }
 
-    archive.pipe(res);
-
-    files.forEach((file, index) => {
-      let ext = '';
-      if (file.lastIndexOf('.') >= 0) {
-        ext = `.${file.substring(file.lastIndexOf('.') + 1).toLowerCase()}`;
+    let regexFiles = files.map(file => new RegExp(`${req.params.domain}/${req.params.agentId}/${file}`, 'i'));
+    models.Invoice.find({ doc: {$in: regexFiles} }).sort([['purchaseDate', 1], ['updatedAt', -1]]).then(invoices => {
+      if (!invoices.length) {
+        return res.status(404).json({ message: 'You have no processed invoices' });
       }
-      
-      archive.file(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, { name: `${req.user.getBaseFilename()} #${index + 1}${ext}` });
-    });
 
-    archive.finalize();
+      models.Agent.findOne({ _id: invoices[0].agent }).then(agent => {
+        res.set('Content-Type', 'application/zip');
+        res.attachment(`${agent.getBaseFilename()} #1-${invoices.length}.zip`);
+
+        archive.pipe(res);
+
+        let consolidated = [];
+        invoices.forEach((invoice, index) => {
+          let filename = invoice.doc.split('/').pop();
+          let ext = '';
+          if (filename.lastIndexOf('.') >= 0) {
+            ext = `.${filename.substring(filename.lastIndexOf('.') + 1).toLowerCase()}`;
+          }
+
+          archive.file(`uploads/${invoice.doc}`, { name: `${agent.getBaseFilename()} #${index + 1}${ext}` });
+          consolidated.push({
+            'Category': invoice.category,
+            'Purchase Date': moment(invoice.purchaseDate).format('DD MMM \'YY'),
+            'Item': invoice.reason,
+            'Business Purpose of Expense': models.Invoice.getCategories()[invoice.category],
+            'Receipt ref #': index + 1,
+            'Local Amount': invoice.formatTotal()
+          });
+        });
+
+        parseAsync(consolidated).then(csv => {
+          if (err) {
+            req.flash('error', err.message);
+            return res.redirect('/image');
+          }
+
+          archive.append(csv, { name: `${agent.name.split(' ').pop()} MER.csv` });
+
+          archive.finalize();
+        }).catch(err => {
+          req.flash('error', err.message);
+          res.redirect(`/image/${req.user.getAgentDirectory()}`);
+        });
+      }).catch((error) => {
+        req.flash('error', error.message);
+        res.redirect(`/image/${req.user.getAgentDirectory()}`);
+      });
+    }).catch((error) => {
+      req.flash('error', error.message);
+      res.redirect(`/image/${req.user.getAgentDirectory()}`);
+    });
   });
 });
-
 
 /**
  * GET /image/:domain/:agentId/:imageId
@@ -327,55 +383,6 @@ router.post('/', upload.array('docs'), (req, res, next) => {
   });
 });
 
-/**
- * PUT /image
- */
-//router.put('/:id', (req, res) => {
-//  if (!req.isAuthenticated()) { return res.sendStatus(401); }
-//
-//  // Can only edit if a reviewer or submitter (except approval)
-//  models.Agent.findById(req.user._id).then((agent) => {
-//    models.Image.findById(req.params.id).populate('files album').then((image) => {
-//      // Approved images cannot be changed unless dis-approved by a reviewer
-//      let disapproved = false;
-//      let approvalChange = req.body.approved !== undefined;
-//      let notReviewer = agent.reviewables.indexOf(image.album._id.toString()) == -1;
-//      if (image.approved) {
-//        if (notReviewer) return res.sendStatus(403);
-//        if (!approvalChange) disapproved = true;
-//        else {
-//          req.flash('error', 'Cannot update an approved image');
-//          return res.render('image/show', { image: image, agent: agent, messages: req.flash() });
-//        }
-//      }
-//
-//      let notSubmitter = image.agent.toString() != agent._id.toString();
-//      if (notSubmitter && notReviewer) return res.sendStatus(403);
-//      if (notReviewer && approvalChange) return res.sendStatus(403);
-// 
-//      image = Object.assign(image, req.body);
-//      if (!req.body.approved) image.approved = false;
-//      let sum = image.tookPlaceAt.getTimezoneOffset() * 60000 + Date.parse(image.tookPlaceAt); // [min*60000 = ms] 
-//      models.Image.findOneAndUpdate({ _id: req.params.id }, image, { new: true, runValidators: true }).then((image) => {
-//        if (disapproved) {
-//          req.flash('info', 'Image de-approved. It can now be edited.');
-//          res.redirect('/image/' + image._id);
-//        }
-//        else {
-//          req.flash('info', 'Image successfully updated');
-//          res.redirect('/album/' + image.album);
-//        }
-//      }).catch((error) => {
-//        return res.render('image/show', { image: image, agent: agent, messages: error });
-//      });
-//    }).catch((error) => {
-//      return res.sendStatus(501);
-//    });
-//  }).catch((error) => {
-//    return res.sendStatus(501);
-//  });
-//});
-//
 /**
  * DELETE /image/:domain/:agentId/:imageId
  */

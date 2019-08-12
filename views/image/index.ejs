@@ -22,7 +22,7 @@
     <% if (!images.length) { %>
       <h2>No invoices</h2>
     <% } else { %>
-      <% if (canWrite) { %>
+      <% if (canWrite && canZip) { %>
         <section class="deep-link">
           <a href="<%= `/image/${agent.getAgentDirectory()}/zip` %>">
             <img src="/images/zip-download.png">

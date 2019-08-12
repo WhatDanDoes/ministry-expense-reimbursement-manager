@@ -150,7 +150,6 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.assert.success();
             browser.assert.text('.alert.alert-success', 'Invoice saved');
             browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
-console.log(browser.html());
             browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`);
             done();
           });
