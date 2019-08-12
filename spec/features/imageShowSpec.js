@@ -86,6 +86,8 @@ describe('imageShowSpec', () => {
             browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
             // Delete
             browser.assert.element('#delete-image-form');
+            // Cancel
+            browser.assert.element('#cancel-edit-form');
             // Publish
             browser.assert.element('#publish-image-form');
             // Info form
@@ -122,6 +124,8 @@ describe('imageShowSpec', () => {
               browser.assert.element(`img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
               // Delete
               browser.assert.element('#delete-image-form');
+              // Cancel
+              browser.assert.element('#cancel-edit-form');
               // Publish
               browser.assert.element('#publish-image-form');
               // Info form
@@ -216,6 +220,19 @@ describe('imageShowSpec', () => {
           browser.assert.element(`a[href="/uploads/${agent.getAgentDirectory()}/image3.pdf"]`);
           browser.assert.elements('#delete-image-form', 1);
           done();
+        });
+      });
+
+      it('allows an agent to cancel and return to the image roll', done => {
+        browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
+          if (err) return done.fail(err);
+          browser.assert.success();
+          browser.pressButton('Cancel', err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.url(`/image/${agent.getAgentDirectory()}`);
+            done();
+          });
         });
       });
     });

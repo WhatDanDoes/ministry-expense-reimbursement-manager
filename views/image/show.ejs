@@ -45,11 +45,14 @@
             <button id="publish-image-button" type="submit">Save</button>
           <% } %>
         </form>
-      <% if (canWrite) { %>
-        <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
-          <button id="delete-image" type="submit">Delete</button>
+        <% if (canWrite) { %>
+          <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
+            <button id="delete-image" type="submit">Delete</button>
+          </form>
+        <% } %>
+        <form action="/image" method="get" id="cancel-edit-form">
+          <button id="cancel-edit" type="submit">Cancel</button>
         </form>
-      <% } %>
       </section>
   </main> 
   <% include ../_partials/footer %>

@@ -440,15 +440,17 @@ h2 {
 /**
  * Image controls
  */
+#image-controls {
+  display: inline-block;
+}
 #image-controls form {
-  position: relative;
   display: inline;
 }
 
 /**
  * Delete image
  */
-button[type="submit"]#delete-image  {
+button[type="submit"]#delete-image {
   margin-top: 1em;
   padding: 0.5em;
   background: #ff4c4c;
@@ -460,13 +462,26 @@ button[type="submit"]#delete-image  {
 /**
  * Publish image
  */
-button[type="submit"]#publish-image  {
+button[type="submit"]#publish-image {
   padding: 0.5em;
   background: green;
   font-size: 1em;
   width: 30%;
   border: 1px solid green;
   float: right;
+}
+
+/**
+ * Cancel edit
+ */
+button[type="submit"]#cancel-edit {
+  margin-top: 1em;
+  padding: 0.5em;
+  background: blue;
+  font-size: .5em;
+  float: right;
+  width: 30%;
+  border: 1px solid blue;
 }
 
 /**
