@@ -5,6 +5,8 @@ module.exports = function(mongoose) {
   const Schema = mongoose.Schema;
   require('mongoose-currency').loadType(mongoose);
   const moment = require('moment');
+  const cc = require('currency-codes');
+  const data = require('currency-codes/data');
 
   // Enums only work on strings
   const CATEGORIES = {
@@ -29,6 +31,9 @@ module.exports = function(mongoose) {
     '520': 'Conferences',
     '530': 'National Co-workers\'s Wages'
   };
+
+  const CURRENCIES = {};
+  data.forEach(curr => CURRENCIES[curr.code] = curr.currency);
 
   const InvoiceSchema = new Schema({
     category: {
@@ -75,6 +80,17 @@ module.exports = function(mongoose) {
       ref: 'Agent',
       required: [true, 'This invoice is not associated with an agent'],
     },
+    currency: {
+      type: Schema.Types.String,
+      enum: { values: cc.codes(), message: 'Unknown currency' },
+      required: [true, 'No currency symbol provided'],
+      default: 'CAD'
+    },
+    exchangeRate: {
+      type: Schema.Types.Number,
+      required: [true, 'No exchange rate provided'],
+      default: 1.0, 
+    }
   }, {
     timestamps: true
   });
@@ -94,6 +110,11 @@ module.exports = function(mongoose) {
     return ((this.total/100) * 0.05).toFixed(2);
   };
 
+  InvoiceSchema.methods.convertToCAD = function() {
+    return ((this.total/100) * this.exchangeRate).toFixed(2);
+  };
+
+
   /**
    * Get formatted purchase date 
    */
@@ -107,6 +128,14 @@ module.exports = function(mongoose) {
   InvoiceSchema.statics.getCategories = function() {
     return CATEGORIES;
   };
+
+  /**
+   * .getCurrencies
+   */
+  InvoiceSchema.statics.getCurrencies = function() {
+    return CURRENCIES;
+  };
+
 
   return InvoiceSchema;
 };

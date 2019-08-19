@@ -31,6 +31,8 @@ describe('Invoice', function() {
         _valid.doc = `${agent.getAgentDirectory()}/receipt1.jpg`;
         _valid.total = '12.69';
         _valid.agent = agent._id;
+        _valid.currency = 'CAD';
+        _valid.exchangeRate = 1.0;
 
         invoice = new Invoice(_valid);
 
@@ -217,6 +219,29 @@ describe('Invoice', function() {
         });
       });
     });
+
+    it('defaults to CAD currency', function(done) {
+      delete _valid.currency;
+      delete _valid.exchangeRate;
+      Invoice.create(_valid).then(function(obj) {
+        expect(obj.currency).toEqual('CAD');
+        expect(obj.exchangeRate).toEqual(1.0);
+        done();
+      }).catch(function(error) {
+        done.fail(error);
+      });
+    });
+
+    it('doesn\'t allow unknown currency symbols', function(done) {
+      _valid.currency = 'BTC';
+      Invoice.create(_valid).then(function(obj) {
+        done.fail('his should not have saved');
+      }).catch(function(error) {
+        expect(Object.keys(error.errors).length).toEqual(1);
+        expect(error.errors['currency'].message).toEqual('Unknown currency');
+        done();
+      });
+    });
   });
 
   describe('currency formatting', function() {
@@ -232,9 +257,34 @@ describe('Invoice', function() {
       });
     });
 
+    describe('#convertToCAD', function() {
+      it('returns the total if already in CAD', function(done) {
+        invoice.save().then(function(obj) {
+          expect(invoice.total).toEqual(1269);
+          expect(invoice.convertToCAD()).toEqual('12.69');
+          done();
+        }).catch(function(error) {
+          done.fail(error);
+        });
+      });
+
+      it('returns the total property converted to CAD', function(done) {
+        invoice.currency = 'USD';
+        invoice.exchangeRate = 1.35;
+        invoice.save().then(function(obj) {
+          expect(invoice.total).toEqual(1269);
+          expect(invoice.convertToCAD()).toEqual('17.13');
+          done();
+        }).catch(function(error) {
+          done.fail(error);
+        });
+      });
+    });
+
     describe('#formatSubtotal', function() {
       it('returns the subtotal property formatted as currency', function(done) {
         invoice.save().then(function(obj) {
+          expect(invoice.total).toEqual(1269);
           expect(invoice.formatSubtotal()).toEqual('12.06');
           done();
         }).catch(function(error) {
@@ -246,6 +296,7 @@ describe('Invoice', function() {
     describe('#formatGst', function() {
       it('returns the gst property formatted as currency', function(done) {
         invoice.save().then(function(obj) {
+          expect(invoice.total).toEqual(1269);
           expect(invoice.formatGst()).toEqual('0.63');
           done();
         }).catch(function(error) {
@@ -259,6 +310,13 @@ describe('Invoice', function() {
     it('returns the expenditure categories as an object', function() {
       const obj = Invoice.getCategories();
       expect(Object.keys(obj).length).toEqual(20);
+    });
+  });
+
+  describe('.getCurrencies', function() {
+    it('returns the currency symbol key paired with country-currency value', function() {
+      const obj = Invoice.getCurrencies();
+      expect(Object.keys(obj).length).toEqual(178);
     });
   });
 
