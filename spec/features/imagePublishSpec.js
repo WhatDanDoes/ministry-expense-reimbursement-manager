@@ -123,7 +123,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
 
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('.dropdown', '110 - Commercial Travel');
+            browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
             browser.pressButton('Save', function(err) {
               if (err) return done.fail(err);
@@ -151,7 +151,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
  
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
-              browser.select('.dropdown', '110 - Commercial Travel');
+              browser.select('#category-dropdown', '110 - Commercial Travel');
               browser.fill('#reason', 'Lime scooter for 2km');
               browser.pressButton('Save', function(err) {
                 if (err) return done.fail(err);
@@ -178,7 +178,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
    
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
-              browser.select('.dropdown', '110 - Commercial Travel');
+              browser.select('#category-dropdown', '110 - Commercial Travel');
               browser.fill('#reason', 'Lime scooter for 2km');
               browser.pressButton('Save', function(err) {
                 if (err) return done.fail(err);
@@ -198,7 +198,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           beforeEach(function(done) {
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('.dropdown', '110 - Commercial Travel');
+            browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
             browser.pressButton('Save', function(err) {
               if (err) return done.fail(err);
