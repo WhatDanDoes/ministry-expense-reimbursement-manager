@@ -27,6 +27,18 @@
             <input id="total" class="form-control" type="number" name="total" min="0" step="0.01" required=true
                    <%= canWrite ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.formatTotal() : '' %>">
           </div>
+          <div class="form-group invoice-details">
+            <select class="dropdown form-control" name="currency" required=true
+                    <%= canWrite ? '' : ' disabled=disabled' %>>
+              <% for (let currency of ['CAD', 'USD']) { %>
+                <% if (!invoice && currency === 'CAD') { %>
+                  <option value="<%= currency %>" selected=selected><%= `${currency}` %></option>
+                <% } else { %>
+                  <option value="<%= currency %>"<%= invoice && currency === invoice.currency ? ' selected=selected': '' %>><%= `${currency}` %></option>
+                <% } %>
+              <% } %>
+            </select>
+          </div>
           <div class="form-group">
             <select class="dropdown form-control" name="category" required=true
                     <%= canWrite ? '' : ' disabled=disabled' %>>

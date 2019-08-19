@@ -76,7 +76,7 @@ describe('imageShowSpec', () => {
 
     describe('authorized', () => {
       describe('viewing an image an agent owns', () => {
-        it('without an associated receipt', done => {
+        it('it renders interface without an associated receipt', done => {
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
           browser.assert.element(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] img[src="/uploads/${agent.getAgentDirectory()}/image1.jpg"]`);
           browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
@@ -96,6 +96,12 @@ describe('imageShowSpec', () => {
             browser.assert.elements('form select[name=category] option', 21);
             // Total
             browser.assert.input('form input[name=total]', '');
+            // Currency
+            browser.assert.element('form select[name=currency]', 'CAD');
+            browser.assert.elements('form select[name=currency] option', 2);
+            browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+            // Exchange Rate (not visible)
+            browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
             // Reason
             browser.assert.input('form input[name=reason]', '');
             // Date
@@ -105,7 +111,7 @@ describe('imageShowSpec', () => {
           });
         });
 
-        it('with an associated receipt', done => {
+        it('it renders interface with an associated receipt', done => {
           const invoice = {
             category: 110,
             purchaseDate: new Date('2019-08-08'),
@@ -135,6 +141,12 @@ describe('imageShowSpec', () => {
               browser.assert.element('form select[name=category] option[value="110"][selected=selected]');
               // Total
               browser.assert.input('form input[name=total]', '7.90');
+              // Currency
+              browser.assert.element('form select[name=currency]', 'CAD');
+              browser.assert.elements('form select[name=currency] option', 2);
+              browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+              // Exchange Rate (not visible)
+              browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
               // Reason
               browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
               // Date
@@ -149,7 +161,7 @@ describe('imageShowSpec', () => {
       });
 
       describe('viewing an image to which an agent has permission to read', () => {
-        it('without associated invoice', done => {
+        it('renders without associated invoice', done => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
   
@@ -166,6 +178,8 @@ describe('imageShowSpec', () => {
             browser.assert.element('form select[name=category][disabled=disabled]');
             // Total
             browser.assert.input('form input[name=total][disabled=disabled]', '');
+            // Currency
+            browser.assert.element('form select[name=currency][disabled=disabled]', 'CAD');
             // Reason
             browser.assert.input('form input[name=reason][disabled=disabled]', '');
             // Date
@@ -174,7 +188,7 @@ describe('imageShowSpec', () => {
           });
         });
 
-        it('with associated invoice', done => {
+        it('renders with associated invoice', done => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
   
@@ -201,6 +215,8 @@ describe('imageShowSpec', () => {
               browser.assert.element('form select[name=category] option[value="110"][selected=selected]');
               // Total
               browser.assert.input('form input[name=total][disabled=disabled]', '7.90');
+              // Currency
+              browser.assert.element('form select[name=currency][disabled=disabled]', 'CAD');
               // Reason
               browser.assert.input('form input[name=reason][disabled=disabled]', 'Lime scooter for 2 km');
               // Date
