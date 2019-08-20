@@ -135,6 +135,10 @@ describe('imageIndexSpec', () => {
         browser.assert.element("form[action='/image']");
       });
 
+      it('displays an archive-files link', () => {
+        browser.assert.element(`a[href="/image/${agent.getAgentDirectory()}/archive"]`);
+      });
+
       it('writes a file upload to disk', done => {
         fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
           if (err) {

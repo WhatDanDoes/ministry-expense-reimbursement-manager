@@ -2,6 +2,12 @@
   <% include ../_partials/messages %>
   <main>
     <% if (canWrite) { %>
+      <section class="deep-link">
+        <a href="<%= `/image/${agent.getAgentDirectory()}/archive` %>">
+          <img src="/images/start-new.png">
+          <p>Start new claim</p>
+        </a>
+      </section>
       <% include ../_partials/appLink %>
       <section>
         <form role="form" action="/image" method="post" enctype="multipart/form-data">

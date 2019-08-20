@@ -198,7 +198,6 @@ describe('imageIndexSpec', () => {
   
           // The `gif` has no associated invoice (cf., `fixtures/invoices.js`)
           it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
-
             expect(zipEntries.length).toEqual(4);
             expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
             expect(zipEntries[1].name).toEqual(`${agent.getBaseFilename()} #1.pdf`);
