@@ -231,7 +231,9 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
             'Item': invoice.reason,
             'Business Purpose of Expense': models.Invoice.getCategories()[invoice.category],
             'Receipt ref #': index + 1,
-            'Local Amount': invoice.formatTotal()
+            'Local Amount': invoice.formatTotal(),
+            'Currency Used': invoice.currency,
+            'Exchange Rate': invoice.exchangeRate,
           });
         });
 

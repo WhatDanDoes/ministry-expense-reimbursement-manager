@@ -32,5 +32,7 @@ exports.Invoice = {
     total: 1730,
     doc: 'example.com/daniel/image4',
     agent: agents.dan._id,
+    currency: 'USD',
+    exchangeRate: 1.35,
   },
 };

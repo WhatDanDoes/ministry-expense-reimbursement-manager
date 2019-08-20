@@ -104,7 +104,6 @@ describe('imageIndexSpec', () => {
         browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
-console.log(browser.html());
           browser.assert.elements('section.image img', 0);
           browser.assert.elements('section.link a', 0);
           browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
@@ -212,10 +211,10 @@ console.log(browser.html());
               expect(invoices.length).toEqual(3);
               let csv = zipEntries[0].getData().toString('utf8')
               csv = csv.split('\n');
-              expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount"');
-              expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Supplies and Stationery",1,"9.65"');
-              expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Communication (Phone, Fax, E-mail)",2,"17.30"');
-              expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Equipment",3,"65.99"');
+              expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
+              expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Supplies and Stationery",1,"9.65","CAD",1');
+              expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Communication (Phone, Fax, E-mail)",2,"17.30","USD",1.35');
+              expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Equipment",3,"65.99","CAD",1');
               done();
             }).catch(function(err) {
               done.fail(err);
