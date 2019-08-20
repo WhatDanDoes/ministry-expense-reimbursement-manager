@@ -193,6 +193,17 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           });
         });
 
+        describe('non-Canadian currencies', () => {
+
+          it('displays a exchangeRate spinner when CAD is not selected', done => {
+            browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
+            browser.select('#currency-dropdown', 'USD', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.elements('form input[name=exchangeRate][type=number]', 1);
+              done();
+            });
+          });
+        });
 
         describe('editing existing invoice', () => {
           beforeEach(function(done) {
