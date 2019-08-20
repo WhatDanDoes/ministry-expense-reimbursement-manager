@@ -672,6 +672,17 @@ button[type="submit"]#cancel-edit {
   font-weight: normal;
 }
 
+#exchange-rate input {
+  width: 3em;
+}
+#currency-dropdown {
+  width: 5em;
+}
+#exchange-rate,
+#currency-dropdown {
+  margin-left: auto;
+}
+
 .image {
   position: relative;
 }

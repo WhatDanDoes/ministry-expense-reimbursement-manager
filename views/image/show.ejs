@@ -29,6 +29,9 @@
           </div>
           <div class="form-group invoice-details">
             <select id="currency-dropdown" class="dropdown form-control" name="currency" required=true
+                    onchange="this.options[this.selectedIndex].value === 'CAD' ?
+                                                                         document.getElementById('exchange-rate').style.display = 'none' :
+                                                                         document.getElementById('exchange-rate').style.display = 'block'"
                     <%= canWrite ? '' : ' disabled=disabled' %>>
               <% for (let currency of ['CAD', 'USD']) { %>
                 <% if (!invoice && currency === 'CAD') { %>
@@ -38,6 +41,11 @@
                 <% } %>
               <% } %>
             </select>
+          </div>
+          <div id="exchange-rate" class="form-group invoice-details" style="display:<%= !invoice || invoice.currency === 'CAD' ? 'none' : 'block' %>;">
+            <label for="exchangeRate">Rate (%)</label>  
+            <input name="exchangeRate" type="number" step="0.01"
+                   value="<%= invoice ? invoice.exchangeRate : 1.0 %>">
           </div>
           <div class="form-group">
             <select id="category-dropdown" class="dropdown form-control" name="category" required=true

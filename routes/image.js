@@ -295,7 +295,11 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
 
   req.body.agent = req.user._id;
   req.body.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
-  models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {// , function(error, result) {
+  if (req.body.currency === 'CAD') {
+    req.body.exchangeRate = 1.0;
+  }
+
+  models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {
     req.flash('success', 'Invoice saved');
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }).catch((error) => {

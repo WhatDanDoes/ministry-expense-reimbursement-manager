@@ -194,13 +194,72 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         });
 
         describe('non-Canadian currencies', () => {
-
           it('displays a exchangeRate spinner when CAD is not selected', done => {
-            browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
+            browser.assert.style('#exchange-rate', 'display', 'none');
             browser.select('#currency-dropdown', 'USD', function(err) {
               if (err) return done.fail(err);
-              browser.assert.elements('form input[name=exchangeRate][type=number]', 1);
-              done();
+              browser.assert.style('#exchange-rate', 'display', 'block');
+              browser.select('#currency-dropdown', 'CAD', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.style('#exchange-rate', 'display', 'none');
+                done();
+              });
+            });
+          });
+
+          it('displays the currency and exchangeRate when invoice not in CAD', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#currency-dropdown', 'USD');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                done();
+              });
+            });
+          });
+
+          it('resets exchange rate when currency set back to CAD', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#currency-dropdown', 'USD');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+
+                browser.select('#currency-dropdown', 'CAD');
+                browser.pressButton('Save', function(err) {
+                  if (err) return done.fail(err);
+                  browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                    if (err) return done.fail(err);
+                    browser.assert.success();
+ 
+                    browser.assert.style('#exchange-rate', 'display', 'none');
+                    browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
+                    browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+
+                    done();
+                  });
+                });
+              });
             });
           });
         });

@@ -101,7 +101,7 @@ describe('imageShowSpec', () => {
             browser.assert.elements('form select[name=currency] option', 2);
             browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
             // Exchange Rate (not visible)
-            browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
+            browser.assert.style('#exchange-rate', 'display', 'none');
             // Reason
             browser.assert.input('form input[name=reason]', '');
             // Date
@@ -146,7 +146,7 @@ describe('imageShowSpec', () => {
               browser.assert.elements('form select[name=currency] option', 2);
               browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
               // Exchange Rate (not visible)
-              browser.assert.elements('form input[name=exchangeRate][type=number]', 0);
+              browser.assert.style('#exchange-rate', 'display', 'none');
               // Reason
               browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
               // Date

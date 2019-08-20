@@ -104,6 +104,7 @@ describe('imageIndexSpec', () => {
         browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
+console.log(browser.html());
           browser.assert.elements('section.image img', 0);
           browser.assert.elements('section.link a', 0);
           browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
