@@ -7,7 +7,6 @@ const fixtures = require('pow-mongoose-fixtures');
 const models = require('../../models'); 
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
-const AdmZip = require('adm-zip');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
@@ -19,7 +18,7 @@ const AdmZip = require('adm-zip');
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
-describe('imageZipSpec', () => {
+describe('imageArchiveSpec', () => {
   let browser, agent, lanny;
 
   beforeEach(function(done) {
@@ -94,31 +93,31 @@ describe('imageZipSpec', () => {
     });
 
     describe('authorized', () => {
-      it('displays a link to zip and download the images if viewing his own album', () => {
+      it('displays a form to archive the images if viewing his own album', () => {
         browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.element(`a[href="/image/${agent.getAgentDirectory()}/zip"]`);
+        browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
       });
 
-      it('does not display a link to zip and download the images if there are no images', (done) => {
+      it('does not display a form to archive the images if there are no images', (done) => {
         mock.restore();
         browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
           browser.assert.elements('section.image img', 0);
           browser.assert.elements('section.link a', 0);
-          browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
+          browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
           done();
         });
       });
 
-      it('does not display a link to zip and download the images if none have been processed as invoices', (done) => {
+      it('displays a link to archive the images even if none have been processed as invoices', (done) => {
         models.mongoose.connection.db.dropCollection('invoices').then(result => {
           browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
             if (err) return done.fail(err);
             browser.assert.success();
             browser.assert.elements('section.image img', 2);
             browser.assert.elements('section.link a', 2);
-            browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
+            browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
             done();
           });
         }).catch(function(err) {
@@ -126,97 +125,103 @@ describe('imageZipSpec', () => {
         });
       });
 
-      describe('zipping contents', () => {
+      describe('archiving contents', () => {
 
-        describe('with no processed invoices', () => {
+        describe('with no invoices', () => {
+
           it('returns an appropriate message if no images have been uploaded', (done) => {
             mock.restore();
             request(app)
-              .get(`/image/${agent.getAgentDirectory()}/zip`)
+              .post(`/image/${agent.getAgentDirectory()}/archive`)
               .set('Cookie', browser.cookies)
               .expect(404)
               .expect('Content-Type', /application\/json/ )
               .end(function(err, res) {
                 if (err) done.fail(err);
-                expect(res.body).toEqual({message: 'You have no processed invoices'});
+                expect(res.body).toEqual({message: 'You have no invoices to archive'});
                 done();
               });
-          });
-
-          it('returns an appropriate message if no images have been processed as receipts', (done) => {
-            models.mongoose.connection.db.dropCollection('invoices').then(result => {
-              request(app)
-                .get(`/image/${agent.getAgentDirectory()}/zip`)
-                .set('Cookie', browser.cookies)
-                .expect(404)
-                .expect('Content-Type', /application\/json/ )
-                .end(function(err, res) {
-                  if (err) done.fail(err);
-                  expect(res.body).toEqual({message: 'You have no processed invoices'});
-                  done();
-                });
-            }).catch(function(err) {
-              done.fail(err);
-            });
           });
         });
 
-        describe('with processed invoices', () => {
-          let zipEntries;
+        describe('with invoices', () => {
           beforeEach(done => {
-            function binaryParser(res, callback) {
-              res.setEncoding('binary');
-              res.data = '';
-              res.on('data', function (chunk) {
-                res.data += chunk;
-              });
-              res.on('end', function () {
-                callback(null, Buffer.from(res.data, 'binary'));
-              });
-            }
-    
-            request(app)
-              .get(`/image/${agent.getAgentDirectory()}/zip`)
-              .set('Cookie', browser.cookies)
-              .expect(200)
-              .expect( 'Content-Type', /application\/zip/ )
-              .parse(binaryParser)
-              .end(function(err, res) {
-                if (err) done.fail(err);
-  
-                expect(Buffer.isBuffer(res.body)).toBe(true);
-    
-                let zip = new AdmZip(res.body);
-                zipEntries = zip.getEntries();
+            done();
+          });
 
-                // One file in zipEntries is the CSV (not to be counted in the image count)
-                expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-1}.zip`);
-  
-                done();
+          it('creates an archive directory if none exists', done => {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.indexOf('archive')).toEqual(-1);
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.indexOf('archive') >= 0).toBe(true);
+ 
+                  done();
+                });
               });
+            });
           });
-  
-          // The `gif` has no associated invoice (cf., `fixtures/invoices.js`)
-          it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
-            expect(zipEntries.length).toEqual(4);
-            expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-            expect(zipEntries[1].name).toEqual(`${agent.getBaseFilename()} #1.pdf`);
-            expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #2`);
-            expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #3.jpg`);
+
+          it('moves all an agent\'s images to the archive directory', done => {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(4);
+
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.indexOf('archive') >= 0).toBe(true);
+                  expect(files.length).toEqual(1);
+                  fs.readdir(`uploads/${agent.getAgentDirectory()}/archive`, (err, files) => {
+                    if (err) return done.fail(err);
+                    expect(files.indexOf('archive') >= 0).toBe(false);
+                    expect(files.length).toEqual(4);
+ 
+                    done();
+                  });
+                });
+              });
+            });
           });
-    
-          it('consolidates the invoice data in a CSV', done => {
-            models.Invoice.find({}).sort({ purchaseDate: -1 }).then(invoices => {
+
+          it('updates all invoice doc paths to point to archive directory', done => {
+            models.Invoice.find({}).then(invoices => {
               expect(invoices.length).toEqual(3);
-              let csv = zipEntries[0].getData().toString('utf8')
-              csv = csv.split('\n');
-              expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
-              expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Supplies and Stationery",1,"9.65","CAD",1');
-              expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Communication (Phone, Fax, E-mail)",2,"17.30","USD",1.35');
-              expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Equipment",3,"65.99","CAD",1');
-              done();
-            }).catch(function(err) {
+              for (let invoice of invoices) {
+                expect(invoice.doc).toMatch(`${agent.getAgentDirectory()}`);
+              }
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+
+                models.Invoice.find({}).then(invoices => {
+                  expect(invoices.length).toEqual(3);
+                  for (let invoice of invoices) {
+                    expect(invoice.doc).toMatch(`archive/${agent.getAgentDirectory()}`);
+                  }
+                  done();
+                });
+              });
+            }).catch(err => {
               done.fail(err);
+            });
+          });
+
+          it('redirects to agent\'s images with message', done => {
+            browser.pressButton('#archive-button', function(err) {
+              if (err) done.fail(err);
+              browser.assert.success();
+
+              browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
+              done();
             });
           });
         });
@@ -224,23 +229,23 @@ describe('imageZipSpec', () => {
     });
 
     describe('unauthorized', () => {
-      it('does not display a zip link in an album the agent can read but does not own', done => {
+      it('does not display an archive form in an album the agent can read but does not own', done => {
         expect(agent.canRead.length).toEqual(1);
         expect(agent.canRead[0]).toEqual(lanny._id);
 
         browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
-          browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
+          browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
           done();
         });
       });
 
-      it('does not return a zip file', done => {
+      it('does not archive anything', done => {
         request(app)
-          .get(`/image/${lanny.getAgentDirectory()}/zip`)
+          .post(`/image/${lanny.getAgentDirectory()}/archive`)
           .set('Cookie', browser.cookies)
-          .expect(403)
+          .expect(401)
           .end(function(err, res) {
             if (err) done.fail(err);
             done();
@@ -250,20 +255,10 @@ describe('imageZipSpec', () => {
   });
 
   describe('unauthenticated', () => {
-    it('redirects home (which is where the login form is located)', done => {
-      browser.visit(`/image/${agent.getAgentDirectory()}/zip`, function(err) {
-        if (err) return done.fail(err);
-        browser.assert.redirected();
-        browser.assert.url({ pathname: '/'});
-        browser.assert.text('.alert.alert-danger', 'You need to login first');
-        done();
-      });
-    });
-
     // This is getting caught by basic auth and redirecting to home
-    it('does not return a zip file', done => {
+    it('does not return a archive file', done => {
       request(app)
-        .get(`/image/${agent.getAgentDirectory()}/zip`)
+        .post(`/image/${agent.getAgentDirectory()}/archive`)
         .expect(302)
         .end(function(err, res) {
           if (err) done.fail(err);

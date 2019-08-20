@@ -2,12 +2,14 @@
   <% include ../_partials/messages %>
   <main>
     <% if (canWrite) { %>
-      <section class="deep-link">
-        <a href="<%= `/image/${agent.getAgentDirectory()}/archive` %>">
-          <img src="/images/start-new.png">
-          <p>Start new claim</p>
-        </a>
-      </section>
+      <% if (canArchive) { %>
+        <section class="deep-link">
+          <form role="form" action="<%= `/image/${agent.getAgentDirectory()}/archive` %>" method="post" enctype="multipart/form-data">
+            <input type="image" id="archive-button" name="submit" src="/images/start-new.png">
+            <p>Start new claim</p>
+          </form>
+        </section>
+      <% } %>
       <% include ../_partials/appLink %>
       <section>
         <form role="form" action="/image" method="post" enctype="multipart/form-data">

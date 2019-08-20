@@ -547,10 +547,16 @@ button[type="submit"]#cancel-edit {
   text-align: center;
 }
 .upload-link img,
-.deep-link img {
+.deep-link img,
+.deep-link input[type=image] {
   width: 30%;
   border-radius: 1em;
   box-shadow: .25em .25em rgb(0,0,0,0.2);
+}
+
+.deep-link input + p {
+  color: #00B7FF;
+  font-size: 0.8em;
 }
 
 /**

@@ -136,7 +136,7 @@ describe('imageIndexSpec', () => {
       });
 
       it('displays an archive-files link', () => {
-        browser.assert.element(`a[href="/image/${agent.getAgentDirectory()}/archive"]`);
+        browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
       });
 
       it('writes a file upload to disk', done => {

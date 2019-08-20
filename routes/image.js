@@ -50,6 +50,9 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     if (err) {
       return res.render('error', { error: err });
     }
+    if (files.indexOf('archive') > -1) {
+      files.splice(files.indexOf('archive'), 1)
+    }
 
     models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
       invoices = invoices.map(invoice => invoice.doc);
@@ -86,6 +89,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
                                   nextPage: nextPage,
                                   prevPage: 0,
                                   token: token,
+                                  canArchive: !!files.length,
                                   canWrite: canWrite,
                                   canZip: files.length && invoices.length,
                                   isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
@@ -106,7 +110,6 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
     }
     models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
       invoices = invoices.map(invoice => invoice.doc);
-
 
       files = files.map(file => {
         let obj = { file: `${req.params.domain}/${req.params.agentId}/${file}`, type: 'link', invoice: false };
@@ -145,6 +148,7 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
                                   nextPage: nextPage,
                                   prevPage: prevPage,
                                   token: token,
+                                  canArchive: !!files.length,
                                   canWrite: canWrite,
                                   canZip: files.length && invoices.length,
                                   isMobile: isMobile({ ua: req, tablet: true}) });
@@ -411,6 +415,63 @@ router.delete('/:domain/:agentId/:imageId', ensureAuthorized, function(req, res)
   }).catch(error => {
     req.flash('error', error.message);
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
+  });
+});
+
+/**
+ * POST /image/:domain/:agentId/archive
+ */
+router.post('/:domain/:agentId/archive', ensureAuthorized, (req, res) => {
+  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
+  if (!canWrite){
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  // Read agent's upload directory
+  fs.readdir(`uploads/${req.params.domain}/${req.params.agentId}`, (err, files) => {
+    if (err) {
+      return res.render('error', { error: err });
+    }
+
+    if (files.indexOf('archive') > -1) {
+      files.splice(files.indexOf('archive'), 1)
+    }
+
+    if (!files.length) {
+      return res.status(404).json({ message: 'You have no invoices to archive' });
+    }
+
+    function recursiveSave(done) {
+      if (!files.length) {
+        return done();
+      }
+      let file = files.pop();
+      models.Invoice.findOneAndUpdate({ doc: `${req.params.domain}/${req.params.agentId}/${file}` }, { doc: `archive/${req.params.domain}/${req.params.agentId}/${file}` }).then(invoice => {
+        mv(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, `uploads/${req.params.domain}/${req.params.agentId}/archive/${file}`, { mkdirp: true }, function(err) {
+          if (err) {
+            return done(err);
+          }
+          recursiveSave(done);
+        });
+      }).catch(err => {
+        done(err);
+      });
+    };
+  
+    recursiveSave((err) => {
+      if (err) {
+        if (/json/.test(req.headers['accept'])) {
+          return res.status(500).json({ message: err.message });
+        }
+        req.flash('error', err.message);
+        return res.redirect(`/image/${req.user.getAgentDirectory()}`);
+      }
+      if (/json/.test(req.headers['accept'])) {
+        return res.status(201).json({ message: 'You can now start a new expense claim' });
+      }
+      req.flash('success', 'You can now start a new expense claim');
+      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+    });
   });
 });
 
