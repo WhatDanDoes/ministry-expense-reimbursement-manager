@@ -18,7 +18,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('imageShowSpec', () => {
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -28,10 +28,15 @@ describe('imageShowSpec', () => {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results;
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results;
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -57,6 +62,10 @@ describe('imageShowSpec', () => {
           'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'image3.pdf': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        [`uploads/${troy.getAgentDirectory()}`]: {
+          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
         },
         'public/images/uploads': {}
       });
@@ -158,6 +167,29 @@ describe('imageShowSpec', () => {
             done.fail(err);
           });
         });
+
+        it('allows an agent to view his own non-image document', done => {
+          browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.element(`a[href="/uploads/${agent.getAgentDirectory()}/image3.pdf"]`);
+            browser.assert.elements('#delete-image-form', 1);
+            done();
+          });
+        });
+
+        it('allows an agent to cancel and return to the image roll', done => {
+          browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.pressButton('Cancel', err => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url(`/image/${agent.getAgentDirectory()}`);
+              done();
+            });
+          });
+        });
       });
 
       describe('viewing an image to which an agent has permission to read', () => {
@@ -227,27 +259,133 @@ describe('imageShowSpec', () => {
             done.fail(err);
           });
         });
-      });
 
-      it('allows an agent to view his own non-image document', done => {
-        browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          browser.assert.element(`a[href="/uploads/${agent.getAgentDirectory()}/image3.pdf"]`);
-          browser.assert.elements('#delete-image-form', 1);
-          done();
+        it('allows an agent to cancel and return to the owner agent\'s image roll', done => {
+          browser.visit(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.pressButton('Cancel', err => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url(`/image/${lanny.getAgentDirectory()}`);
+              done();
+            });
+          });
         });
       });
 
-      it('allows an agent to cancel and return to the image roll', done => {
-        browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image3.pdf"]`, (err) => {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          browser.pressButton('Cancel', err => {
+      describe('viewing a writable image', () => {
+        beforeEach(done => {
+          browser.visit(`/image/${troy.getAgentDirectory()}`, (err) => {
             if (err) return done.fail(err);
             browser.assert.success();
-            browser.assert.url(`/image/${agent.getAgentDirectory()}`);
             done();
+          });
+        });
+
+        it('it renders interface without an associated receipt', done => {
+          browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+          browser.assert.element(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] img[src="/uploads/${troy.getAgentDirectory()}/troy1.jpg"]`);
+          browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            // Image
+            browser.assert.element(`img[src="/uploads/${troy.getAgentDirectory()}/troy1.jpg"]`);
+            // Delete
+            browser.assert.element('#delete-image-form');
+            // Cancel
+            browser.assert.element('#cancel-edit-form');
+            // Publish
+            browser.assert.element('#publish-image-form');
+            // Info form
+            // Category selector
+            browser.assert.element('form select[name=category]');
+            browser.assert.elements('form select[name=category] option', 21);
+            // Total
+            browser.assert.input('form input[name=total]', '');
+            // Currency
+            browser.assert.element('form select[name=currency]', 'CAD');
+            browser.assert.elements('form select[name=currency] option', 2);
+            browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+            // Exchange Rate (not visible)
+            browser.assert.style('#exchange-rate', 'display', 'none');
+            // Reason
+            browser.assert.input('form input[name=reason]', '');
+            // Date
+            browser.assert.element(`form input[name=purchaseDate][value="${moment().format('YYYY-MM-DD')}"]` );
+  
+            done();
+          });
+        });
+
+        it('it renders interface with an associated receipt', done => {
+          const invoice = {
+            category: 110,
+            purchaseDate: new Date('2019-08-08'),
+            reason: 'Lime scooter for 2 km',
+            doc: `${troy.getAgentDirectory()}/troy1.jpg`,
+            total: '7.90',
+            agent: troy._id,
+          };
+          models.Invoice.create(invoice).then((invoice) => {
+            browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+            browser.assert.element(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] img[src="/uploads/${troy.getAgentDirectory()}/troy1.jpg"]`);
+            browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              // Image
+              browser.assert.element(`img[src="/uploads/${troy.getAgentDirectory()}/troy1.jpg"]`);
+              // Delete
+              browser.assert.element('#delete-image-form');
+              // Cancel
+              browser.assert.element('#cancel-edit-form');
+              // Publish
+              browser.assert.element('#publish-image-form');
+              // Info form
+              // Category selector
+              browser.assert.element('form select[name=category]', '110 - Commercial Travel');
+              browser.assert.elements('form select[name=category] option', 21);
+              browser.assert.element('form select[name=category] option[value="110"][selected=selected]');
+              // Total
+              browser.assert.input('form input[name=total]', '7.90');
+              // Currency
+              browser.assert.element('form select[name=currency]', 'CAD');
+              browser.assert.elements('form select[name=currency] option', 2);
+              browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+              // Exchange Rate (not visible)
+              browser.assert.style('#exchange-rate', 'display', 'none');
+              // Reason
+              browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
+              // Date
+              browser.assert.element(`form input[name=purchaseDate][value='2019-08-08']` );
+    
+              done();
+            });
+          }).catch((err) => {
+            done.fail(err);
+          });
+        });
+
+        it('allows an agent to view his own non-image document', done => {
+          browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"]`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.element(`a[href="/uploads/${troy.getAgentDirectory()}/troy2.pdf"]`);
+            browser.assert.elements('#delete-image-form', 1);
+            done();
+          });
+        });
+
+        it('allows an agent to cancel and return to the owner agent\'s image roll', done => {
+          browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"]`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.pressButton('Cancel', err => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url(`/image/${troy.getAgentDirectory()}`);
+              done();
+            });
           });
         });
       });

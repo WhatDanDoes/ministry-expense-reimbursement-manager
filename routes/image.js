@@ -274,6 +274,7 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
                                invoice: invoice,
                                messages: req.flash(),
                                agent: req.user,
+                               path: `${req.params.domain}/${req.params.agentId}`,
                                today: moment().format('YYYY-MM-DD'),
                                categories: models.Invoice.getCategories() });
   }).catch((error) => {
