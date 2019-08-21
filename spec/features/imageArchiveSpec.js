@@ -19,7 +19,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('imageArchiveSpec', () => {
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -30,10 +30,15 @@ describe('imageArchiveSpec', () => {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -64,9 +69,14 @@ describe('imageArchiveSpec', () => {
             'image4': fs.readFileSync('spec/files/troll.jpg'),
           },
           [`uploads/${lanny.getAgentDirectory()}`]: {
-            'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${troy.getAgentDirectory()}`]: {
+            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'troy2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'troy3.doc': fs.readFileSync('spec/files/troll.jpg'),
           },
           'public/images/uploads': {}
         });
@@ -93,46 +103,105 @@ describe('imageArchiveSpec', () => {
     });
 
     describe('authorized', () => {
-      it('displays a form to archive the images if viewing his own album', () => {
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
-      });
-
-      it('does not display a form to archive the images if there are no images', (done) => {
-        mock.restore();
-        browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          browser.assert.elements('section.image img', 0);
-          browser.assert.elements('section.link a', 0);
-          browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
-          done();
+      describe('agent viewing own album\'s interface', () => {
+        it('displays a form to archive the images if viewing his own album', () => {
+          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+          browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
         });
-      });
-
-      it('displays a link to archive the images even if none have been processed as invoices', (done) => {
-        models.mongoose.connection.db.dropCollection('invoices').then(result => {
+  
+        it('does not display a form to archive the images if there are no images', (done) => {
+          mock.restore();
           browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
             if (err) return done.fail(err);
             browser.assert.success();
-            browser.assert.elements('section.image img', 2);
-            browser.assert.elements('section.link a', 2);
-            browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
+            browser.assert.elements('section.image img', 0);
+            browser.assert.elements('section.link a', 0);
+            browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
             done();
           });
-        }).catch(function(err) {
-          done.fail(err);
+        });
+
+        it('displays a link to archive the images even if none have been processed as invoices', (done) => {
+          models.mongoose.connection.db.dropCollection('invoices').then(result => {
+            browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.elements('section.image img', 2);
+              browser.assert.elements('section.link a', 2);
+              browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
+              done();
+            });
+          }).catch(function(err) {
+            done.fail(err);
+          });
+        });
+      });
+
+      describe('agent viewing a writable album\'s interface', () => {
+        beforeEach(done => {
+          browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
+        });
+
+        it('displays a form to archive the images if viewing a writable album', () => {
+          browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+          browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
+        });
+  
+        it('does not display a form to archive the images if there are no images', (done) => {
+          mock.restore();
+          browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+            browser.assert.success();
+            browser.assert.elements('section.image img', 0);
+            browser.assert.elements('section.link a', 0);
+            browser.assert.elements(`form[action='/image/${troy.getAgentDirectory()}/archive']`, 0);
+            done();
+          });
+        });
+
+        it('displays a link to archive the images even if none have been processed as invoices', (done) => {
+          models.mongoose.connection.db.dropCollection('invoices').then(result => {
+            browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+              browser.assert.elements('section.image img', 2);
+              browser.assert.elements('section.link a', 1);
+              browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
+              done();
+            });
+          }).catch(function(err) {
+            done.fail(err);
+          });
         });
       });
 
       describe('archiving contents', () => {
 
         describe('with no invoices', () => {
-
-          it('returns an appropriate message if no images have been uploaded', (done) => {
+          it('returns an appropriate message if no images have been uploaded to agent\'s album', (done) => {
             mock.restore();
             request(app)
               .post(`/image/${agent.getAgentDirectory()}/archive`)
+              .set('Cookie', browser.cookies)
+              .expect(404)
+              .expect('Content-Type', /application\/json/ )
+              .end(function(err, res) {
+                if (err) done.fail(err);
+                expect(res.body).toEqual({message: 'You have no invoices to archive'});
+                done();
+              });
+          });
+
+          it('returns an appropriate message if no images have been uploaded to a writable album', (done) => {
+            mock.restore();
+            request(app)
+              .post(`/image/${troy.getAgentDirectory()}/archive`)
               .set('Cookie', browser.cookies)
               .expect(404)
               .expect('Content-Type', /application\/json/ )
@@ -252,6 +321,7 @@ describe('imageArchiveSpec', () => {
           .expect(401)
           .end(function(err, res) {
             if (err) done.fail(err);
+            expect(res.body.message).toEqual('Unauthorized');
             done();
           });
       });

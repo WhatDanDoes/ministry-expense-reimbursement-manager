@@ -206,16 +206,22 @@ describe('imageIndexSpec', () => {
 
     describe('unauthorized', () => {
       it('does not allow an agent to view an album for which he has not been granted access', done => {
-        models.Agent.findOne({ email: 'troy@example.com' }).then(function(troy) {
-          expect(agent.canRead.length).toEqual(1);
-          expect(agent.canRead[0]).not.toEqual(troy._id);
-
-          browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
-            if (err) return done.fail(err);
-            browser.assert.redirected();
-            browser.assert.url({ pathname: '/'});
-            browser.assert.text('.alert.alert-danger', 'You are not authorized to access that resource');
-            done();
+        agent.canWrite.pop();
+        agent.save().then(function(agent) {
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(troy) {
+            expect(agent.canRead.length).toEqual(1);
+            expect(agent.canRead[0]).not.toEqual(troy._id);
+            expect(agent.canWrite.length).toEqual(0);
+  
+            browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
+              if (err) return done.fail(err);
+              browser.assert.redirected();
+              browser.assert.url({ pathname: '/'});
+              browser.assert.text('.alert.alert-danger', 'You are not authorized to access that resource');
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);

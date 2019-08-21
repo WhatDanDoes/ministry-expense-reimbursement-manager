@@ -385,15 +385,21 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
       describe('unauthorized resource', function() {
         let troy;
         beforeEach(function(done) {
-          models.Agent.findOne({ email: 'troy@example.com' }).then(function(result) {
-            troy = result;
-
-            expect(agent.canRead.length).toEqual(1);
-            expect(agent.canRead[0]).not.toEqual(troy._id);
+          agent.canWrite.pop();
+          agent.save().then(result => {
+            models.Agent.findOne({ email: 'troy@example.com' }).then(function(result) {
+              troy = result;
   
-            browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
-              if (err) return done.fail(err);
-              done();
+              expect(agent.canRead.length).toEqual(1);
+              expect(agent.canRead[0]).not.toEqual(troy._id);
+              expect(agent.canWrite.length).toEqual(0);
+    
+              browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
+                if (err) return done.fail(err);
+                done();
+              });
+            }).catch(function(error) {
+              done.fail(error);
             });
           }).catch(function(error) {
             done.fail(error);
