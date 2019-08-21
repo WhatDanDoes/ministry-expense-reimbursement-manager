@@ -306,30 +306,12 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
   });
 });
 
-
 /**
- * POST /image
+ * saveUploads
+ *
+ * Used for POSTing images
  */
-//upload.array('docs', 8) limits number of files
-router.post('/', upload.array('docs'), (req, res, next) => {
-  if (/json/.test(req.headers['accept'])) {
-    return jwtAuth(req, res, next);
-  }
-  if (!req.isAuthenticated()) { 
-    req.flash('error', 'You need to login first');
-    return res.redirect('/');
-  }
-  next();
-
-}, (req, res) => {
-  if (!req.isAuthenticated()) {
-    if (/json/.test(req.headers['accept'])) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    req.flash('error', 'You have to login first');
-    return res.redirect('/');
-  }
-
+function saveUploads(req, res, done) {
   // No image provided
   if (!req.files || !req.files.length) {
     if (/json/.test(req.headers['accept'])) {
@@ -348,8 +330,14 @@ router.post('/', upload.array('docs'), (req, res, next) => {
     }
     newFileName = `${newFileName}.${file.path.split('.').pop()}`;
 
-    let parts = req.user.email.split('@');
-    const agentDirectory = `${parts[1]}/${parts[0]}` ;
+    let agentDirectory;
+    if (Object.keys(req.params).length) {
+      agentDirectory = `${req.params.domain}/${req.params.agentId}` ;
+    }
+    else {
+      let parts = req.user.email.split('@');
+      agentDirectory = `${parts[1]}/${parts[0]}` ;
+    }
     savePaths.push({
       curr: file.path,
       dest: `uploads/${agentDirectory}/${newFileName}`
@@ -371,6 +359,30 @@ router.post('/', upload.array('docs'), (req, res, next) => {
 
   recursiveSave((err) => {
     if (err) {
+      return done(err);
+    }
+    done()
+  });
+}
+
+/**
+ * POST /image
+ */
+//upload.array('docs', 8) limits number of files
+router.post('/', upload.array('docs'), (req, res, next) => {
+  if (/json/.test(req.headers['accept'])) {
+    return jwtAuth(req, res, next);
+  }
+  if (!req.isAuthenticated()) { 
+    req.flash('error', 'You need to login first');
+    return res.redirect('/');
+  }
+  next();
+
+}, (req, res) => {
+
+  saveUploads(req, res, (err, message) => {
+    if (err) {
       if (/json/.test(req.headers['accept'])) {
         return res.status(500).json({ message: err.message });
       }
@@ -381,7 +393,35 @@ router.post('/', upload.array('docs'), (req, res, next) => {
       return res.status(201).json({ message: 'Image received' });
     }
     req.flash('success', 'Received');
-    return res.redirect(`/image/${req.user.getAgentDirectory()}`);
+    return res.redirect(`/image/${req.param.domain}/${req.param.agentId}`);
+  });
+});
+
+/**
+ * POST /image/:domain/:agentId
+ */
+router.post('/:domain/:agentId', upload.array('docs'), ensureAuthorized, (req, res) => {
+  if (!req.user.isWriter) {
+    if (/json/.test(req.headers['accept'])) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    req.flash('error', 'You are not authorized to post to that account');
+    return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+  }
+
+  saveUploads(req, res, (err) => {
+    if (err) {
+      if (/json/.test(req.headers['accept'])) {
+        return res.status(500).json({ message: err.message });
+      }
+      req.flash('error', err.message);
+      return res.redirect(`/image/${req.user.getAgentDirectory()}`);
+    }
+    if (/json/.test(req.headers['accept'])) {
+      return res.status(201).json({ message: 'Image received' });
+    }
+    req.flash('success', 'Received');
+    return res.redirect(`/image/${req.param.domain}/${req.param.agentId}`);
   });
 });
 
