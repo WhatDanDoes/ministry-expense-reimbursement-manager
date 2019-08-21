@@ -20,7 +20,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('imageIndexSpec', () => {
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -32,10 +32,15 @@ describe('imageIndexSpec', () => {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -62,6 +67,9 @@ describe('imageIndexSpec', () => {
           'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'image3.doc': fs.readFileSync('spec/files/troll.jpg'),
         },
+        [`uploads/${troy.getAgentDirectory()}`]: {
+          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
         'public/images/uploads': {}
       });
  
@@ -81,124 +89,239 @@ describe('imageIndexSpec', () => {
     });
 
     describe('authorized', () => {
-      it('allows an agent to view his own album', () => {
-        browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-        browser.assert.elements('section.image img', 1);
-        browser.assert.elements('section.link a', 2);
-      });
-
-      it('allows an agent to view an album he can read', done => {
-        expect(agent.canRead.length).toEqual(1);
-        expect(agent.canRead[0]).toEqual(lanny._id);
-
-        browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          browser.assert.text('h2', 'No invoices');
-          done();
-        });
-      });
-
-      it('does not display upload form or jwt form if agent can read', done => {
-        expect(agent.canRead.length).toEqual(1);
-        expect(agent.canRead[0]).toEqual(lanny._id);
-
-        browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          browser.assert.elements('form[action="/image"]', 0);
-          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
-          done();
-        });
-      });
-
-      it('creates an agent directory if it does not exist already', done => {
-        expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(false);
-        browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(true);
-          done();
-        });
-      });
-
-      it('redirects /image to agent\'s personal album', done => {
-        browser.visit(`/image`, function(err) {
-          if (err) return done.fail(err);
-          browser.assert.redirected();
+      describe('owner album', () => {
+        it('allows an agent to view his own album', () => {
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-          done();
+          browser.assert.elements('section.image img', 1);
+          browser.assert.elements('section.link a', 2);
         });
-      });
-
-      it('displays an upload-files form', () => {
-        browser.assert.element("form[action='/image']");
-      });
-
-      it('displays an archive-files link', () => {
-        browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
-      });
-
-      it('writes a file upload to disk', done => {
-        fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-          if (err) {
-            return done.fail(err);
-          }
-          // Three files written in setup
-          expect(files.length).toEqual(3);
-
-          request(app)
-            .post('/image')
-            .set('Accept', 'text/html')
-            .set('Cookie', browser.cookies)
-            .attach('docs', 'spec/files/troll.jpg')
-            .expect('Content-Type', /html/)
-            .expect(302) // redirect
-            .end(function(err, res) {
-              if (err) {
-                return done.fail(err);
-              }
+ 
+        it('redirects /image to agent\'s personal album', done => {
+          browser.visit(`/image`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.redirected();
+            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+            done();
+          });
+        });
   
-              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+        it('displays an upload-files form', () => {
+          browser.assert.element("form[action='/image']");
+        });
+  
+        it('displays an archive-files link', () => {
+          browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
+        });
+  
+        it('writes a file upload to disk', done => {
+          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+            if (err) {
+              return done.fail(err);
+            }
+            // Three files written in setup
+            expect(files.length).toEqual(3);
+  
+            request(app)
+              .post('/image')
+              .set('Accept', 'text/html')
+              .set('Cookie', browser.cookies)
+              .attach('docs', 'spec/files/troll.jpg')
+              .expect('Content-Type', /html/)
+              .expect(302) // redirect
+              .end(function(err, res) {
                 if (err) {
                   return done.fail(err);
                 }
-                expect(files.length).toEqual(4);
-                done();
-              });
+    
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) {
+                    return done.fail(err);
+                  }
+                  expect(files.length).toEqual(4);
+                  done();
+                });
+            });
+          });
+        });
+  
+        it('writes multiple file uploads to disk', done => {
+          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+            if (err) {
+              return done.fail(err);
+            }
+  
+            // Three files written in setup
+            expect(files.length).toEqual(3);
+  
+            request(app)
+              .post('/image')
+              .set('Accept', 'text/html')
+              .set('Cookie', browser.cookies)
+              .attach('docs', 'spec/files/troll.jpg')
+              .attach('docs', 'spec/files/troll.png')
+              .expect('Content-Type', /html/)
+              .expect(302) // redirect
+              .end(function(err, res) {
+                if (err) {
+                  return done.fail(err);
+                }
+    
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) {
+                    return done.fail(err);
+                  }
+                  expect(files.length).toEqual(5);
+                  done();
+                });
+            });
           });
         });
       });
 
-      it('writes multiple file uploads to disk', done => {
-        fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-          if (err) {
-            return done.fail(err);
-          }
+      describe('readable album', () => {
+        beforeEach(done => {
+          expect(agent.canRead.length).toEqual(1);
+          expect(agent.canRead[0]).toEqual(lanny._id);
+ 
+          browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
+        });
 
-          // Three files written in setup
-          expect(files.length).toEqual(3);
+        it('allows an agent to view an album he can read', () => {
+          browser.assert.text('h2', 'No invoices');
+        });
 
-          request(app)
-            .post('/image')
-            .set('Accept', 'text/html')
-            .set('Cookie', browser.cookies)
-            .attach('docs', 'spec/files/troll.jpg')
-            .attach('docs', 'spec/files/troll.png')
-            .expect('Content-Type', /html/)
-            .expect(302) // redirect
-            .end(function(err, res) {
-              if (err) {
-                return done.fail(err);
-              }
+        it('creates an agent directory if it does not exist already', done => {
+          fs.rmdir(`uploads/${lanny.getAgentDirectory()}`, err => {
+            if (err) return done.fail(err);
+            expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(false);
+            browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              expect(fs.existsSync(`uploads/${lanny.getAgentDirectory()}`)).toBe(true);
+              done();
+            });
+          });
+        });
+
+        it('does not display an upload-files form', () => {
+          browser.assert.elements("form[action='/image']", 0);
+        });
   
-              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+        it('does not display an archive-files link', () => {
+          browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
+        });
+
+        it('does not display jwt link if agent can read', () => {
+          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
+        });
+
+        it('does not write a file upload to disk', done => {
+          fs.readdir(`uploads/${lanny.getAgentDirectory()}`, (err, files) => {
+            if (err) {
+              return done.fail(err);
+            }
+            expect(files.length).toEqual(0);
+  
+            request(app)
+              .post(`/image/${lanny.getAgentDirectory()}`)
+              .set('Accept', 'text/html')
+              .set('Cookie', browser.cookies)
+              .attach('docs', 'spec/files/troll.jpg')
+              .expect('Content-Type', /html/)
+              .expect(302) // redirect
+              .end(function(err, res) {
                 if (err) {
                   return done.fail(err);
                 }
-                expect(files.length).toEqual(5);
-                done();
-              });
+                browser.assert.url({ pathname: `/image/${lanny.getAgentDirectory()}`});
+
+                fs.readdir(`uploads/${lanny.getAgentDirectory()}`, (err, files) => {
+                  if (err) {
+                    return done.fail(err);
+                  }
+                  expect(files.length).toEqual(0);
+                  done();
+                });
+            });
+          });
+        });
+      });
+
+      describe('writable album', () => {
+        beforeEach(done => {
+          expect(agent.canWrite.length).toEqual(1);
+          expect(agent.canWrite[0]).toEqual(troy._id);
+ 
+          browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
+        });
+
+        it('allows an agent to view an album to which he can write', () => {
+          browser.assert.elements('section.image img', 1);
+        });
+
+        it('creates an agent directory if it does not exist already', done => {
+          mock.restore();
+          mockAndUnmock({ 
+            'uploads/': {}
+          });
+          expect(fs.existsSync(`uploads/${troy.getAgentDirectory()}`)).toBe(false);
+          browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            expect(fs.existsSync(`uploads/${troy.getAgentDirectory()}`)).toBe(true);
+            done();
+          });
+        });
+
+        it('displays an upload-files form', () => {
+          browser.assert.element("form[action='/image']");
+        });
+  
+        it('displays an archive-files link', () => {
+          browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
+        });
+
+        it('does not display jwt link if agent can write', () => {
+          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
+        });
+
+        it('writes a file upload to disk', done => {
+          fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+            if (err) {
+              return done.fail(err);
+            }
+            expect(files.length).toEqual(1);
+  
+            request(app)
+              .post(`/image/${troy.getAgentDirectory()}`)
+              .set('Accept', 'text/html')
+              .set('Cookie', browser.cookies)
+              .attach('docs', 'spec/files/troll.jpg')
+              .expect('Content-Type', /html/)
+              .expect(302) // redirect
+              .end(function(err, res) {
+                if (err) {
+                  return done.fail(err);
+                }
+
+                browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+
+                fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                  if (err) {
+                    return done.fail(err);
+                  }
+                  expect(files.length).toEqual(2);
+                  done();
+                });
+            });
           });
         });
       });

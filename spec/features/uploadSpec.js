@@ -13,27 +13,17 @@ const jwt = require('jsonwebtoken');
 
 describe('POST image/', () => {
 
-  afterEach(function(done) {
-    models.mongoose.connection.db.dropDatabase().then(function(err, result) {
-      done();
-    }).catch(function(err) {
-      done.fail(err);         
-    });
-  });
- 
   describe('unauthenticated access', () => {
     beforeEach(done => {
       mockAndUnmock({ 
         'uploads': mock.directory({}),
       });
-
       done();
     });
 
     afterEach(() => {
       mock.restore();
     });
-
 
     it('returns 401 error', done => {
       request(app)
@@ -83,7 +73,6 @@ describe('POST image/', () => {
   describe('authenticated access', () => {
 
     let agent, token;
-
     beforeEach(done => {
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
         if (err) {
@@ -104,10 +93,15 @@ describe('POST image/', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
+    afterEach(function(done) {
+      models.mongoose.connection.db.dropDatabase().then(function(err, result) {
+        mock.restore();
+        done();
+      }).catch(function(err) {
+        done.fail(err);         
+      });
     });
-
+ 
     it('responds with 201 on successful receipt of file', done => {
       request(app)
         .post('/image')
