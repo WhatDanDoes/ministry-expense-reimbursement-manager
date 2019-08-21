@@ -1,4 +1,4 @@
-  <% if (isMobile) { %>
+  <% if (isMobile && agent.isOwner) { %>
     <section class="deep-link">
       <a href="bpe://bpe?token=<%= token %>&domain=<%= encodeURIComponent(process.env.DOMAIN) %>">
         <img src="/images/bpe-logo.png">
