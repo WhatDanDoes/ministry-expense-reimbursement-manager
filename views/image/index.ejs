@@ -7,7 +7,7 @@
           <form role="form" action="<%= `/image/${agent.getAgentDirectory()}/archive` %>" method="post" enctype="multipart/form-data"
                 onsubmit="return confirm('Have you zipped your current work and sent it to your supervisor?\n\nYou cannot retrieve your old claim.\n\nPress OK to start a new claim.');">
             <input type="image" id="archive-button" name="submit" src="/images/start-new.png">
-            <p>Start new claim</p>
+            <p>Start new expense claim</p>
           </form>
         </section>
       <% } %>
@@ -16,7 +16,7 @@
         <form role="form" action="/image" method="post" enctype="multipart/form-data">
           <label class="fileContainer upload-link">
             <p><img src="/images/file-upload.png"></p>
-            <p>Upload file</p>
+            <p>Upload invoice file</p>
             <input type="file" id="docs" name="docs" multiple=true>
           </label>
           <div class="form-group">
