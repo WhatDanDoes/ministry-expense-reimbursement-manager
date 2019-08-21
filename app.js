@@ -5,6 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const models = require('./models');
+const ensureAuthorized = require('./lib/ensureAuthorized');
 
 const app = express();
 
@@ -114,7 +115,18 @@ app.use(`/uploads`, [function(req, res, next) {
         return next();
       }
     }
-    return res.sendStatus(403);
+
+    req.user.getWritables((err, writables) => {
+      if (err) {
+        return next(err);
+      }
+      for (let writable of writables) {
+        if (RegExp(writable).test(req.path)) {
+          return next();
+        }
+      }
+      return res.sendStatus(403);
+    });
   });
 }, express.static(path.join(__dirname, `/uploads`))]);
 

@@ -19,7 +19,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('imageStaticSpec', () => {
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -29,10 +29,15 @@ describe('imageStaticSpec', () => {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -63,6 +68,9 @@ describe('imageStaticSpec', () => {
          'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
          'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
          'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+       },
+       [`uploads/${troy.getAgentDirectory()}`]: {
+         'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
        },
        'public/images/uploads': {}
      });
@@ -104,13 +112,29 @@ describe('imageStaticSpec', () => {
             done();
           });
       });
+
+      it('allows an agent to view a static image file to which he is allowed to write', done => {
+        expect(agent.canWrite.length).toEqual(1);
+        expect(agent.canWrite[0]).toEqual(troy._id);
+        request(app)
+          .get(`/uploads/${troy.getAgentDirectory()}/troy1.jpg`)
+          .set('Cookie', browser.cookies)
+          .expect(200)
+          .end(function(err, res) {
+            if (err) done.fail(err);
+            done();
+          });
+      });
     });
 
     describe('unauthorized', () => {
       it('does not allow an agent to view a static image for which he has not been granted access', done => {
-        models.Agent.findOne({ email: 'troy@example.com' }).then(function(troy) {
-          expect(agent.canRead.length).toEqual(1);
-          expect(agent.canRead[0]).not.toEqual(troy._id);
+        agent.canRead.pop();
+        agent.canWrite.pop();
+        //models.Agent.findOne({ email: 'troy@example.com' }).then(function(troy) {
+        agent.save().then(function(agent) {
+          expect(agent.canRead.length).toEqual(0);
+          expect(agent.canWrite.length).toEqual(0);
 
           request(app)
             .get(`/uploads/${troy.getAgentDirectory()}/troy.jpg`)
