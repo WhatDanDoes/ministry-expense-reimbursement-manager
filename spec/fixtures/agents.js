@@ -22,7 +22,7 @@ exports.Agent = {
     password: 'secret',
     name: 'Dan',
     canRead: [lannyId],
-    canWrite: [lannyId, troyId],
+    canWrite: [troyId],
   },
   troy: {
     _id: troyId,
