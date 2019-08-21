@@ -172,6 +172,35 @@ module.exports = function(mongoose) {
     });
   };
 
+  AgentSchema.methods.getWritables = function(done) {
+    this.populate('canWrite', (err, agent) => {
+      if (err) {
+        return done(err);
+      }
+
+      let writables = agent.canWrite.map(a => a.getAgentDirectory());
+      writables.push(this.getAgentDirectory());
+      done(null, writables);
+    });
+  };
+
+  AgentSchema.methods.getWritablesAndFiles = function(done) {
+    this.populate('canWrite', (err, agent) => {
+      if (err) {
+        return done(err);
+      }
+
+      let writables = agent.canWrite.map(a => a.getAgentDirectory());
+      writables.push(this.getAgentDirectory());
+
+      countFiles(writables, (err, result) => {
+        if (err) {
+          return done(err);
+        }
+        done(null, result);
+      });
+    });
+  };
   
   // The toLocaleString method returns different results in Ubuntu 18 and 16:
   // date.toLocaleString('default', { month: 'short' })

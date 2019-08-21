@@ -437,26 +437,146 @@ describe('Agent', function() {
         });
       });
 
-      it('allows two agents to push the same writeable agent ID', function(done) {
+      it('allows two agents to push the same writable agent ID', function(done) {
         expect (agent.canWrite.length).toEqual(0);
         expect (newAgent.canWrite.length).toEqual(0);
 
-        let writeableAgent = new Agent({ email: 'writeableAgent@example.com', password: 'secret', name: 'Writable Agent' });
-        writeableAgent.save().then(function(result) {
+        let writableAgent = new Agent({ email: 'writableAgent@example.com', password: 'secret', name: 'Writable Agent' });
+        writableAgent.save().then(function(result) {
         
-          agent.canWrite.push(writeableAgent._id);
-          newAgent.canWrite.push(writeableAgent._id);
+          agent.canWrite.push(writableAgent._id);
+          newAgent.canWrite.push(writableAgent._id);
 
           agent.save().then(function(result) {
             expect(agent.canWrite.length).toEqual(1);
-            expect(agent.canWrite[0]).toEqual(writeableAgent._id);
+            expect(agent.canWrite[0]).toEqual(writableAgent._id);
   
             newAgent.save().then(function(result) {
               expect(newAgent.canWrite.length).toEqual(1);
-              expect(newAgent.canWrite[0]).toEqual(writeableAgent._id);
+              expect(newAgent.canWrite[0]).toEqual(writableAgent._id);
               done();
             }).catch(err => {
               done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+    });
+
+    /**
+     * #getWritables
+     */
+    describe('#getWritables', function() {
+      let newAgent;
+      beforeEach(function(done) {
+
+        agent.save().then(function(obj) {
+          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+            newAgent = obj;
+            agent.canWrite.push(newAgent._id);
+            agent.save().then(function(result) {
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      it('retrieve an array containing writable static directories', function(done) {
+        agent.getWritables(function(err, writables) {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(writables.length).toEqual(2);
+          expect(writables[0]).toEqual(newAgent.getAgentDirectory());
+          expect(writables[1]).toEqual(agent.getAgentDirectory());
+          done();
+        });
+      });
+    });
+
+
+    /**
+     * #getWritablesAndFiles
+     */
+    describe('#getWritablesAndFiles', function() {
+      let newAgent;
+      beforeEach(function(done) {
+
+
+        agent.save().then(function(obj) {
+          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+            newAgent = obj;
+            agent.canWrite.push(newAgent._id);
+            agent.save().then(function(result) {
+
+              mockAndUnmock({ 
+                [`uploads/${agent.getAgentDirectory()}/processed`]: {},
+                [`uploads/${newAgent.getAgentDirectory()}`]: {
+                  'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'processed': {},
+                  'archived': {},
+                }
+              });
+
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      afterEach(() => {
+        mock.restore();
+      });
+
+      it('retrieve an array containing writable static directories and files', function(done) {
+        agent.getWritablesAndFiles(function(err, writables) {
+          if (err) {
+            return done.fail(err);
+          }
+          expect(writables.length).toEqual(2);
+          expect(writables[0].path).toEqual(newAgent.getAgentDirectory());
+          expect(writables[0].files.length).toEqual(3);
+          expect(writables[1].path).toEqual(agent.getAgentDirectory());
+          expect(writables[1].files.length).toEqual(0);
+          done();
+        });
+      });
+
+      it('doesn\'t barf if writable agent doesn\'t have a directory yet', function(done) {
+        new Agent({ email: 'brandnewagent@example.com', password: 'secret', name: 'Brand New Agent' }).save().then(function(brandNewAgent) {
+          agent.canWrite.push(brandNewAgent._id);
+          agent.save().then(function(result) {
+
+            agent.getWritablesAndFiles(function(err, writables) {
+              if (err) {
+                return done.fail(err);
+              }
+              expect(writables.length).toEqual(3);
+              expect(writables[0].path).toEqual(newAgent.getAgentDirectory());
+              expect(writables[0].files.length).toEqual(3);
+              expect(writables[1].path).toEqual(brandNewAgent.getAgentDirectory());
+              expect(writables[1].files.length).toEqual(0);
+              expect(writables[2].path).toEqual(agent.getAgentDirectory());
+              expect(writables[2].files.length).toEqual(0);
+              done();
             });
           }).catch(err => {
             done.fail(err);
