@@ -1,10 +1,10 @@
 <% include ../_partials/head %>
   <% include ../_partials/messages %>
   <main>
-    <% if (canWrite) { %>
+    <% if (agent.isWriter) { %>
       <% if (canArchive) { %>
         <section class="deep-link">
-          <form role="form" action="<%= `/image/${agent.getAgentDirectory()}/archive` %>" method="post" enctype="multipart/form-data"
+          <form role="form" action="<%= `/image${path}/archive` %>" method="post" enctype="multipart/form-data"
                 onsubmit="return confirm('Have you zipped your current work and sent it to your supervisor?\n\nYou cannot retrieve your old claim.\n\nPress OK to start a new claim.');">
             <input type="image" id="archive-button" name="submit" src="/images/start-new.png">
             <p>Start new expense claim</p>
@@ -31,7 +31,7 @@
     <% if (!images.length) { %>
       <h2>No invoices</h2>
     <% } else { %>
-      <% if (canWrite && canZip) { %>
+      <% if (agent.isWriter && canZip) { %>
         <section class="deep-link">
           <a href="<%= `/image/${agent.getAgentDirectory()}/zip` %>">
             <img src="/images/zip-download.png">
