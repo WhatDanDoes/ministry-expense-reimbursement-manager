@@ -28,7 +28,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
 describe('POST /image/:domain/:agentId/:imageId', function() {
 
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -38,10 +38,15 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -85,6 +90,10 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        [`uploads/${troy.getAgentDirectory()}`]: {
+          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
         },
         'public/images/uploads': {}
       });
@@ -437,6 +446,212 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             });
           }).catch(function(error) {
             done.fail(error);
+          });
+        });
+      });
+
+      describe('writable resource', function() {
+        beforeEach(function(done) {
+          browser.visit(`/image/${troy.getAgentDirectory()}/troy1.jpg`, (err) => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
+        });
+
+        it('renders a form to allow an agent to publish an image', () => {
+          browser.assert.element('#publish-image-form');
+          browser.assert.element(`form[action="/image/${troy.getAgentDirectory()}/troy1.jpg?_method=PUT"][method="post"]`);
+        });
+ 
+        it('adds an invoice record to the database', function(done) {
+          models.Invoice.find({}).then((invoices) => {
+            expect(invoices.length).toEqual(0);
+
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              models.Invoice.find({}).then((invoices) => {
+                expect(invoices.length).toEqual(1);
+                expect(invoices[0].agent).toEqual(troy._id);
+                done();
+              }).catch(function(error) {
+                 done.fail(error);
+              });
+            });
+          }).catch(function(error) {
+            done.fail(error);
+          });
+        });
+
+        it('redirects to the agent image route if the publish is successful', function(done) {
+          browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.element(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .edit-mark`);
+            browser.assert.elements(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .check-mark`, 0);
+            browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+              if (err) return done.fail(err);
+ 
+              browser.fill('#datepicker', '2019-08-09');
+              browser.fill('#total', '7.9');
+              browser.select('#category-dropdown', '110 - Commercial Travel');
+              browser.fill('#reason', 'Lime scooter for 2km');
+              browser.pressButton('Save', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.text('.alert.alert-success', 'Invoice saved');
+                browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+                browser.assert.element(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .check-mark`);
+                browser.assert.elements(`.link a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .edit-mark`, 0);
+                done();
+              });
+            });
+          });
+        });
+
+        it('shows a check-mark on a non-image if publish is successful', function(done) {
+          browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.element(`.link a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"] + .edit-mark`);
+            browser.assert.elements(`.link a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"] + .check-mark`, 0);
+            browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"]`, (err) => {
+              if (err) return done.fail(err);
+              browser.assert.success();
+   
+              browser.fill('#datepicker', '2019-08-09');
+              browser.fill('#total', '7.9');
+              browser.select('#category-dropdown', '110 - Commercial Travel');
+              browser.fill('#reason', 'Lime scooter for 2km');
+              browser.pressButton('Save', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.text('.alert.alert-success', 'Invoice saved');
+                browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+                browser.assert.element(`.link a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"] + .check-mark`);
+                browser.assert.elements(`.link a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"] + .edit-mark`, 0);
+                done();
+              });
+            });
+          });
+        });
+
+        describe('non-Canadian currencies', () => {
+          it('displays a exchangeRate spinner when CAD is not selected', done => {
+            browser.assert.style('#exchange-rate', 'display', 'none');
+            browser.select('#currency-dropdown', 'USD', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.style('#exchange-rate', 'display', 'block');
+              browser.select('#currency-dropdown', 'CAD', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.style('#exchange-rate', 'display', 'none');
+                done();
+              });
+            });
+          });
+
+          it('displays the currency and exchangeRate when invoice not in CAD', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#currency-dropdown', 'USD');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                done();
+              });
+            });
+          });
+
+          it('resets exchange rate when currency set back to CAD', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#currency-dropdown', 'USD');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+
+                browser.select('#currency-dropdown', 'CAD');
+                browser.pressButton('Save', function(err) {
+                  if (err) return done.fail(err);
+                  browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                    if (err) return done.fail(err);
+                    browser.assert.success();
+ 
+                    browser.assert.style('#exchange-rate', 'display', 'none');
+                    browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
+                    browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+
+        describe('editing existing invoice', () => {
+          beforeEach(function(done) {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                done();
+              });
+            });
+          });
+
+          it('redirects to the agent image route if the update is successful', function(done) {
+            browser.fill('#total', '87.89');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.text('.alert.alert-success', 'Invoice saved');
+              browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+
+              browser.assert.element(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .check-mark`);
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+
+                browser.assert.element(`img[src="/uploads/${troy.getAgentDirectory()}/troy1.jpg"]`);
+                browser.assert.element('form select[name=category]', '110 - Commercial Travel');
+                browser.assert.elements('form select[name=category] option', 21);
+                browser.assert.input('form input[name=total]', '87.89');
+                browser.assert.input('form input[name=reason]', 'Lime scooter for 2km');
+                browser.assert.element(`form input[name=purchaseDate][value='2019-08-09']` );
+
+                done();
+              });
+            });
           });
         });
       });

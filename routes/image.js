@@ -291,16 +291,24 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
 
-  req.body.agent = req.user._id;
-  req.body.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
-  if (req.body.currency === 'CAD') {
-    req.body.exchangeRate = 1.0;
-  }
+  models.Agent.findOne({ email: `${req.params.agentId}@${req.params.domain}` }).then(owner => {
+    if (!owner) {
+      return res.status(400).json({ message: 'No such account' });
+    }
+    req.body.agent = owner._id;
+    req.body.doc = `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`;
+    if (req.body.currency === 'CAD') {
+      req.body.exchangeRate = 1.0;
+    }
 
-  models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {
-    req.flash('success', 'Invoice saved');
-    res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
-  }).catch((error) => {
+    models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {
+      req.flash('success', 'Invoice saved');
+      res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+    }).catch((error) => {
+      req.flash('error', error.message);
+      res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
+    });
+  }).catch(error => {
     req.flash('error', error.message);
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
   });
