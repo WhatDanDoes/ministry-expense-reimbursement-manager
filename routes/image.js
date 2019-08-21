@@ -82,7 +82,6 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
       const payload = { email: req.user.email };
       const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
   
-      const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
       res.render('image/index', { images: files,
                                   messages: req.flash(),
                                   agent: req.user,
@@ -90,8 +89,8 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
                                   prevPage: 0,
                                   token: token,
                                   canArchive: !!files.length,
-                                  canWrite: canWrite,
                                   canZip: files.length && invoices.length,
+                                  path: req.path,
                                   isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
     }).catch((error) => {
       req.flash('error', error.message);
@@ -141,7 +140,6 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
       const payload = { email: req.user.email };
       const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
   
-      const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
       res.render('image/index', { images: files,
                                   messages: req.flash(),
                                   agent: req.user,
@@ -149,7 +147,7 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
                                   prevPage: prevPage,
                                   token: token,
                                   canArchive: !!files.length,
-                                  canWrite: canWrite,
+                                  path: req.path,
                                   canZip: files.length && invoices.length,
                                   isMobile: isMobile({ ua: req, tablet: true}) });
     }).catch((error) => {
@@ -163,9 +161,7 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
  * GET /image/:domain/:agentId/zip
  */
 router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
-  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-
-  if (!canWrite) {
+  if (!req.user.isWriter) {
     return res.sendStatus(403);
   }
 
@@ -269,7 +265,6 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
  * GET /image/:domain/:agentId/:imageId
  */
 router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
-  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
   let file = {file: req.path};
   if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(req.path)) {
     file.type = 'image';
@@ -279,7 +274,6 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
                                invoice: invoice,
                                messages: req.flash(),
                                agent: req.user,
-                               canWrite: canWrite,
                                today: moment().format('YYYY-MM-DD'),
                                categories: models.Invoice.getCategories() });
   }).catch((error) => {
@@ -292,9 +286,7 @@ router.get('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
  * PUT /image/:domain/:agentId/:imageId
  */
 router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
-  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-
-  if (!canWrite) {
+  if (!req.user.isWriter) {
     req.flash('info', 'You do not have access to that resource');
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
@@ -397,8 +389,7 @@ router.post('/', upload.array('docs'), (req, res, next) => {
  * DELETE /image/:domain/:agentId/:imageId
  */
 router.delete('/:domain/:agentId/:imageId', ensureAuthorized, function(req, res) {
-  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-  if (!canWrite){
+  if (!req.user.isWriter){
     req.flash('error', 'You are not authorized to delete that resource');
     return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   }
@@ -422,8 +413,7 @@ router.delete('/:domain/:agentId/:imageId', ensureAuthorized, function(req, res)
  * POST /image/:domain/:agentId/archive
  */
 router.post('/:domain/:agentId/archive', ensureAuthorized, (req, res) => {
-  const canWrite = RegExp(req.user.getAgentDirectory()).test(req.path);
-  if (!canWrite){
+  if (!req.user.isWriter){
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
