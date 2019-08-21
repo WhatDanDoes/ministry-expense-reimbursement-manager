@@ -146,6 +146,10 @@ describe('imageArchiveSpec', () => {
 
         describe('with invoices', () => {
           beforeEach(done => {
+            browser.on('confirm', function(obj) {
+              expect(obj.question).toEqual('Have you zipped your current work and sent it to your supervisor?\n\nYou cannot retrieve your old claim.\n\nPress OK to start a new claim.');
+              expect(obj.response).toBe(true);
+            });
             done();
           });
 
