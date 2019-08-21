@@ -42,6 +42,7 @@ module.exports = function(mongoose) {
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
+    canWrite: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
   }, {
     timestamps: true
   });

@@ -125,7 +125,6 @@ describe('Agent', function() {
       });
     });
 
-
     it('does not re-hash a password on update', function(done) {
       agent.save().then(function(obj) {
         var passwordHash = agent.password;
@@ -399,6 +398,72 @@ describe('Agent', function() {
         expect(agent.name).toEqual('Some Guy');
 
         expect(agent.getBaseFilename()).toEqual('Guy, Some 2019 12 Dec Reimb Receipt');
+      });
+    });
+
+    /**
+     * canWrite relationship
+     */
+    describe('canWrite', function() {
+      let newAgent;
+      beforeEach(function(done) {
+        agent.save().then(function(obj) {
+          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {;
+            newAgent = obj;
+            done();
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      it('does not add a duplicate agent to the canWrite field', function(done) {
+        agent.canWrite.push(newAgent._id);
+        agent.save().then(function(result) {
+          expect(agent.canWrite.length).toEqual(1);
+          expect(agent.canWrite[0]).toEqual(newAgent._id);
+
+          agent.canWrite.push(newAgent._id);
+          agent.save().then(function(result) {
+            done.fail('This should not have updated');
+          }).catch(err => {
+            expect(err.message).toMatch('Duplicate values in array');
+            done();
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      it('allows two agents to push the same writeable agent ID', function(done) {
+        expect (agent.canWrite.length).toEqual(0);
+        expect (newAgent.canWrite.length).toEqual(0);
+
+        let writeableAgent = new Agent({ email: 'writeableAgent@example.com', password: 'secret', name: 'Writable Agent' });
+        writeableAgent.save().then(function(result) {
+        
+          agent.canWrite.push(writeableAgent._id);
+          newAgent.canWrite.push(writeableAgent._id);
+
+          agent.save().then(function(result) {
+            expect(agent.canWrite.length).toEqual(1);
+            expect(agent.canWrite[0]).toEqual(writeableAgent._id);
+  
+            newAgent.save().then(function(result) {
+              expect(newAgent.canWrite.length).toEqual(1);
+              expect(newAgent.canWrite[0]).toEqual(writeableAgent._id);
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
       });
     });
   });
