@@ -5,7 +5,6 @@ const fs = require('fs');
 
 module.exports = function(mongoose) {
   const Schema = mongoose.Schema;
-  const arrayUniquePlugin = require('mongoose-unique-array');
 
   const AgentSchema = new Schema({
     email: {
@@ -40,8 +39,9 @@ module.exports = function(mongoose) {
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
-    canWrite: [{ type: Schema.Types.ObjectId, ref: 'Agent', unique: true }],
+    // use $addToSet to ensure not duplicates
+    canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent' }],
+    canWrite: [{ type: Schema.Types.ObjectId, ref: 'Agent' }],
   }, {
     timestamps: true
   });
@@ -214,8 +214,6 @@ module.exports = function(mongoose) {
     return `${lastname}, ${firstname} ${date.getFullYear()} ${("0" + (date.getMonth() + 1)).slice(-2)} ${MONTHS[date.getMonth()]} Reimb Receipt`;
   };
 
-
-  AgentSchema.plugin(arrayUniquePlugin);
   return AgentSchema;
 };
 
