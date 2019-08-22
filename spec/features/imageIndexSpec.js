@@ -72,9 +72,9 @@ describe('imageIndexSpec', () => {
         },
         'public/images/uploads': {}
       });
- 
+
       spyOn(jwt, 'sign').and.returnValue('somejwtstring');
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -83,7 +83,7 @@ describe('imageIndexSpec', () => {
         done();
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -95,7 +95,7 @@ describe('imageIndexSpec', () => {
           browser.assert.elements('section.image img', 1);
           browser.assert.elements('section.link a', 2);
         });
- 
+
         it('redirects /image to agent\'s personal album', done => {
           browser.visit(`/image`, function(err) {
             if (err) return done.fail(err);
@@ -104,15 +104,15 @@ describe('imageIndexSpec', () => {
             done();
           });
         });
-  
+
         it('displays an upload-files form', () => {
           browser.assert.element("form[action='/image']");
         });
-  
+
         it('displays an archive-files link', () => {
           browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
         });
-  
+
         it('writes a file upload to disk', done => {
           fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
             if (err) {
@@ -120,7 +120,7 @@ describe('imageIndexSpec', () => {
             }
             // Three files written in setup
             expect(files.length).toEqual(3);
-  
+
             request(app)
               .post('/image')
               .set('Accept', 'text/html')
@@ -132,7 +132,7 @@ describe('imageIndexSpec', () => {
                 if (err) {
                   return done.fail(err);
                 }
-    
+
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) {
                     return done.fail(err);
@@ -143,16 +143,16 @@ describe('imageIndexSpec', () => {
             });
           });
         });
-  
+
         it('writes multiple file uploads to disk', done => {
           fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
             if (err) {
               return done.fail(err);
             }
-  
+
             // Three files written in setup
             expect(files.length).toEqual(3);
-  
+
             request(app)
               .post('/image')
               .set('Accept', 'text/html')
@@ -165,7 +165,7 @@ describe('imageIndexSpec', () => {
                 if (err) {
                   return done.fail(err);
                 }
-    
+
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) {
                     return done.fail(err);
@@ -182,7 +182,7 @@ describe('imageIndexSpec', () => {
         beforeEach(done => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
- 
+
           browser.visit(`/image/${lanny.getAgentDirectory()}`, function(err) {
             if (err) return done.fail(err);
             browser.assert.success();
@@ -210,7 +210,7 @@ describe('imageIndexSpec', () => {
         it('does not display an upload-files form', () => {
           browser.assert.elements("form[action='/image']", 0);
         });
-  
+
         it('does not display an archive-files link', () => {
           browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
         });
@@ -225,7 +225,7 @@ describe('imageIndexSpec', () => {
               return done.fail(err);
             }
             expect(files.length).toEqual(0);
-  
+
             request(app)
               .post(`/image/${lanny.getAgentDirectory()}`)
               .set('Accept', 'text/html')
@@ -255,7 +255,7 @@ describe('imageIndexSpec', () => {
         beforeEach(done => {
           expect(agent.canWrite.length).toEqual(1);
           expect(agent.canWrite[0]).toEqual(troy._id);
- 
+
           browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
             if (err) return done.fail(err);
             browser.assert.success();
@@ -284,7 +284,7 @@ describe('imageIndexSpec', () => {
         it('displays an upload-files form', () => {
           browser.assert.element("form[action='/image']");
         });
-  
+
         it('displays an archive-files link', () => {
           browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
         });
@@ -299,7 +299,7 @@ describe('imageIndexSpec', () => {
               return done.fail(err);
             }
             expect(files.length).toEqual(1);
-  
+
             request(app)
               .post(`/image/${troy.getAgentDirectory()}`)
               .set('Accept', 'text/html')
@@ -335,7 +335,7 @@ describe('imageIndexSpec', () => {
             expect(agent.canRead.length).toEqual(1);
             expect(agent.canRead[0]).not.toEqual(troy._id);
             expect(agent.canWrite.length).toEqual(0);
-  
+
             browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
               if (err) return done.fail(err);
               browser.assert.redirected();
@@ -463,14 +463,14 @@ describe('imageIndexSpec', () => {
         },
         'public/images/uploads': {}
       });
- 
+
       spyOn(jwt, 'sign').and.returnValue('somejwtstring');
- 
+
       browser = new Browser({ waitDuration: '30s', loadCss: false });
 
       done();
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -480,7 +480,7 @@ describe('imageIndexSpec', () => {
       browser.visit('/', function(err) {
         if (err) return done.fail(err);
         browser.assert.success();
-            
+
         browser.fill('email', agent.email);
         browser.fill('password', 'secret');
         browser.pressButton('Login', function(err) {
@@ -497,7 +497,7 @@ describe('imageIndexSpec', () => {
       browser.visit('/', function(err) {
         if (err) return done.fail(err);
         browser.assert.success();
- 
+
         browser.fill('email', agent.email);
         browser.fill('password', 'secret');
         browser.pressButton('Login', function(err) {
@@ -505,7 +505,7 @@ describe('imageIndexSpec', () => {
           browser.assert.success();
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
           browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
-  
+
           done();
         });
       });
@@ -533,13 +533,13 @@ describe('imageIndexSpec', () => {
         browser.visit('/', function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
-  
+
           browser.fill('email', agent.email);
           browser.fill('password', 'secret');
           browser.pressButton('Login', function(err) {
             if (err) done.fail(err);
             browser.assert.success();
-   
+
             browser.clickLink('#next-page', function(err) {
               if (err) done.fail(err);
               browser.assert.success();
@@ -555,19 +555,19 @@ describe('imageIndexSpec', () => {
         browser.visit('/', function(err) {
           if (err) return done.fail(err);
           browser.assert.success();
-  
+
           browser.fill('email', agent.email);
           browser.fill('password', 'secret');
           browser.pressButton('Login', function(err) {
             if (err) done.fail(err);
             browser.assert.success();
-   
+
             browser.clickLink('#next-page', function(err) {
               if (err) done.fail(err);
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
               browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
-      
+
               done();
             });
           });

@@ -67,7 +67,7 @@ describe('agentIndexSpec', () => {
       });
 
       spyOn(jwt, 'sign').and.returnValue('somejwtstring');
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -81,7 +81,7 @@ describe('agentIndexSpec', () => {
         });
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -100,7 +100,7 @@ describe('agentIndexSpec', () => {
           browser.assert.link('.readables .agent a', lanny.getAgentDirectory(), `/image/${lanny.getAgentDirectory()}`);
           browser.assert.link('.readables .agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
         });
-  
+
         it('counts the number of unprocessed invoices in a readable account', () => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
@@ -108,7 +108,7 @@ describe('agentIndexSpec', () => {
           browser.assert.text('.readables section.agent:nth-of-type(1) .count', '');
           browser.assert.text('.readables section.agent:nth-of-type(2) .count', '(3)');
         });
-  
+
         it('lets the agent click and view a link he can read', done => {
           browser.clickLink(lanny.getAgentDirectory(), function(err) {
             if (err) return done.fail(err);
@@ -126,7 +126,7 @@ describe('agentIndexSpec', () => {
           browser.assert.link('.writables .agent a', troy.getAgentDirectory(), `/image/${troy.getAgentDirectory()}`);
           browser.assert.link('.writables .agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
         });
-  
+
         it('counts the number of unprocessed invoices in a writable account', () => {
           expect(agent.canWrite.length).toEqual(1);
           expect(agent.canWrite[0]).toEqual(troy._id);
@@ -134,7 +134,7 @@ describe('agentIndexSpec', () => {
           browser.assert.text('.writables section.agent:nth-of-type(1) .count', '');
           browser.assert.text('.writables section.agent:nth-of-type(2) .count', '(3)');
         });
-  
+
         it('lets the agent click and view a link he can read', done => {
           browser.clickLink(troy.getAgentDirectory(), function(err) {
             if (err) return done.fail(err);

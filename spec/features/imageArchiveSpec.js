@@ -80,9 +80,9 @@ describe('imageArchiveSpec', () => {
           },
           'public/images/uploads': {}
         });
-   
+
         spyOn(jwt, 'sign').and.returnValue('somejwtstring');
-   
+
         browser.fill('email', agent.email);
         browser.fill('password', 'secret');
         browser.pressButton('Login', function(err) {
@@ -92,7 +92,7 @@ describe('imageArchiveSpec', () => {
         });
       });
     });
-  
+
     afterEach(done => {
       models.mongoose.connection.db.dropDatabase().then(result => {
         mock.restore();
@@ -108,7 +108,7 @@ describe('imageArchiveSpec', () => {
           browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
           browser.assert.element(`form[action='/image/${agent.getAgentDirectory()}/archive']`);
         });
-  
+
         it('does not display a form to archive the images if there are no images', (done) => {
           mock.restore();
           browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
@@ -150,7 +150,7 @@ describe('imageArchiveSpec', () => {
           browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
           browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
         });
-  
+
         it('does not display a form to archive the images if there are no images', (done) => {
           mock.restore();
           browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
@@ -233,7 +233,7 @@ describe('imageArchiveSpec', () => {
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) return done.fail(err);
                   expect(files.indexOf('archive') >= 0).toBe(true);
- 
+
                   done();
                 });
               });
@@ -257,7 +257,7 @@ describe('imageArchiveSpec', () => {
                     if (err) return done.fail(err);
                     expect(files.indexOf('archive') >= 0).toBe(false);
                     expect(files.length).toEqual(4);
- 
+
                     done();
                   });
                 });

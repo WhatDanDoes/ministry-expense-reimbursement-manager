@@ -74,7 +74,7 @@ describe('password reset', function() {
           mailer.transport.sentMail = [];
           done();
         });
-  
+
         it('displays success message', function(done) {
           browser.assert.text('.alert.alert-success',
                   'An email has been sent to ' + agent.email + ' with further instructions');
@@ -92,7 +92,7 @@ describe('password reset', function() {
             done.fail(err);
           });
         });
-  
+
         it('sends an email containing the reset link to the agent', function(done) {
           expect(mailer.transport.sentMail.length).toEqual(1);
           expect(mailer.transport.sentMail[0].data.to).toEqual(agent.email);
@@ -151,10 +151,10 @@ describe('password reset', function() {
                 [`uploads/${agent.getAgentDirectory()}`]: {},
                 'public/images/uploads': {}
               });
-    
+
               done();
             });
-    
+
             afterEach(function() {
               mock.restore();
             });

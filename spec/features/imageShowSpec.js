@@ -69,7 +69,7 @@ describe('imageShowSpec', () => {
         },
         'public/images/uploads': {}
       });
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -78,7 +78,7 @@ describe('imageShowSpec', () => {
         done();
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -115,7 +115,7 @@ describe('imageShowSpec', () => {
             browser.assert.input('form input[name=reason]', '');
             // Date
             browser.assert.element(`form input[name=purchaseDate][value="${moment().format('YYYY-MM-DD')}"]` );
-  
+
             done();
           });
         });
@@ -160,7 +160,7 @@ describe('imageShowSpec', () => {
               browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
               // Date
               browser.assert.element(`form input[name=purchaseDate][value='2019-08-08']` );
-    
+
               done();
             });
           }).catch((err) => {
@@ -196,7 +196,7 @@ describe('imageShowSpec', () => {
         it('renders without associated invoice', done => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
-  
+
           browser.visit(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`, function(err) {
             if (err) return done.fail(err);
             browser.assert.success();
@@ -204,7 +204,7 @@ describe('imageShowSpec', () => {
             browser.assert.elements('#delete-image-form', 0);
             browser.assert.elements('#publish-image-form', 1);
             browser.assert.elements('#publish-image-button', 0);
-  
+
             // Info form
             // Category selector
             browser.assert.element('form select[name=category][disabled=disabled]');
@@ -223,7 +223,7 @@ describe('imageShowSpec', () => {
         it('renders with associated invoice', done => {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(lanny._id);
-  
+
           const invoice = {
             category: 110,
             purchaseDate: new Date('2019-08-08'),
@@ -240,7 +240,7 @@ describe('imageShowSpec', () => {
               browser.assert.elements('#delete-image-form', 0);
               browser.assert.elements('#publish-image-form', 1);
               browser.assert.elements('#publish-image-button', 0);
-    
+
               // Info form
               // Category selector
               browser.assert.element('form select[name=category][disabled=disabled]');
@@ -313,7 +313,7 @@ describe('imageShowSpec', () => {
             browser.assert.input('form input[name=reason]', '');
             // Date
             browser.assert.element(`form input[name=purchaseDate][value="${moment().format('YYYY-MM-DD')}"]` );
-  
+
             done();
           });
         });
@@ -358,7 +358,7 @@ describe('imageShowSpec', () => {
               browser.assert.input('form input[name=reason]', 'Lime scooter for 2 km');
               // Date
               browser.assert.element(`form input[name=purchaseDate][value='2019-08-08']` );
-    
+
               done();
             });
           }).catch((err) => {
@@ -398,7 +398,7 @@ describe('imageShowSpec', () => {
           models.Agent.findOne({ email: 'troy@example.com' }).then(function(troy) {
             expect(agent.canRead.length).toEqual(1);
             expect(agent.canRead[0]).not.toEqual(troy._id);
-  
+
             browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
               if (err) return done.fail(err);
               browser.assert.redirected();

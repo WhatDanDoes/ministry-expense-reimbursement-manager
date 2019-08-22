@@ -68,7 +68,7 @@ describe('landing page', () => {
     });
   });
 
-  it('provides a link to  non-image files', done => {
+  it('provides a link to non-image files', done => {
     mockAndUnmock({ 
       'public/images/uploads': {
         'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),

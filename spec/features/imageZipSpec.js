@@ -82,9 +82,9 @@ describe('imageZipSpec', () => {
           },
           'public/images/uploads': {}
         });
-   
+
         spyOn(jwt, 'sign').and.returnValue('somejwtstring');
-   
+
         browser.fill('email', agent.email);
         browser.fill('password', 'secret');
         browser.pressButton('Login', function(err) {
@@ -186,7 +186,7 @@ describe('imageZipSpec', () => {
                   callback(null, Buffer.from(res.data, 'binary'));
                 });
               }
-      
+
               request(app)
                 .get(`/image/${agent.getAgentDirectory()}/zip`)
                 .set('Cookie', browser.cookies)
@@ -195,19 +195,19 @@ describe('imageZipSpec', () => {
                 .parse(binaryParser)
                 .end(function(err, res) {
                   if (err) done.fail(err);
-    
+
                   expect(Buffer.isBuffer(res.body)).toBe(true);
-      
+
                   let zip = new AdmZip(res.body);
                   zipEntries = zip.getEntries();
 
                   // One file in zipEntries is the CSV (not to be counted in the image count)
                   expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-1}.zip`);
-    
+
                   done();
                 });
             });
-    
+
             // The `gif` has no associated invoice (cf., `fixtures/invoices.js`)
             it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
               expect(zipEntries.length).toEqual(4);
@@ -216,7 +216,7 @@ describe('imageZipSpec', () => {
               expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #2`);
               expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #3.jpg`);
             });
-      
+
             it('consolidates the invoice data in a CSV', done => {
               models.Invoice.find({}).sort({ purchaseDate: -1 }).then(invoices => {
                 expect(invoices.length).toEqual(3);
@@ -244,7 +244,7 @@ describe('imageZipSpec', () => {
               invoice.doc = invoice.doc.replace('image', 'troy');
               invoice._id = undefined;
             }
-      
+
             models.Invoice.insertMany(invoices, (err, num) => {
               if (err) return done.fail(err);
 

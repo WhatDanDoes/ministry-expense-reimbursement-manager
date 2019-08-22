@@ -97,7 +97,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
         },
         'public/images/uploads': {}
       });
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -106,7 +106,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
         done();
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -130,34 +130,34 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
             done();
           });
         });
-  
+
         describe('with no associated invoice', () => {
           it('redirects to the origin album if the delete is successful', function(done) {
             browser.pressButton('Delete', function(err) {
               if (err) return done.fail(err);
-    
+
               browser.assert.success();
               browser.assert.text('.alert.alert-info', 'Image deleted');
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
               done();
             });
           });
-    
+
           it('deletes the image from the file system', function(done) {
             fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
               if (err) return done.fail(err);
               expect(files.length).toEqual(3);
               expect(files.includes('image1.jpg')).toBe(true);
-    
+
               browser.pressButton('Delete', function(err) {
                 if (err) return done.fail(err);
                 browser.assert.success();
-    
+
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) return done.fail(err);
                   expect(files.length).toEqual(2);
                   expect(files.includes('image1.jpg')).toBe(false);
-        
+
                   done();
                 });
               });
@@ -186,7 +186,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
           it('redirects to the origin album if the delete is successful', function(done) {
             browser.pressButton('Delete', function(err) {
               if (err) return done.fail(err);
-    
+
               browser.assert.success();
               browser.assert.text('.alert.alert-info', 'Image deleted');
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
@@ -199,16 +199,16 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
               if (err) return done.fail(err);
               expect(files.length).toEqual(3);
               expect(files.includes('image1.jpg')).toBe(true);
-    
+
               browser.pressButton('Delete', function(err) {
                 if (err) return done.fail(err);
                 browser.assert.success();
-    
+
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) return done.fail(err);
                   expect(files.length).toEqual(2);
                   expect(files.includes('image1.jpg')).toBe(false);
-        
+
                   done();
                 });
               });
@@ -295,7 +295,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
           it('does not delete the invoice from the database', function(done) {
             models.Invoice.find({}).then((invoices) => {
               expect(invoices.length).toEqual(1);
-  
+
               request(app)
                 .delete(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
                 .set('Cookie', browser.cookies)
@@ -303,7 +303,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                   if (err) return done.fail(err);
                   expect(res.status).toEqual(302);
                   expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
-  
+
                   models.Invoice.find({}).then((invoices) => {
                     expect(invoices.length).toEqual(1);
                     done();
@@ -325,7 +325,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
             expect(agent.canRead.length).toEqual(1);
             expect(agent.canRead[0]).not.toEqual(troy._id);
             expect(agent.canWrite.length).toEqual(0);
-  
+
             browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
               if (err) return done.fail(err);
               done();
@@ -349,7 +349,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
               if (err) return done.fail(err);
               expect(files.length).toEqual(1);
               expect(files.includes('troy1.jpg')).toBe(true);
-  
+
               request(app)
                 .delete(`/image/${troy.getAgentDirectory()}/troy1.jpg`)
                 .set('Cookie', browser.cookies)
@@ -357,12 +357,12 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                   if (err) return done.fail(err);
                   expect(res.status).toEqual(302);
                   expect(res.header.location).toEqual('/');
-  
+
                   fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.length).toEqual(1);
                     expect(files.includes('troy1.jpg')).toBe(true);
-  
+
                     done();
                   });
                 });
@@ -391,7 +391,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
           it('does not delete the invoice from the database', function(done) {
             models.Invoice.find({}).then((invoices) => {
               expect(invoices.length).toEqual(1);
-  
+
               request(app)
                 .delete(`/image/${troy.getAgentDirectory()}/troy.jpg`)
                 .set('Cookie', browser.cookies)
@@ -399,7 +399,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                   if (err) return done.fail(err);
                   expect(res.status).toEqual(302);
                   expect(res.header.location).toEqual(`/`);
-  
+
                   models.Invoice.find({}).then((invoices) => {
                     expect(invoices.length).toEqual(1);
                     done();

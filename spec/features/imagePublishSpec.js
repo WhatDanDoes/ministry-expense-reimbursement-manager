@@ -97,7 +97,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         },
         'public/images/uploads': {}
       });
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -106,7 +106,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         done();
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -125,7 +125,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           browser.assert.element('#publish-image-form');
           browser.assert.element(`form[action="/image/${agent.getAgentDirectory()}/image1.jpg?_method=PUT"][method="post"]`);
         });
- 
+
         it('adds an invoice record to the database', function(done) {
           models.Invoice.find({}).then((invoices) => {
             expect(invoices.length).toEqual(0);
@@ -157,7 +157,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.assert.elements(`.image a[href="/image/${agent.getAgentDirectory()}/image1.jpg"] + .check-mark`, 0);
             browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
               if (err) return done.fail(err);
- 
+
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
               browser.select('#category-dropdown', '110 - Commercial Travel');
@@ -184,7 +184,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image2.pdf"]`, (err) => {
               if (err) return done.fail(err);
               browser.assert.success();
-   
+
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
               browser.select('#category-dropdown', '110 - Commercial Travel');
@@ -260,7 +260,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                   browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
                     if (err) return done.fail(err);
                     browser.assert.success();
- 
+
                     browser.assert.style('#exchange-rate', 'display', 'none');
                     browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
                     browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
@@ -309,7 +309,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                 browser.assert.input('form input[name=total]', '87.89');
                 browser.assert.input('form input[name=reason]', 'Lime scooter for 2km');
                 browser.assert.element(`form input[name=purchaseDate][value='2019-08-09']` );
-   
+
                 done();
               });
             });
@@ -398,11 +398,11 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           agent.save().then(result => {
             models.Agent.findOne({ email: 'troy@example.com' }).then(function(result) {
               troy = result;
-  
+
               expect(agent.canRead.length).toEqual(1);
               expect(agent.canRead[0]).not.toEqual(troy._id);
               expect(agent.canWrite.length).toEqual(0);
-    
+
               browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
                 if (err) return done.fail(err);
                 done();
@@ -463,7 +463,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           browser.assert.element('#publish-image-form');
           browser.assert.element(`form[action="/image/${troy.getAgentDirectory()}/troy1.jpg?_method=PUT"][method="post"]`);
         });
- 
+
         it('adds an invoice record to the database', function(done) {
           models.Invoice.find({}).then((invoices) => {
             expect(invoices.length).toEqual(0);
@@ -496,7 +496,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.assert.elements(`.image a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"] + .check-mark`, 0);
             browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
               if (err) return done.fail(err);
- 
+
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
               browser.select('#category-dropdown', '110 - Commercial Travel');
@@ -523,7 +523,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
             browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy2.pdf"]`, (err) => {
               if (err) return done.fail(err);
               browser.assert.success();
-   
+
               browser.fill('#datepicker', '2019-08-09');
               browser.fill('#total', '7.9');
               browser.select('#category-dropdown', '110 - Commercial Travel');
@@ -599,7 +599,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                   browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
                     if (err) return done.fail(err);
                     browser.assert.success();
- 
+
                     browser.assert.style('#exchange-rate', 'display', 'none');
                     browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
                     browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');

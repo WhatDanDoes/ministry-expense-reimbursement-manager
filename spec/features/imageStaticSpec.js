@@ -83,7 +83,7 @@ describe('imageStaticSpec', () => {
        done();
      });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
