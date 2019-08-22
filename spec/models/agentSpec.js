@@ -176,41 +176,66 @@ describe('Agent', function() {
         });
       });
 
-      it('does not add a duplicate agent to the canRead field', function(done) {
-        agent.canRead.push(newAgent._id);
-        agent.save().then(function(result) {
+      // addToSet
+      it('does not add a duplicate agent to the canRead set', function(done) {
+        db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: newAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
           expect(agent.canRead.length).toEqual(1);
           expect(agent.canRead[0]).toEqual(newAgent._id);
 
-          agent.canRead.push(newAgent._id);
-          agent.save().then(function(result) {
-            done.fail('This should not have updated');
-          }).catch(err => {
-            expect(err.message).toMatch('Duplicate values in array');
+          db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: newAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
+            expect(agent.canRead.length).toEqual(1);
+            expect(agent.canRead[0]).toEqual(newAgent._id);
             done();
+          }).catch(err => {
+            done.fail(err);
           });
         }).catch(err => {
           done.fail(err);
         });
       });
 
-      it('allows two agents to push the same agent ID', function(done) {
+      // addToSet
+      it('allows two agents to add the same agent ID to the canRead set', function(done) {
         expect (agent.canRead.length).toEqual(0);
         expect (newAgent.canRead.length).toEqual(0);
 
         let viewableAgent = new Agent({ email: 'viewableAgent@example.com', password: 'secret', name: 'Viewable Agent' });
         viewableAgent.save().then(function(result) {
-        
-          agent.canRead.push(viewableAgent._id);
-          newAgent.canRead.push(viewableAgent._id);
+          db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
+            db.Agent.findByIdAndUpdate(newAgent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(newAgent) {
 
-          agent.save().then(function(result) {
-            expect(agent.canRead.length).toEqual(1);
-            expect(agent.canRead[0]).toEqual(viewableAgent._id);
-  
-            newAgent.save().then(function(result) {
+              expect(agent.canRead.length).toEqual(1);
+              expect(agent.canRead[0]).toEqual(viewableAgent._id);
               expect(newAgent.canRead.length).toEqual(1);
               expect(newAgent.canRead[0]).toEqual(viewableAgent._id);
+
+              done();
+            }).catch(err => {
+              done.fail(err);
+            });
+          }).catch(err => {
+            done.fail(err);
+          });
+        }).catch(err => {
+          done.fail(err);
+        });
+      });
+
+      // addToSet
+      it('allows two agents to add the same agent ID to the canRead set', function(done) {
+        expect (agent.canRead.length).toEqual(0);
+        expect (newAgent.canRead.length).toEqual(0);
+
+        let viewableAgent = new Agent({ email: 'viewableAgent@example.com', password: 'secret', name: 'Viewable Agent' });
+        viewableAgent.save().then(function(result) {
+          db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
+            db.Agent.findByIdAndUpdate(newAgent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(newAgent) {
+
+              expect(agent.canRead.length).toEqual(1);
+              expect(agent.canRead[0]).toEqual(viewableAgent._id);
+              expect(newAgent.canRead.length).toEqual(1);
+              expect(newAgent.canRead[0]).toEqual(viewableAgent._id);
+
               done();
             }).catch(err => {
               done.fail(err);
@@ -230,8 +255,6 @@ describe('Agent', function() {
     describe('#getReadables', function() {
       let newAgent;
       beforeEach(function(done) {
-
-
         agent.save().then(function(obj) {
           new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
             newAgent = obj;
@@ -269,8 +292,6 @@ describe('Agent', function() {
     describe('#getReadablesAndFiles', function() {
       let newAgent;
       beforeEach(function(done) {
-
-
         agent.save().then(function(obj) {
           new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
             newAgent = obj;
@@ -411,53 +432,6 @@ describe('Agent', function() {
           new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {;
             newAgent = obj;
             done();
-          }).catch(err => {
-            done.fail(err);
-          });
-        }).catch(err => {
-          done.fail(err);
-        });
-      });
-
-      it('does not add a duplicate agent to the canWrite field', function(done) {
-        agent.canWrite.push(newAgent._id);
-        agent.save().then(function(result) {
-          expect(agent.canWrite.length).toEqual(1);
-          expect(agent.canWrite[0]).toEqual(newAgent._id);
-
-          agent.canWrite.push(newAgent._id);
-          agent.save().then(function(result) {
-            done.fail('This should not have updated');
-          }).catch(err => {
-            expect(err.message).toMatch('Duplicate values in array');
-            done();
-          });
-        }).catch(err => {
-          done.fail(err);
-        });
-      });
-
-      it('allows two agents to push the same writable agent ID', function(done) {
-        expect (agent.canWrite.length).toEqual(0);
-        expect (newAgent.canWrite.length).toEqual(0);
-
-        let writableAgent = new Agent({ email: 'writableAgent@example.com', password: 'secret', name: 'Writable Agent' });
-        writableAgent.save().then(function(result) {
-        
-          agent.canWrite.push(writableAgent._id);
-          newAgent.canWrite.push(writableAgent._id);
-
-          agent.save().then(function(result) {
-            expect(agent.canWrite.length).toEqual(1);
-            expect(agent.canWrite[0]).toEqual(writableAgent._id);
-  
-            newAgent.save().then(function(result) {
-              expect(newAgent.canWrite.length).toEqual(1);
-              expect(newAgent.canWrite[0]).toEqual(writableAgent._id);
-              done();
-            }).catch(err => {
-              done.fail(err);
-            });
           }).catch(err => {
             done.fail(err);
           });
