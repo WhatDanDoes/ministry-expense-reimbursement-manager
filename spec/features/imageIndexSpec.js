@@ -283,7 +283,7 @@ describe('imageIndexSpec', () => {
         });
 
         it('displays an upload-files form', () => {
-          browser.assert.element("form[action='/image']");
+          browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}']`);
         });
 
         it('displays an archive-files link', () => {
@@ -313,7 +313,7 @@ describe('imageIndexSpec', () => {
                   return done.fail(err);
                 }
 
-                browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
+                expect(res.header.location).toEqual(`/image/${troy.getAgentDirectory()}`);
 
                 fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                   if (err) {
