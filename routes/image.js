@@ -402,7 +402,7 @@ router.post('/', upload.array('docs'), (req, res, next) => {
       return res.status(201).json({ message: 'Image received' });
     }
     req.flash('success', 'Received');
-    return res.redirect(`/image/${req.param.domain}/${req.param.agentId}`);
+    return res.redirect(`/image`);
   });
 });
 

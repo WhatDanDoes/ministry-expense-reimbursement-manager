@@ -165,6 +165,7 @@ describe('imageIndexSpec', () => {
                 if (err) {
                   return done.fail(err);
                 }
+                expect(res.header.location).toEqual('/image');
 
                 fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                   if (err) {
