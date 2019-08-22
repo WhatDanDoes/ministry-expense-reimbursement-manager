@@ -13,7 +13,7 @@
       <% } %>
       <% include ../_partials/appLink %>
       <section>
-        <form role="form" action="/image" method="post" enctype="multipart/form-data">
+        <form role="form" action="/image<%= agent.isOwner ? '' : path %>" method="post" enctype="multipart/form-data">
           <label class="fileContainer upload-link">
             <p><img src="/images/file-upload.png"></p>
             <p>Upload invoice file</p>
