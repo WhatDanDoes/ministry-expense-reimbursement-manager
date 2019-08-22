@@ -8,7 +8,6 @@ module.exports = function(mongoose) {
   const arrayUniquePlugin = require('mongoose-unique-array');
 
   const AgentSchema = new Schema({
-
     email: {
       type: String,
       trim: true,

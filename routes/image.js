@@ -71,17 +71,17 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
         return obj;
       });
       files.reverse();
-  
+
       let nextPage = 0;
       if (files.length > MAX_IMGS) {
         nextPage = 2;
         files = files.slice(0, MAX_IMGS);
       }
-  
+
       // To open deep link with auth token
       const payload = { email: req.user.email };
       const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-  
+
       res.render('image/index', { images: files,
                                   messages: req.flash(),
                                   agent: req.user,
@@ -89,7 +89,7 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
                                   prevPage: 0,
                                   token: token,
                                   canArchive: !!files.length,
-                                  canZip: files.length && invoices.length,
+                                  canZip: !!files.length && !!invoices.length,
                                   path: req.path,
                                   isMobile: isMobile({ ua: req.headers['user-agent'], tablet: true})  });
     }).catch((error) => {
@@ -123,7 +123,7 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
         return obj;
       });
       files.reverse();
-  
+
       let page = parseInt(req.params.num),
           nextPage = 0,
           prevPage = page - 1;
@@ -131,15 +131,15 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
         nextPage = page + 1;
         files = files.slice(MAX_IMGS * prevPage, MAX_IMGS * page);
       }
-  
+
       if (!nextPage && prevPage) {
         files = files.slice(MAX_IMGS * prevPage);
       }
-  
+
       // To open deep link with auth token
       const payload = { email: req.user.email };
       const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-  
+
       res.render('image/index', { images: files,
                                   messages: req.flash(),
                                   agent: req.user,
@@ -496,7 +496,7 @@ router.post('/:domain/:agentId/archive', ensureAuthorized, (req, res) => {
         done(err);
       });
     };
-  
+
     recursiveSave((err) => {
       if (err) {
         if (/json/.test(req.headers['accept'])) {

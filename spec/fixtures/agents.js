@@ -37,5 +37,6 @@ exports.Agent = {
     password: 'supersecret',
     name: 'Lanny',
     canRead: [troyId],
+    canWrite: [danId], // this gets a dup key error if not set
   }
 };
