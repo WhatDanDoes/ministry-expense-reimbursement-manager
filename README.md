@@ -115,7 +115,7 @@ show collections
 #### Give an agent album reading permission
 
 ```
-db.agents.update({ email: 'daniel@example.com' }, { $push: { "canRead": db.agents.findOne({ email: 'lyndsay@example.com' })._id } })
+db.agents.update({ email: 'daniel@example.com' }, { $addToSet: { "canRead": db.agents.findOne({ email: 'lyndsay@example.com' })._id } })
 ```
 
 
