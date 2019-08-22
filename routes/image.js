@@ -430,7 +430,7 @@ router.post('/:domain/:agentId', upload.array('docs'), ensureAuthorized, (req, r
       return res.status(201).json({ message: 'Image received' });
     }
     req.flash('success', 'Received');
-    return res.redirect(`/image/${req.param.domain}/${req.param.agentId}`);
+    return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
   });
 });
 
