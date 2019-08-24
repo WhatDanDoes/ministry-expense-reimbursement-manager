@@ -224,12 +224,44 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
             ext = `.${filename.substring(filename.lastIndexOf('.') + 1).toLowerCase()}`;
           }
 
+          // Split `reason` field into `Item` and `Business Purpose of Expense`
+          let item = invoice.reason;
+          let purpose = models.Invoice.getCategories()[invoice.category];
+          let forMatch = /for/.exec(item);
+          let toMatch = /to/.exec(item);
+
+          let parts;
+          if (forMatch && toMatch) {
+            if (forMatch.index > toMatch.index) {
+              parts = item.split('to', 2);
+            }
+            else {
+              parts = item.split('for', 2);
+            }
+            item = parts[0].trim();
+            purpose = parts[1].trim();
+            purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
+          }
+          else if (forMatch) {
+            parts = item.split('for', 2);
+            item = parts[0].trim();
+            purpose = parts[1].trim();
+            purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
+          }
+          else if (toMatch) {
+            parts = item.split('to', 2);
+            item = parts[0].trim();
+            purpose = parts[1].trim();
+            purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
+          }
+
+
           archive.file(`uploads/${invoice.doc}`, { name: `${agent.getBaseFilename()} #${index + 1}${ext}` });
           consolidated.push({
             'Category': invoice.category,
             'Purchase Date': moment(invoice.purchaseDate).format('DD MMM \'YY'),
-            'Item': invoice.reason,
-            'Business Purpose of Expense': models.Invoice.getCategories()[invoice.category],
+            'Item': item,
+            'Business Purpose of Expense': purpose,
             'Receipt ref #': index + 1,
             'Local Amount': invoice.formatTotal(),
             'Currency Used': invoice.currency,

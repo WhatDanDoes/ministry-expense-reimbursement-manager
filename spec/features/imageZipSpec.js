@@ -68,6 +68,7 @@ describe('imageZipSpec', () => {
             'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
             'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
             'image4': fs.readFileSync('spec/files/troll.jpg'),
+            'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
           },
           [`uploads/${lanny.getAgentDirectory()}`]: {
             'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
@@ -79,6 +80,7 @@ describe('imageZipSpec', () => {
             'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
             'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
             'troy4': fs.readFileSync('spec/files/troll.jpg'),
+            'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
           },
           'public/images/uploads': {}
         });
@@ -128,7 +130,7 @@ describe('imageZipSpec', () => {
             browser.visit(`/image/${agent.getAgentDirectory()}`, function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
-              browser.assert.elements('section.image img', 2);
+              browser.assert.elements('section.image img', 3);
               browser.assert.elements('section.link a', 2);
               browser.assert.elements(`a[href="/image/${agent.getAgentDirectory()}/zip"]`, 0);
               done();
@@ -232,6 +234,89 @@ describe('imageZipSpec', () => {
               });
             });
           });
+
+          describe('with for/to regex-aware business purposes', () => {
+            let zipEntries;
+            beforeEach(done => {
+
+              function binaryParser(res, callback) {
+                res.setEncoding('binary');
+                res.data = '';
+                res.on('data', function (chunk) {
+                  res.data += chunk;
+                });
+                res.on('end', function () {
+                  callback(null, Buffer.from(res.data, 'binary'));
+                });
+              }
+
+              models.Invoice.find({agent: agent._id}).sort({ purchaseDate: -1 }).then(invoices => {
+                expect(invoices.length).toEqual(3);
+                invoices[0].reason = 'Bible for Spiritual enrichment';
+                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes';
+                invoices[2].reason = 'Pens and staples for writing cards and to staple documents';
+                let newInvoice = new models.Invoice();
+                newInvoice.category = 400;
+                newInvoice.purchaseDate = new Date('2019-8-13');
+                newInvoice.reason = 'Bible to feed my soul';
+                newInvoice.total = 6599;
+                newInvoice.doc = 'example.com/daniel/image5.jpg';
+                newInvoice.agent = agent._id;
+                invoices.push(newInvoice);
+
+
+                const saveInvoices = function() {
+                  if (!invoices.length) {
+                    return request(app)
+                      .get(`/image/${agent.getAgentDirectory()}/zip`)
+                      .set('Cookie', browser.cookies)
+                      .expect(200)
+                      .expect( 'Content-Type', /application\/zip/ )
+                      .parse(binaryParser)
+                      .end(function(err, res) {
+                        if (err) done.fail(err);
+      
+                        expect(Buffer.isBuffer(res.body)).toBe(true);
+      
+                        let zip = new AdmZip(res.body);
+                        zipEntries = zip.getEntries();
+      
+                        // One file in zipEntries is the CSV (not to be counted in the image count)
+                        expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-1}.zip`);
+      
+                        done();
+                      });
+                  }
+                  let invoice = invoices.pop();
+                  invoice.save().then(result => {
+                    saveInvoices();
+                  }).catch(err => {
+                    return done.fail(err);
+                  });
+
+                };
+                saveInvoices();
+              }).catch(function(err) {
+                done.fail(err);
+              });           
+            });
+
+            it('splits item/reason on for/to', done => {
+              models.Invoice.find({agent: agent._id}).sort({ purchaseDate: -1 }).then(invoices => {
+                expect(invoices.length).toEqual(4);
+                let csv = zipEntries[0].getData().toString('utf8')
+                csv = csv.split('\n');
+                expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
+                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents",1,"9.65","CAD",1');
+                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes",2,"17.30","USD",1.35');
+                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment",3,"65.99","CAD",1');
+                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul",4,"65.99","CAD",1');
+                done();
+              }).catch(function(err) {
+                done.fail(err);
+              });
+            });
+          });
         });
       });
 
@@ -281,7 +366,7 @@ describe('imageZipSpec', () => {
             browser.visit(`/image/${troy.getAgentDirectory()}`, function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
-              browser.assert.elements('section.image img', 2);
+              browser.assert.elements('section.image img', 3);
               browser.assert.elements('section.link a', 2);
               browser.assert.elements(`a[href="/image/${troy.getAgentDirectory()}/zip"]`, 0);
               done();
@@ -379,6 +464,88 @@ describe('imageZipSpec', () => {
                 expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Supplies and Stationery",1,"9.65","CAD",1');
                 expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Communication (Phone, Fax, E-mail)",2,"17.30","USD",1.35');
                 expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Equipment",3,"65.99","CAD",1');
+                done();
+              }).catch(function(err) {
+                done.fail(err);
+              });
+            });
+          });
+
+          describe('with for/to regex-aware business purposes', () => {
+            let zipEntries;
+            beforeEach(done => {
+
+              function binaryParser(res, callback) {
+                res.setEncoding('binary');
+                res.data = '';
+                res.on('data', function (chunk) {
+                  res.data += chunk;
+                });
+                res.on('end', function () {
+                  callback(null, Buffer.from(res.data, 'binary'));
+                });
+              }
+
+              models.Invoice.find({agent: troy._id}).sort({ purchaseDate: -1 }).then(invoices => {
+                expect(invoices.length).toEqual(3);
+                invoices[0].reason = 'Bible for Spiritual enrichment';
+                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes';
+                invoices[2].reason = 'Pens and staples for writing cards and to staple documents';
+                let newInvoice = new models.Invoice();
+                newInvoice.category = 400;
+                newInvoice.purchaseDate = new Date('2019-8-13');
+                newInvoice.reason = 'Bible to feed my soul';
+                newInvoice.total = 6599;
+                newInvoice.doc = 'example.com/troy/troy5.jpg';
+                newInvoice.agent = troy._id;
+                invoices.push(newInvoice);
+
+                const saveInvoices = function() {
+                  if (!invoices.length) {
+                    return request(app)
+                      .get(`/image/${troy.getAgentDirectory()}/zip`)
+                      .set('Cookie', browser.cookies)
+                      .expect(200)
+                      .expect( 'Content-Type', /application\/zip/ )
+                      .parse(binaryParser)
+                      .end(function(err, res) {
+                        if (err) done.fail(err);
+      
+                        expect(Buffer.isBuffer(res.body)).toBe(true);
+      
+                        let zip = new AdmZip(res.body);
+                        zipEntries = zip.getEntries();
+      
+                        // One file in zipEntries is the CSV (not to be counted in the image count)
+                        expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-1}.zip`);
+      
+                        done();
+                      });
+                  }
+                  let invoice = invoices.pop();
+                  invoice.save().then(result => {
+                    saveInvoices();
+                  }).catch(err => {
+                    return done.fail(err);
+                  });
+
+                };
+                saveInvoices();
+              }).catch(function(err) {
+                done.fail(err);
+              });           
+            });
+
+            it('splits item/reason on for/to', done => {
+              models.Invoice.find({agent: troy._id}).sort({ purchaseDate: -1 }).then(invoices => {
+                expect(invoices.length).toEqual(4);
+                let csv = zipEntries[0].getData().toString('utf8')
+                csv = csv.split('\n');
+                expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
+                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents",1,"9.65","CAD",1');
+                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes",2,"17.30","USD",1.35');
+                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment",3,"65.99","CAD",1');
+                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul",4,"65.99","CAD",1');
                 done();
               }).catch(function(err) {
                 done.fail(err);
