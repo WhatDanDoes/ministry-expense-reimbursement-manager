@@ -233,25 +233,27 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
           let parts;
           if (forMatch && toMatch) {
             if (forMatch.index > toMatch.index) {
-              parts = item.split('to', 2);
+              parts = item.split('to');
+              item = parts.shift().trim(); 
+              purpose = parts.join('to').trim();
             }
             else {
-              parts = item.split('for', 2);
+              parts = item.split('for');
+              item = parts.shift().trim(); 
+              purpose = parts.join('for').trim();
             }
-            item = parts[0].trim();
-            purpose = parts[1].trim();
             purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
           }
           else if (forMatch) {
-            parts = item.split('for', 2);
-            item = parts[0].trim();
-            purpose = parts[1].trim();
+            parts = item.split('for');
+            item = parts.shift().trim();
+            purpose = parts.join('for').trim();
             purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
           }
           else if (toMatch) {
-            parts = item.split('to', 2);
-            item = parts[0].trim();
-            purpose = parts[1].trim();
+            parts = item.split('to');
+            item = parts.shift().trim();
+            purpose = parts.join('to').trim();
             purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
           }
 

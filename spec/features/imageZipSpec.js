@@ -252,13 +252,13 @@ describe('imageZipSpec', () => {
 
               models.Invoice.find({agent: agent._id}).sort({ purchaseDate: -1 }).then(invoices => {
                 expect(invoices.length).toEqual(3);
-                invoices[0].reason = 'Bible for Spiritual enrichment';
-                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes';
-                invoices[2].reason = 'Pens and staples for writing cards and to staple documents';
+                invoices[0].reason = 'Bible for Spiritual enrichment for life';
+                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes to raise money';
+                invoices[2].reason = 'Pens and staples for writing cards and to staple documents for organization';
                 let newInvoice = new models.Invoice();
                 newInvoice.category = 400;
                 newInvoice.purchaseDate = new Date('2019-8-13');
-                newInvoice.reason = 'Bible to feed my soul';
+                newInvoice.reason = 'Bible to feed my soul to live in eternity';
                 newInvoice.total = 6599;
                 newInvoice.doc = 'example.com/daniel/image5.jpg';
                 newInvoice.agent = agent._id;
@@ -307,10 +307,10 @@ describe('imageZipSpec', () => {
                 let csv = zipEntries[0].getData().toString('utf8')
                 csv = csv.split('\n');
                 expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
-                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents",1,"9.65","CAD",1');
-                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes",2,"17.30","USD",1.35');
-                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment",3,"65.99","CAD",1');
-                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul",4,"65.99","CAD",1');
+                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents for organization",1,"9.65","CAD",1');
+                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes to raise money",2,"17.30","USD",1.35');
+                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment for life",3,"65.99","CAD",1');
+                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul to live in eternity",4,"65.99","CAD",1');
                 done();
               }).catch(function(err) {
                 done.fail(err);
@@ -488,13 +488,13 @@ describe('imageZipSpec', () => {
 
               models.Invoice.find({agent: troy._id}).sort({ purchaseDate: -1 }).then(invoices => {
                 expect(invoices.length).toEqual(3);
-                invoices[0].reason = 'Bible for Spiritual enrichment';
-                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes';
-                invoices[2].reason = 'Pens and staples for writing cards and to staple documents';
+                invoices[0].reason = 'Bible for Spiritual enrichment for life';
+                invoices[1].reason = 'Cloud server to serve up work blog for PD purposes to raise money';
+                invoices[2].reason = 'Pens and staples for writing cards and to staple documents for organization';
                 let newInvoice = new models.Invoice();
                 newInvoice.category = 400;
                 newInvoice.purchaseDate = new Date('2019-8-13');
-                newInvoice.reason = 'Bible to feed my soul';
+                newInvoice.reason = 'Bible to feed my soul to live in eternity';
                 newInvoice.total = 6599;
                 newInvoice.doc = 'example.com/troy/troy5.jpg';
                 newInvoice.agent = troy._id;
@@ -542,10 +542,10 @@ describe('imageZipSpec', () => {
                 let csv = zipEntries[0].getData().toString('utf8')
                 csv = csv.split('\n');
                 expect(csv[0]).toEqual('"Category","Purchase Date","Item","Business Purpose of Expense","Receipt ref #","Local Amount","Currency Used","Exchange Rate"');
-                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents",1,"9.65","CAD",1');
-                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes",2,"17.30","USD",1.35');
-                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment",3,"65.99","CAD",1');
-                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul",4,"65.99","CAD",1');
+                expect(csv[1]).toEqual('"430","10 Aug \'19","Pens and staples","Writing cards and to staple documents for organization",1,"9.65","CAD",1');
+                expect(csv[2]).toEqual('"440","11 Aug \'19","Cloud server","Serve up work blog for PD purposes to raise money",2,"17.30","USD",1.35');
+                expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment for life",3,"65.99","CAD",1');
+                expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul to live in eternity",4,"65.99","CAD",1');
                 done();
               }).catch(function(err) {
                 done.fail(err);
