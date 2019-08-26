@@ -80,13 +80,17 @@ The _Dockerized_ production is meant to be deployed behind an `nginx-proxy`/`let
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-Seed database:
+### Upload APK
+
+Put the BasicPhotoEconomizer app in `public/app/app-release.apk`.
+
+### Seed database:
 
 ```
 docker-compose -f docker-compose.prod.yml run --rm node node seed.js NODE_ENV=production
 ```
 
-### Database Operations
+#### Database Operations
 
 Connect to DB container like this:
 
