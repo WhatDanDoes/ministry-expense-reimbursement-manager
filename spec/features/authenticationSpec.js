@@ -158,6 +158,15 @@ describe('authentication', function() {
           browser.assert.link('nav ul li a', 'Invoices', `/image/${agent.getAgentDirectory()}`);
         });
 
+        it('does not display the login form on the landing page', function(done) {
+          browser.visit('/', err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.elements('form[action="/login"]', 0);
+            done();
+          });
+        });
+
 
         describe('logout', function() {
           it('does not display the logout button if not logged in', function(done) {

@@ -40,7 +40,7 @@ describe('landing page', () => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
+      browser.assert.text('.copy:last-of-type h1', 'No image scanner?');
       done();
     });
   });
@@ -161,11 +161,11 @@ describe('landing page', () => {
     it('doesn\'t barf if paginating beyond the bounds', done => {
       browser.visit('/page/10', (err) => {
         if (err) return done.fail(err);
-        browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
+        browser.assert.text('.copy:last-of-type h1', 'No image scanner?');
 
         browser.visit('/page/0', (err) => {
           if (err) return done.fail(err);
-          browser.assert.text('.copy:last-of-type h1', 'Publish your pics here!!');
+          browser.assert.text('.copy:last-of-type h1', 'No image scanner?');
 
           done();
           // Negative page params work, kinda
