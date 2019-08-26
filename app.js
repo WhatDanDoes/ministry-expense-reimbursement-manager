@@ -131,6 +131,13 @@ app.use(`/uploads`, [function(req, res, next) {
 }, express.static(path.join(__dirname, `/uploads`))]);
 
 /**
+ * BasicPhotoEconomizer About page
+ */
+app.use('/bep', (req, res) => {
+  res.render('bep', { messages: req.flash(), agent: req.user });
+});
+
+/**
  * For PUT/PATCH/DELETE
  */
 const methodOverride = require('method-override');
