@@ -122,5 +122,7 @@ show collections
 db.agents.update({ email: 'daniel@example.com' }, { $addToSet: { "canRead": db.agents.findOne({ email: 'lyndsay@example.com' })._id } })
 ```
 
+## Notes
 
+`Merman` logo obtained from [here](http://heraldicart.org/merman/) on 2019-8-26. Artist unknown.
 
