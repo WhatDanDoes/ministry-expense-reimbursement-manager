@@ -247,6 +247,7 @@ details section {
  */
 .agent {
   margin-left: 1em;
+  width: 90%;
 }
 
 h3 {
@@ -564,7 +565,7 @@ button[type="submit"]#cancel-edit {
  */
 .splash {
   width: 80%;
-  background-image: url("/images/mermaid-man.png");
+  background-image: url("/images/merman-or-triton-3.png");
   background-color: #151515;
   color: white;
   background-position: right;
@@ -586,8 +587,30 @@ button[type="submit"]#cancel-edit {
   width: 100%;
   background-color: #151515;
   color: white;
-  text-align: center;
   padding: 2em 0 2em 0;
+}
+
+.copy h1,
+.copy h2 {
+  margin-left: auto;
+  margin-right: auto;
+  width: 70%;
+  text-align: center;
+}
+.copy h1 {
+  font-size: 1.5em;
+  line-height: 2.25em;
+}
+.copy h2 {
+  line-height: 1.75em;
+}
+
+.copy ul {
+  line-height: 1.5em;
+}
+
+.copy h1 em{
+  font-size: 2em;
 }
 
 .copy img.true-size {
@@ -598,6 +621,14 @@ button[type="submit"]#cancel-edit {
 .copy img.small-size {
   width: 40%;
   min-width: 0;
+}
+
+.copy ul {
+  margin-left: auto;
+  margin-right: auto;
+  width: 70%;
+  font-size: 1.25em;
+
 }
 
 
@@ -709,4 +740,9 @@ button[type="submit"]#cancel-edit {
 .edit-mark {
   color: rgba(24,24,24,0.25);
   border: .1em solid rgba(24,24,24,0.25);
+}
+
+.center {
+  width: 100%;
+  text-align: center;
 }
