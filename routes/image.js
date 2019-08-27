@@ -15,6 +15,8 @@ const isMobile = require('is-mobile');
 const archiver = require('archiver');
 const moment = require('moment'); 
 const parseAsync = require('json2csv').parseAsync; 
+const child_process = require('child_process'); 
+const stream = require('stream');
 
 // Set upload destination directory
 let storage = multer.diskStorage({
@@ -160,7 +162,7 @@ router.get('/:domain/:agentId/page/:num', ensureAuthorized, (req, res, next) => 
 /**
  * GET /image/:domain/:agentId/zip
  */
-router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
+router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
   if (!req.user.isWriter) {
     return res.sendStatus(403);
   }
@@ -186,7 +188,7 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
   // Catch this error explicitly
   archive.on('error', function(err) {
     req.flash('error', err.message);
-    return redirect('/image');
+    return res.redirect('/image');
   });
 
   // Request ends on stream close
@@ -257,7 +259,6 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
             purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
           }
 
-
           archive.file(`uploads/${invoice.doc}`, { name: `${agent.getBaseFilename()} #${index + 1}${ext}` });
           consolidated.push({
             'Category': invoice.category,
@@ -279,7 +280,49 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res) => {
 
           archive.append(csv, { name: `${agent.name.split(' ').pop()} MER.csv` });
 
-          archive.finalize();
+          /**
+           * ODS template
+           */
+          let templatePath = `uploads/${agent.getAgentDirectory()}/templates/MER-template.ods`;
+          fs.access(templatePath, fs.constants.R_OK, err => {
+            if (err) {
+              templatePath = 'public/templates/MER-template.ods';
+            }
+
+            const csvStream = new stream.Readable({read(size) {
+              this.push(csv);
+              this.push(null);
+            }});
+
+            const args = [
+              '-t', '2', // populate tab 2 of spreadsheet
+              '-s', '2', // skip header of CSV
+              '-o', '1,2,3,,4,5,6,7,8', // match CSV columns to spreadsheet columns
+              '--template=' + templatePath,
+            ];
+            const proc = child_process.spawn('csv2odf', args, { stdio: 'pipe' });
+            csvStream.pipe(proc.stdin);
+
+            proc.stderr.on('data', data => {
+              console.log(`csv2odf: ${data}`);
+            });
+
+            proc.on('close', code => {
+              console.log(`csv2odf process close all stdio with code ${code}`);
+            });
+
+            proc.on('exit', code => {
+              if (code) {
+                archive.abort()
+                req.flash('error', 'Could not create spreadsheet');
+                return next('Could not create spreadsheet');
+              } else {
+                archive.finalize();
+              }
+            });
+
+            archive.append(proc.stdout, { name: `${agent.name.split(' ').pop()} MER.ods` });
+          });
         }).catch(err => {
           req.flash('error', err.message);
           res.redirect(`/image/${req.user.getAgentDirectory()}`);
