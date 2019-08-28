@@ -10,70 +10,88 @@
         <a href="/uploads<%= image.file %>"><%= image.file.split('/')[image.file.split('/').length-1] %></a>
       </section>
     <% } %>
-      <section id="image-controls">
-        <form action="<%= `/image${image.file}?_method=PUT` %>" method="post" id="publish-image-form">
-          <div class="form-group date invoice-details">
-            <label for="purchaseDate">Date of invoice</label>  
-            <input id="datepicker"
-                   class="form-control"
-                   type="text"
-                   name="purchaseDate"
-                   <%= agent.isWriter ? '' : ' disabled=disabled' %>
-                   required=true
-                   value="<%= invoice ? invoice.formatPurchaseDate() : (agent.isWriter ? today : '') %>">
-          </div>
-          <div class="form-group currency invoice-details">
-            <label for="total">Total</label>  
-            <input id="total" class="form-control" type="number" name="total" min="0" step="0.01" required=true
-                   <%= agent.isWriter ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.formatTotal() : '' %>">
-          </div>
-          <div class="form-group invoice-details">
-            <select id="currency-dropdown" class="dropdown form-control" name="currency" required=true
-                    onchange="this.options[this.selectedIndex].value === 'CAD' ?
-                                                                         document.getElementById('exchange-rate').style.display = 'none' :
-                                                                         document.getElementById('exchange-rate').style.display = 'block'"
-                    <%= agent.isWriter ? '' : ' disabled=disabled' %>>
-              <% for (let currency of ['CAD', 'USD']) { %>
-                <% if (!invoice && currency === 'CAD') { %>
-                  <option value="<%= currency %>" selected=selected><%= `${currency}` %></option>
-                <% } else { %>
-                  <option value="<%= currency %>"<%= invoice && currency === invoice.currency ? ' selected=selected': '' %>><%= `${currency}` %></option>
-                <% } %>
-              <% } %>
-            </select>
-          </div>
-          <div id="exchange-rate" class="form-group invoice-details" style="display:<%= !invoice || invoice.currency === 'CAD' ? 'none' : 'block' %>;">
-            <label for="exchangeRate">Rate (%)</label>  
-            <input name="exchangeRate" type="number" step="0.01"
-                   value="<%= invoice ? invoice.exchangeRate : 1.0 %>">
-          </div>
-          <div class="form-group">
-            <select id="category-dropdown" class="dropdown form-control" name="category" required=true
-                    <%= agent.isWriter ? '' : ' disabled=disabled' %>>
-              <option value="">--Expense Category--</option>
-              <% for (let category in categories) { %>
-                <option value="<%= category %>"<%= invoice && category === invoice.category ? ' selected=selected': '' %>><%= `${category} - ${categories[category]}` %></option>
-              <% } %>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="reason">Items:</label>  
-            <input id="reason" class="form-control" type="text" name="reason" required=true
-                   <%= agent.isWriter ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.reason : '' %>">
-          </div>
-          <% if (agent.isWriter) { %>
-            <button id="publish-image-button" type="submit">Save</button>
-          <% } %>
-        </form>
+    <section id="image-controls">
+      <form action="<%= `/image${image.file}?_method=PUT` %>" method="post" id="publish-image-form">
+        <div class="form-group date invoice-details">
+          <label for="purchaseDate">Date of invoice</label>  
+          <input id="datepicker"
+                 class="form-control"
+                 type="text"
+                 name="purchaseDate"
+                 <%= agent.isWriter ? '' : ' disabled=disabled' %>
+                 required=true
+                 value="<%= invoice ? invoice.formatPurchaseDate() : (agent.isWriter ? today : '') %>">
+        </div>
+        <div class="form-group currency invoice-details">
+          <label for="total">Total</label>  
+          <input id="total" class="form-control" type="number" name="total" min="0" step="0.01" required=true
+                 <%= agent.isWriter ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.formatTotal() : '' %>">
+        </div>
+        <div class="form-group invoice-details">
+          <label for="currency">Currency Symbol</label>
+          <input list="currencies" id="currency-selector" type="text"
+                 class="form-control" name="currency" required=true
+                 value="<%= invoice ? invoice.currency : 'CAD' %>"
+                 <%= agent.isWriter ? '' : ' disabled=disabled' %>>
+          <datalist id="currencies">
+            <% for (let currency of ['CAD', 'USD']) { %>
+              <option value="<%= currency %>">
+            <% } %>
+          </datalist>
+        </div>
+        <div id="exchange-rate" class="form-group invoice-details" style="display:<%= !invoice || invoice.currency === 'CAD' ? 'none' : 'block' %>;">
+          <label for="exchangeRate">Rate (%)</label>  
+          <input name="exchangeRate" type="number" step="0.01"
+                 value="<%= invoice ? invoice.exchangeRate : 1.0 %>">
+        </div>
+        <div class="form-group">
+          <select id="category-dropdown" class="dropdown form-control" name="category" required=true
+                  <%= agent.isWriter ? '' : ' disabled=disabled' %>>
+            <option value="">--Expense Category--</option>
+            <% for (let category in categories) { %>
+              <option value="<%= category %>"<%= invoice && category === invoice.category ? ' selected=selected': '' %>><%= `${category} - ${categories[category]}` %></option>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="reason">Items:</label>  
+          <input id="reason" class="form-control" type="text" name="reason" required=true
+                 <%= agent.isWriter ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.reason : '' %>">
+        </div>
         <% if (agent.isWriter) { %>
-          <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
-            <button id="delete-image" type="submit">Delete</button>
-          </form>
+          <button id="publish-image-button" type="submit">Save</button>
         <% } %>
-        <form action="/image/<%= path %>" method="get" id="cancel-edit-form">
-          <button id="cancel-edit" type="submit">Cancel</button>
+      </form>
+      <% if (agent.isWriter) { %>
+        <form action="<%= `/image${image.file}?_method=DELETE` %>" method="post" id="delete-image-form">
+          <button id="delete-image" type="submit">Delete</button>
         </form>
-      </section>
-  </main> 
+      <% } %>
+      <form action="/image/<%= path %>" method="get" id="cancel-edit-form">
+        <button id="cancel-edit" type="submit">Cancel</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    var currency;
+    const selector = document.getElementById('currency-selector');
+    selector.addEventListener('focus', (event) => {
+      currency = event.target.value;
+      event.target.value = '';
+    }, true);
+
+    selector.addEventListener('blur', (event) => {
+      if (!event.target.value.trim().length) event.target.value = currency;
+    }, true);
+
+    selector.addEventListener('change', (event) => {
+      if (event.target.value === 'CAD') {
+        document.getElementById('exchange-rate').style.display = 'none';
+      } else {
+        document.getElementById('exchange-rate').style.display = 'block';
+      }
+    }, true);
+  </script>
+
   <% include ../_partials/footer %>
 

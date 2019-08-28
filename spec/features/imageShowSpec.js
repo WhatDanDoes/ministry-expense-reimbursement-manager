@@ -106,9 +106,8 @@ describe('imageShowSpec', () => {
             // Total
             browser.assert.input('form input[name=total]', '');
             // Currency
-            browser.assert.element('form select[name=currency]', 'CAD');
-            browser.assert.elements('form select[name=currency] option', 2);
-            browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+            browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+            browser.assert.elements('form datalist#currencies option', 2);
             // Exchange Rate (not visible)
             browser.assert.style('#exchange-rate', 'display', 'none');
             // Reason
@@ -151,9 +150,8 @@ describe('imageShowSpec', () => {
               // Total
               browser.assert.input('form input[name=total]', '7.90');
               // Currency
-              browser.assert.element('form select[name=currency]', 'CAD');
-              browser.assert.elements('form select[name=currency] option', 2);
-              browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+              browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+              browser.assert.elements('form datalist#currencies option', 2);
               // Exchange Rate (not visible)
               browser.assert.style('#exchange-rate', 'display', 'none');
               // Reason
@@ -211,7 +209,7 @@ describe('imageShowSpec', () => {
             // Total
             browser.assert.input('form input[name=total][disabled=disabled]', '');
             // Currency
-            browser.assert.element('form select[name=currency][disabled=disabled]', 'CAD');
+            browser.assert.element('form input[name=currency][value=CAD][list=currencies][disabled=disabled]');
             // Reason
             browser.assert.input('form input[name=reason][disabled=disabled]', '');
             // Date
@@ -248,7 +246,7 @@ describe('imageShowSpec', () => {
               // Total
               browser.assert.input('form input[name=total][disabled=disabled]', '7.90');
               // Currency
-              browser.assert.element('form select[name=currency][disabled=disabled]', 'CAD');
+              browser.assert.element('form input[name=currency][value=CAD][list=currencies][disabled=disabled]');
               // Reason
               browser.assert.input('form input[name=reason][disabled=disabled]', 'Lime scooter for 2 km');
               // Date
@@ -304,9 +302,8 @@ describe('imageShowSpec', () => {
             // Total
             browser.assert.input('form input[name=total]', '');
             // Currency
-            browser.assert.element('form select[name=currency]', 'CAD');
-            browser.assert.elements('form select[name=currency] option', 2);
-            browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+            browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+            browser.assert.elements('form datalist#currencies option', 2);
             // Exchange Rate (not visible)
             browser.assert.style('#exchange-rate', 'display', 'none');
             // Reason
@@ -349,9 +346,8 @@ describe('imageShowSpec', () => {
               // Total
               browser.assert.input('form input[name=total]', '7.90');
               // Currency
-              browser.assert.element('form select[name=currency]', 'CAD');
-              browser.assert.elements('form select[name=currency] option', 2);
-              browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+              browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+              browser.assert.elements('form datalist#currencies option', 2);
               // Exchange Rate (not visible)
               browser.assert.style('#exchange-rate', 'display', 'none');
               // Reason

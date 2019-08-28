@@ -205,10 +205,10 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         describe('non-Canadian currencies', () => {
           it('displays a exchangeRate spinner when CAD is not selected', done => {
             browser.assert.style('#exchange-rate', 'display', 'none');
-            browser.select('#currency-dropdown', 'USD', function(err) {
+            browser.fill('#currency-selector', 'USD', function(err) {
               if (err) return done.fail(err);
               browser.assert.style('#exchange-rate', 'display', 'block');
-              browser.select('#currency-dropdown', 'CAD', function(err) {
+              browser.fill('#currency-selector', 'CAD', function(err) {
                 if (err) return done.fail(err);
                 browser.assert.style('#exchange-rate', 'display', 'none');
                 done();
@@ -219,7 +219,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           it('displays the currency and exchangeRate when invoice not in CAD', done => {
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('#currency-dropdown', 'USD');
+            browser.fill('#currency-selector', 'USD');
             browser.fill('input[name=exchangeRate]', 1.35);
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
@@ -231,7 +231,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                 browser.assert.success();
                 browser.assert.style('#exchange-rate', 'display', 'block');
                 browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
-                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
                 done();
               });
             });
@@ -240,7 +240,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           it('resets exchange rate when currency set back to CAD', done => {
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('#currency-dropdown', 'USD');
+            browser.fill('#currency-selector', 'USD');
             browser.fill('input[name=exchangeRate]', 1.35);
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
@@ -252,9 +252,9 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                 browser.assert.success();
                 browser.assert.style('#exchange-rate', 'display', 'block');
                 browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
-                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
 
-                browser.select('#currency-dropdown', 'CAD');
+                browser.fill('#currency-selector', 'CAD');
                 browser.pressButton('Save', function(err) {
                   if (err) return done.fail(err);
                   browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
@@ -263,7 +263,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
 
                     browser.assert.style('#exchange-rate', 'display', 'none');
                     browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
-                    browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+                    browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
 
                     done();
                   });
@@ -544,10 +544,10 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
         describe('non-Canadian currencies', () => {
           it('displays a exchangeRate spinner when CAD is not selected', done => {
             browser.assert.style('#exchange-rate', 'display', 'none');
-            browser.select('#currency-dropdown', 'USD', function(err) {
+            browser.fill('#currency-selector', 'USD', function(err) {
               if (err) return done.fail(err);
               browser.assert.style('#exchange-rate', 'display', 'block');
-              browser.select('#currency-dropdown', 'CAD', function(err) {
+              browser.fill('#currency-selector', 'CAD', function(err) {
                 if (err) return done.fail(err);
                 browser.assert.style('#exchange-rate', 'display', 'none');
                 done();
@@ -558,7 +558,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           it('displays the currency and exchangeRate when invoice not in CAD', done => {
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('#currency-dropdown', 'USD');
+            browser.fill('#currency-selector', 'USD');
             browser.fill('input[name=exchangeRate]', 1.35);
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
@@ -570,7 +570,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                 browser.assert.success();
                 browser.assert.style('#exchange-rate', 'display', 'block');
                 browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
-                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
                 done();
               });
             });
@@ -579,7 +579,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
           it('resets exchange rate when currency set back to CAD', done => {
             browser.fill('#datepicker', '2019-08-09');
             browser.fill('#total', '7.9');
-            browser.select('#currency-dropdown', 'USD');
+            browser.fill('#currency-selector', 'USD');
             browser.fill('input[name=exchangeRate]', 1.35);
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Lime scooter for 2km');
@@ -591,9 +591,9 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                 browser.assert.success();
                 browser.assert.style('#exchange-rate', 'display', 'block');
                 browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
-                browser.assert.element('form select[name=currency] option[value="USD"][selected=selected]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
 
-                browser.select('#currency-dropdown', 'CAD');
+                browser.fill('#currency-selector', 'CAD');
                 browser.pressButton('Save', function(err) {
                   if (err) return done.fail(err);
                   browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
@@ -602,7 +602,7 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
 
                     browser.assert.style('#exchange-rate', 'display', 'none');
                     browser.assert.element('form input[name=exchangeRate][type=number][value="1"]');
-                    browser.assert.element('form select[name=currency] option[value="CAD"][selected=selected]');
+                    browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
 
                     done();
                   });
