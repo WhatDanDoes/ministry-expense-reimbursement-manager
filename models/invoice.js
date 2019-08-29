@@ -63,7 +63,7 @@ module.exports = function(mongoose) {
       validate: {
         isAsync: true,
         validator: function(v, cb) {
-          if (!this.isNew) return cb();
+          if (!this || !this.isNew) return cb();
           this.model('Invoice').count({ doc: v }).then(count => {
             cb(!count);
           });

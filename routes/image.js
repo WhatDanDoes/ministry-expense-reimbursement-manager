@@ -379,10 +379,13 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
       req.body.exchangeRate = 1.0;
     }
 
-    models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true }).then(result => {
+console.log('WORD', req.body);
+    models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true, runValidators: true }).then(result => {
+console.log(result);
       req.flash('success', 'Invoice saved');
       res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
     }).catch((error) => {
+console.log(error.message);
       req.flash('error', error.message);
       res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
     });

@@ -26,7 +26,7 @@ const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 // For when system resources are scarce
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-describe('POST /image/:domain/:agentId/:imageId', function() {
+describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
 
   let browser, agent, lanny, troy;
 
@@ -269,6 +269,33 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                   });
                 });
               });
+            });
+          });
+        });
+
+        describe('invalid currencies', () => {
+          it('performs validation', done => {
+            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/image1.jpg` });
+            browser.fill('#datepicker', '2019-08-28');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', 'BTC');
+            browser.fill('input[name=exchangeRate]', 0.00013);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Helicopter for language survey');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/image1.jpg` });
+              browser.assert.text('.alert.alert-danger', 'Unknown currency');
+
+              browser.assert.style('#exchange-rate', 'display', 'block');
+              browser.assert.element('form input[name=purchaseDate][type=number][value="2019-08-28"]');
+              browser.assert.element('form input[name=total][type=number][value="7.90"]');
+              browser.assert.element('form input[name=exchangeRate][type=number][value="0.00013"]');
+              browser.assert.element('form input[name=currency][value=BTC][list=currencies]');
+              browser.assert.element('form input[name=category] option[value="110"][selected=selected]');
+              browser.assert.element('form input[name=reason][value="Helicopter for language survey"]');
+              done();
             });
           });
         });
@@ -608,6 +635,33 @@ describe('POST /image/:domain/:agentId/:imageId', function() {
                   });
                 });
               });
+            });
+          });
+        });
+
+        describe('invalid currencies', () => {
+          it('performs validation', done => {
+            browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}/troy1.jpg` });
+            browser.fill('#datepicker', '2019-08-28');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', 'BTC');
+            browser.fill('input[name=exchangeRate]', 0.00013);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Helicopter for language survey');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}/troy1.jpg` });
+              browser.assert.text('.alert.alert-danger', 'Unknown currency');
+
+              browser.assert.style('#exchange-rate', 'display', 'block');
+              browser.assert.element('form input[name=purchaseDate][type=number][value="2019-08-28"]');
+              browser.assert.element('form input[name=total][type=number][value="7.90"]');
+              browser.assert.element('form input[name=exchangeRate][type=number][value="0.00013"]');
+              browser.assert.element('form input[name=currency][value=BTC][list=currencies]');
+              browser.assert.element('form input[name=category] option[value="110"][selected=selected]');
+              browser.assert.element('form input[name=reason][value="Helicopter for language survey"]');
+              done();
             });
           });
         });
