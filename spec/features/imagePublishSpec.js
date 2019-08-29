@@ -271,6 +271,28 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
               });
             });
           });
+
+          it('is not case-sensitive on the currency symbols', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', 'usd');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
+
+                done();
+              });
+            });
+          });
         });
 
         describe('invalid currencies', () => {
@@ -283,19 +305,41 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Helicopter for language survey');
             browser.pressButton('Save', function(err) {
+console.log(browser.html());
               if (err) return done.fail(err);
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/image1.jpg` });
-              browser.assert.text('.alert.alert-danger', 'Unknown currency');
+              browser.assert.text('.alert.alert-danger', 'Unknown currency.');
 
               browser.assert.style('#exchange-rate', 'display', 'block');
-              browser.assert.element('form input[name=purchaseDate][type=number][value="2019-08-28"]');
+              browser.assert.element('form input[name=purchaseDate][type=text][value="2019-08-28"]');
               browser.assert.element('form input[name=total][type=number][value="7.90"]');
               browser.assert.element('form input[name=exchangeRate][type=number][value="0.00013"]');
               browser.assert.element('form input[name=currency][value=BTC][list=currencies]');
-              browser.assert.element('form input[name=category] option[value="110"][selected=selected]');
+              browser.assert.element('form select[name=category] option[value="110"][selected="selected"]');
               browser.assert.element('form input[name=reason][value="Helicopter for language survey"]');
               done();
+            });
+          });
+
+          it('doesn\'t barf if currency left empty', done => {
+            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/image1.jpg` });
+            browser.fill('#datepicker', '2019-08-28');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', '');
+            browser.fill('input[name=exchangeRate]', 0.00013);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Helicopter for language survey');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${agent.getAgentDirectory()}/image1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'none');
+                browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+                done();
+              });
             });
           });
         });
@@ -637,6 +681,28 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
               });
             });
           });
+
+          it('is not case-sensitive on the currency symbols', done => {
+            browser.fill('#datepicker', '2019-08-09');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', 'usd');
+            browser.fill('input[name=exchangeRate]', 1.35);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Lime scooter for 2km');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'block');
+                browser.assert.element('form input[name=exchangeRate][type=number][value="1.35"]');
+                browser.assert.element('form input[name=currency][value=USD][list=currencies]');
+
+                done();
+              });
+            });
+          });
         });
 
         describe('invalid currencies', () => {
@@ -652,16 +718,37 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
               if (err) return done.fail(err);
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}/troy1.jpg` });
-              browser.assert.text('.alert.alert-danger', 'Unknown currency');
+              browser.assert.text('.alert.alert-danger', 'Unknown currency.');
 
               browser.assert.style('#exchange-rate', 'display', 'block');
-              browser.assert.element('form input[name=purchaseDate][type=number][value="2019-08-28"]');
+              browser.assert.element('form input[name=purchaseDate][type=text][value="2019-08-28"]');
               browser.assert.element('form input[name=total][type=number][value="7.90"]');
               browser.assert.element('form input[name=exchangeRate][type=number][value="0.00013"]');
               browser.assert.element('form input[name=currency][value=BTC][list=currencies]');
-              browser.assert.element('form input[name=category] option[value="110"][selected=selected]');
+              browser.assert.element('form select[name=category] option[value="110"][selected=selected]');
               browser.assert.element('form input[name=reason][value="Helicopter for language survey"]');
               done();
+            });
+          });
+
+          it('doesn\'t barf if currency left empty', done => {
+            browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}/troy1.jpg` });
+            browser.fill('#datepicker', '2019-08-28');
+            browser.fill('#total', '7.9');
+            browser.fill('#currency-selector', '');
+            browser.fill('input[name=exchangeRate]', 0.00013);
+            browser.select('#category-dropdown', '110 - Commercial Travel');
+            browser.fill('#reason', 'Helicopter for language survey');
+            browser.pressButton('Save', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              browser.clickLink(`a[href="/image/${troy.getAgentDirectory()}/troy1.jpg"]`, (err) => {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                browser.assert.style('#exchange-rate', 'display', 'none');
+                browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
+                done();
+              });
             });
           });
         });

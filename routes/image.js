@@ -378,17 +378,32 @@ router.put('/:domain/:agentId/:imageId', ensureAuthorized, (req, res) => {
     if (req.body.currency === 'CAD') {
       req.body.exchangeRate = 1.0;
     }
+    req.body.currency = req.body.currency.toUpperCase();
 
-console.log('WORD', req.body);
     models.Invoice.findOneAndUpdate({doc: req.body.doc}, req.body, { upsert: true, new: true, runValidators: true }).then(result => {
-console.log(result);
       req.flash('success', 'Invoice saved');
       res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
     }).catch((error) => {
-console.log(error.message);
-      req.flash('error', error.message);
-      res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
-    });
+      let msg = '';
+      for (let err in error.errors) {
+        msg += error.errors[err].message + '. ';
+      }
+      req.flash('error', msg);
+
+      let file = {file: req.path};
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(req.path)) {
+        file.type = 'image';
+      }
+
+      //res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
+      res.render('image/show', { image: file,
+                                 invoice: new models.Invoice(req.body),
+                                 messages: req.flash(),
+                                 agent: req.user,
+                                 path: `${req.params.domain}/${req.params.agentId}/${req.params.imageId}`,
+                                 today: moment().format('YYYY-MM-DD'),
+                                 categories: models.Invoice.getCategories() });
+     });
   }).catch(error => {
     req.flash('error', error.message);
     res.redirect(`/image/${req.params.domain}/${req.params.agentId}/${req.params.imageId}`);
