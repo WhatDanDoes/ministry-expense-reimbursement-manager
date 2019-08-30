@@ -55,6 +55,9 @@ router.get('/:domain/:agentId', ensureAuthorized, (req, res) => {
     if (files.indexOf('archive') > -1) {
       files.splice(files.indexOf('archive'), 1)
     }
+    if (files.indexOf('templates') > -1) {
+      files.splice(files.indexOf('templates'), 1)
+    }
 
     models.Invoice.find({ doc: { $regex: new RegExp(`${req.params.domain}/${req.params.agentId}`), $options: 'i'} }).select('doc -_id').then(invoices => {
       invoices = invoices.map(invoice => invoice.doc);
@@ -580,7 +583,7 @@ router.post('/:domain/:agentId/archive', ensureAuthorized, (req, res) => {
         return done();
       }
       let file = files.pop();
-      models.Invoice.findOneAndUpdate({ doc: `${req.params.domain}/${req.params.agentId}/${file}` }, { doc: `archive/${req.params.domain}/${req.params.agentId}/${file}` }).then(invoice => {
+      models.Invoice.findOneAndUpdate({ doc: `${req.params.domain}/${req.params.agentId}/${file}` }, { doc: `${req.params.domain}/${req.params.agentId}/archive/${file}` }).then(invoice => {
         mv(`uploads/${req.params.domain}/${req.params.agentId}/${file}`, `uploads/${req.params.domain}/${req.params.agentId}/archive/${file}`, { mkdirp: true }, function(err) {
           if (err) {
             return done(err);

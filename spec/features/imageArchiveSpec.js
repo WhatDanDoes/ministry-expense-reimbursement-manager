@@ -75,8 +75,9 @@ describe('imageArchiveSpec', () => {
           },
           [`uploads/${troy.getAgentDirectory()}`]: {
             'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'troy2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'troy3.doc': fs.readFileSync('spec/files/troll.jpg'),
+            'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+            'troy3.Gif': fs.readFileSync('spec/files/troll.jpg'),
+            'troy4': fs.readFileSync('spec/files/troll.jpg'),
           },
           'public/images/uploads': {}
         });
@@ -171,7 +172,7 @@ describe('imageArchiveSpec', () => {
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}`});
               browser.assert.elements('section.image img', 2);
-              browser.assert.elements('section.link a', 1);
+              browser.assert.elements('section.link a', 2);
               browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
               done();
             });
@@ -222,79 +223,207 @@ describe('imageArchiveSpec', () => {
             done();
           });
 
-          it('creates an archive directory if none exists', done => {
-            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-              if (err) return done.fail(err);
-              expect(files.indexOf('archive')).toEqual(-1);
-              browser.pressButton('#archive-button', function(err) {
-                if (err) done.fail(err);
-                browser.assert.success();
+          describe('owner account', () => {
 
-                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-                  if (err) return done.fail(err);
-                  expect(files.indexOf('archive') >= 0).toBe(true);
-
-                  done();
-                });
-              });
-            });
-          });
-
-          it('moves all an agent\'s images to the archive directory', done => {
-            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-              if (err) return done.fail(err);
-              expect(files.length).toEqual(4);
-
-              browser.pressButton('#archive-button', function(err) {
-                if (err) done.fail(err);
-                browser.assert.success();
-
-                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-                  if (err) return done.fail(err);
-                  expect(files.indexOf('archive') >= 0).toBe(true);
-                  expect(files.length).toEqual(1);
-                  fs.readdir(`uploads/${agent.getAgentDirectory()}/archive`, (err, files) => {
+            it('creates an archive directory if none exists', done => {
+              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                if (err) return done.fail(err);
+                expect(files.indexOf('archive')).toEqual(-1);
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
-                    expect(files.indexOf('archive') >= 0).toBe(false);
-                    expect(files.length).toEqual(4);
-
+                    expect(files.indexOf('archive') >= 0).toBe(true);
+  
                     done();
                   });
                 });
               });
             });
-          });
-
-          it('updates all invoice doc paths to point to archive directory', done => {
-            models.Invoice.find({}).then(invoices => {
-              expect(invoices.length).toEqual(3);
-              for (let invoice of invoices) {
-                expect(invoice.doc).toMatch(`${agent.getAgentDirectory()}`);
-              }
+  
+            it('moves all an agent\'s images to the archive directory', done => {
+              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                if (err) return done.fail(err);
+                expect(files.length).toEqual(4);
+  
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                    if (err) return done.fail(err);
+                    expect(files.indexOf('archive') >= 0).toBe(true);
+                    expect(files.length).toEqual(1);
+                    fs.readdir(`uploads/${agent.getAgentDirectory()}/archive`, (err, files) => {
+                      if (err) return done.fail(err);
+                      expect(files.indexOf('archive') >= 0).toBe(false);
+                      expect(files.length).toEqual(4);
+  
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+  
+            it('updates all invoice doc paths to point to archive directory', done => {
+              models.Invoice.find({}).then(invoices => {
+                expect(invoices.length).toEqual(3);
+                for (let invoice of invoices) {
+                  expect(invoice.doc).toMatch(`${agent.getAgentDirectory()}`);
+                }
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  models.Invoice.find({}).then(invoices => {
+                    expect(invoices.length).toEqual(3);
+                    for (let invoice of invoices) {
+                      expect(invoice.doc).toMatch(`${agent.getAgentDirectory()}/archive`);
+                    }
+                    done();
+                  });
+                });
+              }).catch(err => {
+                done.fail(err);
+              });
+            });
+  
+            it('redirects to agent\'s images with message', done => {
               browser.pressButton('#archive-button', function(err) {
                 if (err) done.fail(err);
                 browser.assert.success();
-
-                models.Invoice.find({}).then(invoices => {
-                  expect(invoices.length).toEqual(3);
-                  for (let invoice of invoices) {
-                    expect(invoice.doc).toMatch(`archive/${agent.getAgentDirectory()}`);
-                  }
-                  done();
-                });
+  
+                browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
+                browser.assert.elements('section.image img', 0);
+                browser.assert.elements('section.link a', 0);
+   
+                done();
               });
-            }).catch(err => {
-              done.fail(err);
             });
           });
 
-          it('redirects to agent\'s images with message', done => {
-            browser.pressButton('#archive-button', function(err) {
-              if (err) done.fail(err);
-              browser.assert.success();
+          describe('writable account', () => {
+            beforeEach(done => {
+              const invoices = [
+                {
+                  category: 400,
+                  purchaseDate: new Date('2019-8-12'),
+                  reason: 'Bible',
+                  total: 6599,
+                  doc: 'example.com/troy/troy1.jpg',
+                  agent: troy._id,
+                },
+                {
+                  category: 430,
+                  purchaseDate: new Date('2019-8-10'),
+                  reason: 'Pens and staples',
+                  total: 965,
+                  doc: 'example.com/troy/troy2.pdf',
+                  agent: troy._id,
+                },
+                {
+                  category: 440,
+                  purchaseDate: new Date('2019-8-11'),
+                  reason: 'Cloud server',
+                  total: 1730,
+                  doc: 'example.com/troy/troy4',
+                  agent: troy._id,
+                  currency: 'USD',
+                  exchangeRate: 1.35,
+                },
+              ];
 
-              browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
-              done();
+              models.Invoice.insertMany(invoices).then(docs => {
+                browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
+                  if (err) return done.fail(err);
+                  browser.assert.success();
+                  done();
+                });
+              }).catch(err => {
+                done.fail(err);
+              });
+            });
+
+            it('creates an archive directory if none exists', done => {
+              fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                if (err) return done.fail(err);
+                expect(files.indexOf('archive')).toEqual(-1);
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                    if (err) return done.fail(err);
+                    expect(files.indexOf('archive') >= 0).toBe(true);
+  
+                    done();
+                  });
+                });
+              });
+            });
+  
+            it('moves all an agent\'s images to the archive directory', done => {
+              fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                if (err) return done.fail(err);
+                expect(files.length).toEqual(4);
+  
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                    if (err) return done.fail(err);
+                    expect(files.indexOf('archive') >= 0).toBe(true);
+                    expect(files.length).toEqual(1);
+                    fs.readdir(`uploads/${troy.getAgentDirectory()}/archive`, (err, files) => {
+                      if (err) return done.fail(err);
+                      expect(files.indexOf('archive') >= 0).toBe(false);
+                      expect(files.length).toEqual(4);
+  
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+  
+            it('updates all invoice doc paths to point to archive directory', done => {
+              models.Invoice.find({ agent: troy._id }).then(invoices => {
+                expect(invoices.length).toEqual(3);
+                for (let invoice of invoices) {
+                  expect(invoice.doc).toMatch(`${troy.getAgentDirectory()}`);
+                }
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+  
+                  models.Invoice.find({ agent: troy._id }).then(invoices => {
+                    expect(invoices.length).toEqual(3);
+                    for (let invoice of invoices) {
+                      expect(invoice.doc).toMatch(new RegExp(`${troy.getAgentDirectory()}/archive`));
+                    }
+                    done();
+                  });
+                });
+              }).catch(err => {
+                done.fail(err);
+              });
+            });
+  
+            it('redirects to agent\'s images with message', done => {
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+  
+                browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
+                browser.assert.elements('section.image img', 0);
+                browser.assert.elements('section.link a', 0);
+   
+                done();
+              });
             });
           });
         });

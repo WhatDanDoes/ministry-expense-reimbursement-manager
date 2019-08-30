@@ -319,27 +319,37 @@ describe('imageZipSpec', () => {
             });
           });
 
+          describe('custom spreadsheet generation', () => {
+            beforeEach(done => {
+              mock.restore();
+              mockAndUnmock({ 
+                [`uploads/${agent.getAgentDirectory()}`]: {
+                  'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+                  'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+                  'image4': fs.readFileSync('spec/files/troll.jpg'),
+                  'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'templates': { 'MER-template.ods': fs.readFileSync('spec/files/MER-template.ods') },
+                },
+                'public/templates/': {},  // <-------- No default template!
+              });
+              done();
+            });
+
+            it('does not list the agent\'s templates/ directory in the photo roll', done => {
+              browser.visit(`/image/${agent.getAgentDirectory()}`, err => {
+                if (err) return done.fail(err);
+                browser.assert.success(); 
+                browser.assert.elements('section.image img', 3);
+                browser.assert.elements('section.link', 2);
+                done();
+              });
+            });
+
           /**
            * `child_process.spawn` does not access the mocked file system
            * These tests are useless
            */
-//          describe('custom spreadsheet generation', () => {
-//            beforeEach(done => {
-//              mock.restore();
-//              mockAndUnmock({ 
-//                [`uploads/${agent.getAgentDirectory()}`]: {
-//                  'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-//                  'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-//                  'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-//                  'image4': fs.readFileSync('spec/files/troll.jpg'),
-//                  'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-//                  'templates/MER-template.ods': fs.readFileSync('spec/files/MER-template.ods'),
-//                },
-//                'public/templates/': {},  // <-------- No default template!
-//              });
-//              done();
-//            });
-//
 //            it('generates the spreadsheet from the agent\'s templates/ directory', done => {
 //              function binaryParser(res, callback) {
 //                res.setEncoding('binary');
@@ -379,7 +389,7 @@ describe('imageZipSpec', () => {
 //                  done();
 //                });
 //            });
-//          });
+          });
         });
       });
 
@@ -617,27 +627,37 @@ describe('imageZipSpec', () => {
             });
           });
 
+          describe('custom spreadsheet generation', () => {
+            beforeEach(done => {
+              mock.restore();
+              mockAndUnmock({ 
+                [`uploads/${troy.getAgentDirectory()}`]: {
+                  'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+                  'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+                  'troy4': fs.readFileSync('spec/files/troll.jpg'),
+                  'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                  'templates': { 'MER-template.ods': fs.readFileSync('spec/files/MER-template.ods') },
+                },
+                'public/templates': {},  // <-------- No default template!
+              });
+              done();
+            });
+
+            it('does not list the agent\'s templates/ directory in the photo roll', done => {
+              browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
+                if (err) return done.fail(err);
+                browser.assert.success(); 
+                browser.assert.elements('section.image img', 3);
+                browser.assert.elements('section.link', 2);
+                done();
+              });
+            }); 
+
           /**
            * `child_process.spawn` does not access the mocked file system
            * These tests are useless
            */
-//          describe('custom spreadsheet generation', () => {
-//            beforeEach(done => {
-//              mock.restore();
-//              mockAndUnmock({ 
-//                [`uploads/${troy.getAgentDirectory()}`]: {
-//                  'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-//                  'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-//                  'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-//                  'troy4': fs.readFileSync('spec/files/troll.jpg'),
-//                  'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-//                  'templates/MER-template.ods': fs.readFileSync('spec/files/MER-template.ods'),
-//                },
-//                'public/templates': {},  // <-------- No default template!
-//              });
-//              done();
-//            });
-//  
 //            it('generates the spreadsheet from the agent\'s templates/ directory', done => {
 //              function binaryParser(res, callback) {
 //                res.setEncoding('binary');
@@ -677,7 +697,7 @@ describe('imageZipSpec', () => {
 //                  done();
 //                });
 //            });
-//          });
+          });
         });
       });
     });
