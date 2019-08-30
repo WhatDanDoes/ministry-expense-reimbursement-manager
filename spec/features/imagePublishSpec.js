@@ -305,7 +305,6 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
             browser.select('#category-dropdown', '110 - Commercial Travel');
             browser.fill('#reason', 'Helicopter for language survey');
             browser.pressButton('Save', function(err) {
-console.log(browser.html());
               if (err) return done.fail(err);
               browser.assert.success();
               browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/image1.jpg` });
