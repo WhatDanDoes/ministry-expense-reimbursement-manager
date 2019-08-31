@@ -18,6 +18,12 @@ Start a MongoDB development server:
 docker run --name dev-mongo -p 27017:27017 -d mongo
 ```
 
+Alternatively, to mount a host volume:
+
+```
+docker run --volume backups:/backups --name dev-mongo -p 27017:27017 -d mongo
+```
+
 I use `jasmine` and `zombie` for testing. These are included in the package's development dependencies.
 
 Run all the tests:
@@ -90,6 +96,30 @@ Put the BasicPhotoEconomizer app in `public/app/app-release.apk`.
 docker-compose -f docker-compose.prod.yml run --rm node node seed.js NODE_ENV=production
 ```
 
+### Database backup and recovery
+
+Backup:
+
+```
+docker-compose -f docker-compose.prod.yml exec merman_mongo mongodump --host merman_mongo --db merman_production --gzip --out ./backups
+tar zcvf merman_production.tar.gz backups/merman_production/
+tar zcvf uploads.tar.gz uploads/
+```
+
+Restore:
+
+```
+tar zxvf merman_production.tar.gz
+tar zxvf uploads.tar.gz
+docker-compose -f docker-compose.prod.yml exec merman_mongo mongorestore --gzip --db merman_production backups/merman_production
+```
+
+Restore to dev:
+
+```
+docker exec -it dev-mongo mongorestore -d basic_photo_server_development --gzip backups/merman_production
+```
+
 #### Database Operations
 
 Connect to DB container like this:
@@ -107,7 +137,7 @@ show dbs
 Use database:
 
 ```
-use accountant_production
+use merman_production
 ```
 
 Show collections:
