@@ -19,6 +19,21 @@ const AdmZip = require('adm-zip');
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
+
+/**
+ * Parses zip file
+ */
+function binaryParser(res, callback) {
+  res.setEncoding('binary');
+  res.data = '';
+  res.on('data', function (chunk) {
+    res.data += chunk;
+  });
+  res.on('end', function () {
+    callback(null, Buffer.from(res.data, 'binary'));
+  });
+}
+
 describe('imageZipSpec', () => {
   let browser, agent, lanny, troy;
 
@@ -178,17 +193,6 @@ describe('imageZipSpec', () => {
           describe('with processed invoices', () => {
             let zipEntries;
             beforeEach(done => {
-              function binaryParser(res, callback) {
-                res.setEncoding('binary');
-                res.data = '';
-                res.on('data', function (chunk) {
-                  res.data += chunk;
-                });
-                res.on('end', function () {
-                  callback(null, Buffer.from(res.data, 'binary'));
-                });
-              }
-
               request(app)
                 .get(`/image/${agent.getAgentDirectory()}/zip`)
                 .set('Cookie', browser.cookies)
@@ -232,6 +236,51 @@ describe('imageZipSpec', () => {
                 done();
               }).catch(function(err) {
                 done.fail(err);
+              });
+            });
+
+            it('ignores archived files when zipping', done => {
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+                fs.writeFileSync(`uploads/${agent.getAgentDirectory()}/image6.jpg`, fs.readFileSync('spec/files/troll.jpg'));
+
+                let newInvoice = new models.Invoice();
+                newInvoice.category = 400;
+                newInvoice.purchaseDate = new Date('2019-8-13');
+                newInvoice.reason = 'Bible to feed my soul to live in eternity';
+                newInvoice.total = 6599;
+                newInvoice.doc = 'example.com/daniel/image6.jpg';
+                newInvoice.agent = agent._id;
+
+                newInvoice.save().then(result => {
+
+                  request(app)
+                    .get(`/image/${agent.getAgentDirectory()}/zip`)
+                    .set('Cookie', browser.cookies)
+                    .expect(200)
+                    .expect( 'Content-Type', /application\/zip/ )
+                    .parse(binaryParser)
+                    .end(function(err, res) {
+                      if (err) done.fail(err);
+    
+                      expect(Buffer.isBuffer(res.body)).toBe(true);
+    
+                      let zip = new AdmZip(res.body);
+                      zipEntries = zip.getEntries();
+    
+                      // One file in zipEntries is the CSV and the other is an ODS (not to be counted in the image count)
+                      expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
+                      expect(zipEntries.length).toEqual(3);
+                      expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
+                      expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.ods`);
+                      expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.jpg`);
+ 
+                      done();
+                    });
+                }).catch(err => {
+                  done.fail(err);
+                });
               });
             });
           });
@@ -541,6 +590,50 @@ describe('imageZipSpec', () => {
                 done();
               }).catch(function(err) {
                 done.fail(err);
+              });
+            });
+
+            it('ignores archived files when zipping', done => {
+              browser.pressButton('#archive-button', function(err) {
+                if (err) done.fail(err);
+                browser.assert.success();
+                fs.writeFileSync(`uploads/${troy.getAgentDirectory()}/troy6.jpg`, fs.readFileSync('spec/files/troll.jpg'));
+
+                let newInvoice = new models.Invoice();
+                newInvoice.category = 400;
+                newInvoice.purchaseDate = new Date('2019-8-13');
+                newInvoice.reason = 'Bible to feed my soul to live in eternity';
+                newInvoice.total = 6599;
+                newInvoice.doc = 'example.com/troy/troy6.jpg';
+                newInvoice.agent = troy._id;
+
+                newInvoice.save().then(result => {
+                  request(app)
+                    .get(`/image/${troy.getAgentDirectory()}/zip`)
+                    .set('Cookie', browser.cookies)
+                    .expect(200)
+                    .expect( 'Content-Type', /application\/zip/ )
+                    .parse(binaryParser)
+                    .end(function(err, res) {
+                      if (err) done.fail(err);
+    
+                      expect(Buffer.isBuffer(res.body)).toBe(true);
+    
+                      let zip = new AdmZip(res.body);
+                      zipEntries = zip.getEntries();
+    
+                      // One file in zipEntries is the CSV and the other is an ODS (not to be counted in the image count)
+                      expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
+                      expect(zipEntries.length).toEqual(3);
+                      expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
+                      expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.ods`);
+                      expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.jpg`);
+ 
+                      done();
+                    });
+                }).catch(err => {
+                  done.fail(err);
+                });
               });
             });
           });

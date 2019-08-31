@@ -303,6 +303,32 @@ describe('imageArchiveSpec', () => {
                 done();
               });
             });
+
+            it('does not move the archive or templates directories', done => {
+              fs.mkdirSync(`uploads/${agent.getAgentDirectory()}/templates`);
+              fs.mkdirSync(`uploads/${agent.getAgentDirectory()}/archive`);
+              fs.writeFileSync(`uploads/${agent.getAgentDirectory()}/templates/MER-template.ods`, fs.readFileSync('spec/files/MER-template.ods'));
+
+              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                if (err) done.fail(err);
+                expect(files.length).toEqual(6);
+
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+
+                  fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                    if (err) done.fail(err);
+    
+                    expect(files.length).toEqual(2);
+                    expect(files[0]).toEqual('archive');
+                    expect(files[1]).toEqual('templates');
+
+                    done();
+                  });
+                });
+              });
+            });
           });
 
           describe('writable account', () => {
@@ -423,6 +449,32 @@ describe('imageArchiveSpec', () => {
                 browser.assert.elements('section.link a', 0);
    
                 done();
+              });
+            });
+
+            it('does not move the archive or templates directories', done => {
+              fs.mkdirSync(`uploads/${troy.getAgentDirectory()}/templates`);
+              fs.mkdirSync(`uploads/${troy.getAgentDirectory()}/archive`);
+              fs.writeFileSync(`uploads/${troy.getAgentDirectory()}/templates/MER-template.ods`, fs.readFileSync('spec/files/MER-template.ods'));
+
+              fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                if (err) done.fail(err);
+                expect(files.length).toEqual(6);
+
+                browser.pressButton('#archive-button', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.success();
+
+                  fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                    if (err) done.fail(err);
+
+                    expect(files.length).toEqual(2);
+                    expect(files[0]).toEqual('archive');
+                    expect(files[1]).toEqual('templates');
+
+                    done();
+                  });
+                });
               });
             });
           });

@@ -209,6 +209,15 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
       return res.status(404).json({ message: 'You have no processed invoices' });
     }
 
+    if (files.indexOf('archive') > -1) {
+      files.splice(files.indexOf('archive'), 1)
+    }
+
+    if (files.indexOf('templates') > -1) {
+      files.splice(files.indexOf('templates'), 1)
+    }
+
+
     let regexFiles = files.map(file => new RegExp(`${req.params.domain}/${req.params.agentId}/${file}`, 'i'));
     models.Invoice.find({ doc: {$in: regexFiles} }).sort([['purchaseDate', 1], ['updatedAt', -1]]).then(invoices => {
       if (!invoices.length) {
@@ -572,6 +581,10 @@ router.post('/:domain/:agentId/archive', ensureAuthorized, (req, res) => {
 
     if (files.indexOf('archive') > -1) {
       files.splice(files.indexOf('archive'), 1)
+    }
+
+    if (files.indexOf('templates') > -1) {
+      files.splice(files.indexOf('templates'), 1)
     }
 
     if (!files.length) {
