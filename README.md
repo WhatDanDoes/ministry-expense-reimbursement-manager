@@ -21,7 +21,7 @@ docker run --name dev-mongo -p 27017:27017 -d mongo
 Alternatively, to mount a host volume:
 
 ```
-docker run --volume backups:/backups --name dev-mongo -p 27017:27017 -d mongo
+docker run --volume /path/to/backups:/backups --name dev-mongo -p 27017:27017 -d mongo
 ```
 
 I use `jasmine` and `zombie` for testing. These are included in the package's development dependencies.
