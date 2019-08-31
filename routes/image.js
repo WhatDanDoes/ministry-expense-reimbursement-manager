@@ -206,7 +206,9 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
     }
 
     if (!files.length) {
-      return res.status(404).json({ message: 'You have no processed invoices' });
+      req.flash('error', 'You have no processed invoices');
+      return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+      //return res.status(404).json({ message: 'You have no processed invoices' });
     }
 
     if (files.indexOf('archive') > -1) {
@@ -221,7 +223,9 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
     let regexFiles = files.map(file => new RegExp(`${req.params.domain}/${req.params.agentId}/${file}`, 'i'));
     models.Invoice.find({ doc: {$in: regexFiles} }).sort([['purchaseDate', 1], ['updatedAt', -1]]).then(invoices => {
       if (!invoices.length) {
-        return res.status(404).json({ message: 'You have no processed invoices' });
+        req.flash('error', 'You have no processed invoices');
+        return res.redirect(`/image/${req.params.domain}/${req.params.agentId}`);
+        //return res.status(404).json({ message: 'You have no processed invoices' });
       }
 
       models.Agent.findOne({ _id: invoices[0].agent }).then(agent => {

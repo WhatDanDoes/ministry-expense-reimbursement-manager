@@ -160,30 +160,24 @@ describe('imageZipSpec', () => {
           describe('with no processed invoices', () => {
             it('returns an appropriate message if no images have been uploaded', (done) => {
               mock.restore();
-              request(app)
-                .get(`/image/${agent.getAgentDirectory()}/zip`)
-                .set('Cookie', browser.cookies)
-                .expect(404)
-                .expect('Content-Type', /application\/json/ )
-                .end(function(err, res) {
-                  if (err) done.fail(err);
-                  expect(res.body).toEqual({message: 'You have no processed invoices'});
-                  done();
-                });
+              browser.clickLink('#zip-link', function(err) {
+                if (err) done.fail(err);
+                browser.assert.redirected();
+                browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+                browser.assert.text('.alert.alert-danger', 'You have no processed invoices');
+                done();
+              });
             });
 
             it('returns an appropriate message if no images have been processed as receipts', (done) => {
               models.mongoose.connection.db.dropCollection('invoices').then(result => {
-                request(app)
-                  .get(`/image/${agent.getAgentDirectory()}/zip`)
-                  .set('Cookie', browser.cookies)
-                  .expect(404)
-                  .expect('Content-Type', /application\/json/ )
-                  .end(function(err, res) {
-                    if (err) done.fail(err);
-                    expect(res.body).toEqual({message: 'You have no processed invoices'});
-                    done();
-                  });
+                browser.clickLink('#zip-link', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.redirected();
+                  browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
+                  browser.assert.text('.alert.alert-danger', 'You have no processed invoices');
+                  done();
+                });
               }).catch(function(err) {
                 done.fail(err);
               });
@@ -503,30 +497,24 @@ describe('imageZipSpec', () => {
           describe('with no processed invoices', () => {
             it('returns an appropriate message if no images have been uploaded', (done) => {
               mock.restore();
-              request(app)
-                .get(`/image/${troy.getAgentDirectory()}/zip`)
-                .set('Cookie', browser.cookies)
-                .expect(404)
-                .expect('Content-Type', /application\/json/ )
-                .end(function(err, res) {
-                  if (err) done.fail(err);
-                  expect(res.body).toEqual({message: 'You have no processed invoices'});
-                  done();
-                });
+              browser.clickLink('#zip-link', function(err) {
+                if (err) done.fail(err);
+                browser.assert.redirected();
+                browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+                browser.assert.text('.alert.alert-danger', 'You have no processed invoices');
+                done();
+              });
             });
 
             it('returns an appropriate message if no images have been processed as receipts', (done) => {
               models.mongoose.connection.db.dropCollection('invoices').then(result => {
-                request(app)
-                  .get(`/image/${troy.getAgentDirectory()}/zip`)
-                  .set('Cookie', browser.cookies)
-                  .expect(404)
-                  .expect('Content-Type', /application\/json/ )
-                  .end(function(err, res) {
-                    if (err) done.fail(err);
-                    expect(res.body).toEqual({message: 'You have no processed invoices'});
-                    done();
-                  });
+                browser.clickLink('#zip-link', function(err) {
+                  if (err) done.fail(err);
+                  browser.assert.redirected();
+                  browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+                  browser.assert.text('.alert.alert-danger', 'You have no processed invoices');
+                  done();
+                });
               }).catch(function(err) {
                 done.fail(err);
               });

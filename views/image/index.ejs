@@ -33,7 +33,7 @@
     <% } else { %>
       <% if (agent.isWriter && canZip) { %>
         <section class="deep-link">
-          <a href="<%= `/image${path}/zip` %>">
+          <a id="zip-link" href="<%= `/image${path}/zip` %>">
             <img src="/images/zip-download.png">
             <p>Zip and download all invoices</p>
           </a>
