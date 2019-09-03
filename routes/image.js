@@ -245,8 +245,8 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
           // Split `reason` field into `Item` and `Business Purpose of Expense`
           let item = invoice.reason;
           let purpose = models.Invoice.getCategories()[invoice.category];
-          let forMatch = /for/.exec(item);
-          let toMatch = /to/.exec(item);
+          let forMatch = / for /.exec(item);
+          let toMatch = / to /.exec(item);
 
           let parts;
           if (forMatch && toMatch) {
