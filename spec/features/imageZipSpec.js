@@ -212,7 +212,7 @@ describe('imageZipSpec', () => {
             it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
               expect(zipEntries.length).toEqual(5);
               expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-              expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.ods`);
+              expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.xlsx`);
               expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.pdf`);
               expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #2`);
               expect(zipEntries[4].name).toEqual(`${agent.getBaseFilename()} #3.jpg`);
@@ -267,7 +267,7 @@ describe('imageZipSpec', () => {
                       expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
                       expect(zipEntries.length).toEqual(3);
                       expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-                      expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.ods`);
+                      expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.xlsx`);
                       expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.jpg`);
  
                       done();
@@ -372,7 +372,7 @@ describe('imageZipSpec', () => {
                   'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
                   'image4': fs.readFileSync('spec/files/troll.jpg'),
                   'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-                  'templates': { 'MER-template.ods': fs.readFileSync('spec/files/MER-template.ods') },
+                  'templates': { 'MER-template.xlsx': fs.readFileSync('spec/files/MER-template.xlsx') },
                 },
                 'public/templates/': {},  // <-------- No default template!
               });
@@ -424,7 +424,7 @@ describe('imageZipSpec', () => {
 //
 //                  expect(zipEntries.length).toEqual(5);
 //                  expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-//                  expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.ods`);
+//                  expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.xlsx`);
 //                  expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.pdf`);
 //                  expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #2`);
 //                  expect(zipEntries[4].name).toEqual(`${agent.getBaseFilename()} #3.jpg`);
@@ -560,7 +560,7 @@ describe('imageZipSpec', () => {
             it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
               expect(zipEntries.length).toEqual(5);
               expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
-              expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.ods`);
+              expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
               expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.pdf`);
               expect(zipEntries[3].name).toEqual(`${troy.getBaseFilename()} #2`);
               expect(zipEntries[4].name).toEqual(`${troy.getBaseFilename()} #3.jpg`);
@@ -614,7 +614,7 @@ describe('imageZipSpec', () => {
                       expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
                       expect(zipEntries.length).toEqual(3);
                       expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
-                      expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.ods`);
+                      expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
                       expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.jpg`);
  
                       done();
@@ -718,7 +718,7 @@ describe('imageZipSpec', () => {
                   'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
                   'troy4': fs.readFileSync('spec/files/troll.jpg'),
                   'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-                  'templates': { 'MER-template.ods': fs.readFileSync('spec/files/MER-template.ods') },
+                  'templates': { 'MER-template.xlsx': fs.readFileSync('spec/files/MER-template.xlsx') },
                 },
                 'public/templates': {},  // <-------- No default template!
               });
@@ -770,7 +770,7 @@ describe('imageZipSpec', () => {
 //  
 //                  expect(zipEntries.length).toEqual(5);
 //                  expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
-//                  expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.ods`);
+//                  expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
 //                  expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.pdf`);
 //                  expect(zipEntries[3].name).toEqual(`${troy.getBaseFilename()} #2`);
 //                  expect(zipEntries[4].name).toEqual(`${troy.getBaseFilename()} #3.jpg`);
