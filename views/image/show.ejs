@@ -34,7 +34,7 @@
                  value="<%= invoice ? invoice.currency : 'CAD' %>"
                  <%= agent.isWriter ? '' : ' disabled=disabled' %>>
           <datalist id="currencies">
-            <% for (let currency of ['CAD', 'USD']) { %>
+            <% for (let currency of ['CAD', 'USD', 'EUR', 'CHF']) { %>
               <option value="<%= currency %>">
             <% } %>
           </datalist>
@@ -54,8 +54,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="reason">Items:</label>  
-          <input id="reason" class="form-control" type="text" name="reason" required=true
+          <label for="reason">Expense justification</label>
+          <input id="reason" class="form-control" type="text" name="reason" required=true placeholder="Item[s] [for|to] reason"
                  <%= agent.isWriter ? '' : ' disabled=disabled' %> value="<%= invoice ? invoice.reason : '' %>">
         </div>
         <% if (agent.isWriter) { %>
