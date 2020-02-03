@@ -219,7 +219,6 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
       files.splice(files.indexOf('templates'), 1)
     }
 
-
     let regexFiles = files.map(file => new RegExp(`${req.params.domain}/${req.params.agentId}/${file}`, 'i'));
     models.Invoice.find({ doc: {$in: regexFiles} }).sort([['purchaseDate', 1], ['updatedAt', -1]]).then(invoices => {
       if (!invoices.length) {
@@ -242,7 +241,9 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
             ext = `.${filename.substring(filename.lastIndexOf('.') + 1).toLowerCase()}`;
           }
 
-          // Split `reason` field into `Item` and `Business Purpose of Expense`
+          /**
+           * FindAndModify Split `reason` field into `Item` and `Business Purpose of Expense`
+           */
           let item = invoice.reason;
           let purpose = models.Invoice.getCategories()[invoice.category];
           let forMatch = / for /.exec(item);
@@ -299,10 +300,10 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
           /**
            * ODS template
            */
-          let templatePath = `uploads/${agent.getAgentDirectory()}/templates/MER-template.ods`;
+          let templatePath = `uploads/${agent.getAgentDirectory()}/templates/MER-template.xlsx`;
           fs.access(templatePath, fs.constants.R_OK, err => {
             if (err) {
-              templatePath = 'public/templates/MER-template.ods';
+              templatePath = 'public/templates/MER-template.xlsx';
             }
 
             const csvStream = new stream.Readable({read(size) {
@@ -337,7 +338,7 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
               }
             });
 
-            archive.append(proc.stdout, { name: `${agent.name.split(' ').pop()} MER.ods` });
+            archive.append(proc.stdout, { name: `${agent.name.split(' ').pop()} MER.xlsx` });
           });
         }).catch(err => {
           req.flash('error', err.message);

@@ -107,7 +107,7 @@ describe('imageShowSpec', () => {
             browser.assert.input('form input[name=total]', '');
             // Currency
             browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
-            browser.assert.elements('form datalist#currencies option', 2);
+            browser.assert.elements('form datalist#currencies option', 4);
             // Exchange Rate (not visible)
             browser.assert.style('#exchange-rate', 'display', 'none');
             // Reason
@@ -151,7 +151,7 @@ describe('imageShowSpec', () => {
               browser.assert.input('form input[name=total]', '7.90');
               // Currency
               browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
-              browser.assert.elements('form datalist#currencies option', 2);
+              browser.assert.elements('form datalist#currencies option', 4);
               // Exchange Rate (not visible)
               browser.assert.style('#exchange-rate', 'display', 'none');
               // Reason
@@ -303,7 +303,7 @@ describe('imageShowSpec', () => {
             browser.assert.input('form input[name=total]', '');
             // Currency
             browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
-            browser.assert.elements('form datalist#currencies option', 2);
+            browser.assert.elements('form datalist#currencies option', 4);
             // Exchange Rate (not visible)
             browser.assert.style('#exchange-rate', 'display', 'none');
             // Reason
@@ -347,7 +347,7 @@ describe('imageShowSpec', () => {
               browser.assert.input('form input[name=total]', '7.90');
               // Currency
               browser.assert.element('form input[name=currency][value=CAD][list=currencies]');
-              browser.assert.elements('form datalist#currencies option', 2);
+              browser.assert.elements('form datalist#currencies option', 4);
               // Exchange Rate (not visible)
               browser.assert.style('#exchange-rate', 'display', 'none');
               // Reason

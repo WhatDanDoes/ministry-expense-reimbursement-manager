@@ -19,9 +19,10 @@ const AdmZip = require('adm-zip');
 const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 
 /**
- * Parses zip file
+ * Parses zip file returned from request (i.e., supertest) calls
  */
 function binaryParser(res, callback) {
   res.setEncoding('binary');
@@ -42,16 +43,21 @@ describe('imageZipSpec', () => {
     //browser.debug();
     fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
       if (err) return done.fail(err);
-      models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
-        agent = results;
-        models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
-          lanny = results; 
-          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
-            troy = results; 
-            browser.visit('/', function(err) {
-              if (err) return done.fail(err);
-              browser.assert.success();
-              done();
+      fixtures.load(__dirname + '/../fixtures/invoices.js', models.mongoose, function(err) {
+        if (err) return done.fail(err);
+        models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
+          agent = results;
+          models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
+            lanny = results; 
+            models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+              troy = results; 
+              browser.visit('/', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                done();
+              });
+            }).catch(function(error) {
+              done.fail(error);
             });
           }).catch(function(error) {
             done.fail(error);
@@ -59,14 +65,13 @@ describe('imageZipSpec', () => {
         }).catch(function(error) {
           done.fail(error);
         });
-      }).catch(function(error) {
-        done.fail(error);
       });
     });
   });
 
   afterEach(function(done) {
     models.mongoose.connection.db.dropDatabase().then((result) => {
+      mock.restore();
       done();
     }).catch(function(err) {
       done.fail(err);
@@ -75,49 +80,37 @@ describe('imageZipSpec', () => {
 
   describe('authenticated', () => {
     beforeEach(done => {
-      fixtures.load(__dirname + '/../fixtures/invoices.js', models.mongoose, function(err) {
-        if (err) return done.fail(err);
-        mockAndUnmock({ 
-          [`uploads/${agent.getAgentDirectory()}`]: {
-            'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-            'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-            'image4': fs.readFileSync('spec/files/troll.jpg'),
-            'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          [`uploads/${lanny.getAgentDirectory()}`]: {
-            'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          [`uploads/${troy.getAgentDirectory()}`]: {
-            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-            'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-            'troy4': fs.readFileSync('spec/files/troll.jpg'),
-            'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          'public/images/uploads': {},
-        });
-
-        spyOn(jwt, 'sign').and.returnValue('somejwtstring');
-
-        browser.fill('email', agent.email);
-        browser.fill('password', 'secret');
-        browser.pressButton('Login', function(err) {
-          if (err) done.fail(err);
-          browser.assert.success();
-          done();
-        });
+      mockAndUnmock({ 
+        [`uploads/${agent.getAgentDirectory()}`]: {
+          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+          'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+          'image4': fs.readFileSync('spec/files/troll.jpg'),
+          'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        [`uploads/${lanny.getAgentDirectory()}`]: {
+          'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        [`uploads/${troy.getAgentDirectory()}`]: {
+          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+          'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+          'troy4': fs.readFileSync('spec/files/troll.jpg'),
+          'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
+        'public/images/uploads': {},
       });
-    });
 
-    afterEach(done => {
-      models.mongoose.connection.db.dropDatabase().then(result => {
-        mock.restore();
+      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
+
+      browser.fill('email', agent.email);
+      browser.fill('password', 'secret');
+      browser.pressButton('Login', function(err) {
+        if (err) done.fail(err);
+        browser.assert.success();
         done();
-      }).catch(function(err) {
-        done.fail(err);
       });
     });
 
@@ -282,18 +275,6 @@ describe('imageZipSpec', () => {
           describe('with for/to regex-aware business purposes', () => {
             let zipEntries;
             beforeEach(done => {
-
-              function binaryParser(res, callback) {
-                res.setEncoding('binary');
-                res.data = '';
-                res.on('data', function (chunk) {
-                  res.data += chunk;
-                });
-                res.on('end', function () {
-                  callback(null, Buffer.from(res.data, 'binary'));
-                });
-              }
-
               models.Invoice.find({agent: agent._id}).sort({ purchaseDate: -1 }).then(invoices => {
                 expect(invoices.length).toEqual(3);
                 invoices[0].reason = 'Bible for Spiritual enrichment for life';
@@ -356,6 +337,21 @@ describe('imageZipSpec', () => {
                 expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment for life",3,"65.99","CAD",1');
                 expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul to live in eternity",4,"65.99","CAD",1');
                 done();
+              }).catch(function(err) {
+                done.fail(err);
+              });
+            });
+
+            it('doesn\'t barf on one-word reasons', done => {
+              models.Invoice.findOneAndUpdate({ doc: `uploads/${agent.getAgentDirectory()}/image5.jpg` }, { reason: 'oneword' }, {useFindAndModify: false}).then(invoice => {
+                browser.visit('/image', err => {
+                  if (err) return done.fail(err);
+                  browser.clickLink('#zip-link', err => {
+                    if (err) return done.fail(err);
+                    browser.assert.success();
+                    done();
+                  });
+                });
               }).catch(function(err) {
                 done.fail(err);
               });
@@ -433,8 +429,8 @@ describe('imageZipSpec', () => {
 //                });
 //            });
           });
-        });
       });
+    });
 
       describe('writer agent', () => {
         beforeEach(done => {
@@ -524,17 +520,6 @@ describe('imageZipSpec', () => {
           describe('with processed invoices', () => {
             let zipEntries;
             beforeEach(done => {
-              function binaryParser(res, callback) {
-                res.setEncoding('binary');
-                res.data = '';
-                res.on('data', function (chunk) {
-                  res.data += chunk;
-                });
-                res.on('end', function () {
-                  callback(null, Buffer.from(res.data, 'binary'));
-                });
-              }
-
               request(app)
                 .get(`/image/${troy.getAgentDirectory()}/zip`)
                 .set('Cookie', browser.cookies)
@@ -629,18 +614,6 @@ describe('imageZipSpec', () => {
           describe('with for/to regex-aware business purposes', () => {
             let zipEntries;
             beforeEach(done => {
-
-              function binaryParser(res, callback) {
-                res.setEncoding('binary');
-                res.data = '';
-                res.on('data', function (chunk) {
-                  res.data += chunk;
-                });
-                res.on('end', function () {
-                  callback(null, Buffer.from(res.data, 'binary'));
-                });
-              }
-
               models.Invoice.find({agent: troy._id}).sort({ purchaseDate: -1 }).then(invoices => {
                 expect(invoices.length).toEqual(3);
                 invoices[0].reason = 'Bible for Spiritual enrichment for life';
@@ -702,6 +675,21 @@ describe('imageZipSpec', () => {
                 expect(csv[3]).toEqual('"400","12 Aug \'19","Bible","Spiritual enrichment for life",3,"65.99","CAD",1');
                 expect(csv[4]).toEqual('"400","13 Aug \'19","Bible","Feed my soul to live in eternity",4,"65.99","CAD",1');
                 done();
+              }).catch(function(err) {
+                done.fail(err);
+              });
+            });
+
+            it('doesn\'t barf on one-word reasons', done => {
+              models.Invoice.findOneAndUpdate({ doc: `uploads/${troy.getAgentDirectory()}/troy5.jpg` }, { reason: 'oneword' }, {useFindAndModify: false}).then(invoice => {
+                browser.visit('/image', err => {
+                  if (err) return done.fail(err);
+                  browser.clickLink('#zip-link', err => {
+                    if (err) return done.fail(err);
+                    browser.assert.success();
+                    done();
+                  });
+                });
               }).catch(function(err) {
                 done.fail(err);
               });
