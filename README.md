@@ -5,6 +5,13 @@ basic-photo-server
 
 ## System dependencies:
 
+### Python
+
+```
+sudo apt update
+sudo apt install python3
+```
+
 ### csv2odf
 
 From https://sourceforge.net/p/csv2odf/wiki/Main_Page/
@@ -13,6 +20,12 @@ From https://sourceforge.net/p/csv2odf/wiki/Main_Page/
 cd ~
 wget https://sourceforge.net/projects/csv2odf/files/csv2odf-2.09/csv2odf_2.09-1.deb
 sudo dpkg -i csv2odf_2.09-1.deb
+```
+
+This may require `python` 2.6. I finally managed to successfully install `csv2odf` with:
+
+```
+sudo apt --fix-broken install
 ```
 
 ## Setup
