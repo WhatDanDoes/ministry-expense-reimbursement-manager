@@ -3,6 +3,18 @@ basic-photo-server
 
 `node`/`express` backend for receiving photos sent by the [BasicPhotoEconomizer](https://github.com/WhatDanDoes/basic-photo-economizer) (my first `react-native` Android app).
 
+## System dependencies:
+
+### csv2odf
+
+From https://sourceforge.net/p/csv2odf/wiki/Main_Page/
+
+```
+cd ~
+wget https://sourceforge.net/projects/csv2odf/files/csv2odf-2.09/csv2odf_2.09-1.deb
+sudo dpkg -i csv2odf_2.09-1.deb
+```
+
 ## Setup
 
 ```
@@ -35,7 +47,7 @@ npm test
 Run one set of tests:
 
 ```
-NODE_ENV=test node_modules/.bin/jasmine spec/models/agentSpec.js
+NODE_ENV=test npx jasmine spec/models/agentSpec.js
 ```
 
 ## Development
