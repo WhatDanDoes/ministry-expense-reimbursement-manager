@@ -1,17 +1,70 @@
 <% include ../_partials/head %>
   <% include ../_partials/messages %>
   <main>
-    <% include ../_partials/appLink %>
+    <% if (agent.isWriter) { %>
+      <% if (canArchive) { %>
+        <section class="deep-link">
+          <form role="form" action="<%= `/image${path}/archive` %>" method="post" enctype="multipart/form-data"
+                onsubmit="return confirm('Have you zipped your current work and sent it to your supervisor?\n\nYou cannot retrieve your old claim.\n\nPress OK to start a new claim.');">
+            <input type="image" id="archive-button" name="submit" src="/images/start-new.png">
+            <p>Start new expense claim</p>
+          </form>
+        </section>
+      <% } %>
+      <% include ../_partials/appLink %>
+      <section>
+        <form role="form" action="/image<%= agent.isOwner ? '' : path %>" method="post" enctype="multipart/form-data">
+          <label class="fileContainer upload-link">
+            <p><img src="/images/file-upload.png"></p>
+            <p>Upload invoice file</p>
+            <input type="file" id="docs" name="docs" multiple=true>
+          </label>
+          <div class="form-group">
+            <ol id="selected-files"></ol>
+          </div>
+          <div class="form-group">
+            <button id="file-upload-button" class="btn btn-default" type="submit">Submit</button>
+          </div>
+        </form>
+      </section>
+    <% } %>
     <% if (!images.length) { %>
-      <h2>No images</h2>
+      <h2>No invoices</h2>
     <% } else { %>
-      <% include ./_pager %>
-      <% for (let image of images) { %>
-        <section class="image">
-          <a href="<%= `/image/${image}` %>">
-            <img src="<%= `/uploads/${image}` %>" />
+      <% if (agent.isWriter && canZip) { %>
+        <section class="deep-link">
+          <a id="zip-link" href="<%= `/image${path}/zip` %>">
+            <img src="/images/zip-download.png">
+            <p>Zip and download all invoices</p>
           </a>
         </section>
+      <% } %>
+      <section class="copy">
+        <h2>Click an image to review</h2>
+      </section>
+      <% include ./_pager %>
+      <% for (let image of images) { %>
+        <% if (image.type === 'image') { %>
+          <section class="image">
+            <a href="<%= `/image/${image.file}` %>">
+              <img src="/uploads/<%= image.file %>" />
+            </a>
+            <% if (image.invoice) { %>
+              <div class="check-mark">&#x2714;</div>
+            <% } else {%>
+              <div class="edit-mark">&#x270E;</div>
+            <% } %>
+          </section>
+        <% } else { %>
+          <section class="link">
+            <a href="/image/<%= image.file %>"><%= image.file.split('/')[image.file.split('/').length-1] %></a>
+            <% if (image.invoice) { %>
+              <div class="check-mark">&#x2714;</div>
+            <% } else {%>
+              <div class="edit-mark">&#x270E;</div>
+            <% } %>
+          </section>
+        <% } %>
       <% } %>
       <% include ./_pager %>
     <% } %>

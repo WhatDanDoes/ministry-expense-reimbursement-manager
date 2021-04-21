@@ -34,13 +34,35 @@ section img {
   width: 100%;
 }
 
+input {
+  width: 100%;
+}
+
 input[type=text],
+input[type=email],
+input[type=number],
 input[type=password] {
   border: 1px solid #4f83cc;
   background-color: #eeeeee;
   border-radius: 25px;
   font-size: 1em;
   color: #002f6c;
+  padding-left: 1em;
+  width: calc(100% - 1em);
+}
+
+/**
+ * 2019-8-8 
+ * https://css-tricks.com/snippets/css/turn-off-number-input-spinners/
+ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { 
+/**
+ * 2019-8-8 
+ * https://css-tricks.com/snippets/css/turn-off-number-input-spinners/
+ */
+  -webkit-appearance: none; 
+  margin: 0; 
 }
 
 /**
@@ -225,6 +247,7 @@ details section {
  */
 .agent {
   margin-left: 1em;
+  width: 90%;
 }
 
 h3 {
@@ -237,7 +260,7 @@ h3 {
   margin-left: 1em;
   margin-right: 1em;
 }
- */
+
 .stakeholder .quantity,
 .agent .permissions,
 .album .permissions {
@@ -248,6 +271,7 @@ h3 {
 .album .permissions .fa {
   margin-right: 0.5em;
 }
+ */
 
 /**
  * forms
@@ -259,6 +283,11 @@ form {
 .login form {
   width: 80%;
   margin: auto;
+}
+
+.login form button {
+  width: 100%;
+  margin-top: .75em;
 }
 
 button[type="submit"] {
@@ -274,7 +303,8 @@ button[type="submit"] {
 }
 
 .form-group {
-  margin-bottom: 1em;
+  margin: 1em;
+  width: calc(100% - 2.25em);
 }
 
 .form-control {
@@ -282,28 +312,27 @@ button[type="submit"] {
   width: 100%;
 }
 
-#selected-files {
+#selected-files p {
   font-size: 0.75em;
 }
 
-.date,
-.currency {
+ol#selected-files li {
+  font-size: 1em;
+}
+
+.invoice-details {
   text-align: right;
 }
 
-.date input,
-.currency input {
+.invoice-details input {
   width: 8em;
   text-align: right;
-  margin-right: 2em;
+  padding-right: 1em;
 }
 
-.date label,
-.currency label {
-  display: inline-block;
-  width: 40%;
+.invoice-details label {
+  display: block;
   text-align: right;
-  margin-right: 1em;
 }
 
 .not-editable {
@@ -317,21 +346,26 @@ button[type="submit"] {
   font-size: .8em;
 }
 
-
+/*
 textarea {
   display: inline;
   width: 100%;
 }
+*/
 
+/*
 .checkbox label {
   display: inline-block;
   width: 40%;
 }
+*/
 
+/*
 .checkbox input {
   text-align: right;
   width: 7em;
 }
+*/
 
 /**
  * 2016-11-22
@@ -360,13 +394,22 @@ h2 {
 /*
 .agent,
 .image {
-  padding: 0.5em 1em 0.5em 1em;
-  border-bottom-style: solid; 
-  border-width: 1px; 
-  border-color: #CFD8DC;
-}
 */
+.link {
+  position: relative;
+  padding: 5em 0 5em 0;
+  border-color: #CFD8DC;
+  background-image: url("/images/document.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: white;
+  text-align: center;
+  font-size: 1.5em;
+  width: 100%;
+}
 
+/*
 .pending {
   color: #90A4AE;
 }
@@ -382,6 +425,7 @@ h2 {
 .credit {
   color: #32ff32;
 }
+*/
 
 .image .album {
   float: left;
@@ -398,18 +442,21 @@ h2 {
 /**
  * Image controls
  */
+#image-controls {
+  display: inline-block;
+}
 #image-controls form {
-  position: relative;
   display: inline;
 }
 
 /**
  * Delete image
  */
-button[type="submit"]#delete-image  {
+button[type="submit"]#delete-image {
+  margin-top: 1em;
   padding: 0.5em;
   background: #ff4c4c;
-  font-size: 1em;
+  font-size: .5em;
   width: 30%;
   border: 1px solid #ff1919;
 }
@@ -417,13 +464,26 @@ button[type="submit"]#delete-image  {
 /**
  * Publish image
  */
-button[type="submit"]#publish-image  {
+button[type="submit"]#publish-image {
   padding: 0.5em;
   background: green;
   font-size: 1em;
   width: 30%;
   border: 1px solid green;
   float: right;
+}
+
+/**
+ * Cancel edit
+ */
+button[type="submit"]#cancel-edit {
+  margin-top: 1em;
+  padding: 0.5em;
+  background: blue;
+  font-size: .5em;
+  float: right;
+  width: 30%;
+  border: 1px solid blue;
 }
 
 /**
@@ -468,48 +528,6 @@ button[type="submit"]#publish-image  {
 }
 
 /**
- * New album, agent, stake forms
- */
-.form-reveal {
-  margin-top: 0.5em;
-  margin-right: 0.5em;
-  float: right;
-}
-.closed {
-  color: green;
-}
-.open {
-  color: red;
-  transform: rotate(45deg);
-}
-
-/*** custom checkboxes ***/
-/* 2017-2-6 https://codepen.io/jamesbarnett/pen/yILjk */
-
-input[type=checkbox][class=pic] { display:none; } /* to hide the checkbox itself */
-input[type=checkbox] + label:before {
-  font-family: FontAwesome;
-  display: inline-block;
-  color: red;
-}
-
-/* Unchecked icons */
-#review + label:before { content: "\f044"; }
-#submit + label:before { content: "\f093"; }
-#view  + label:before { content: "\f06e"; }
-
-/*input[type=checkbox] + label:before { content: "\f096"; } /* unchecked icon */
-input[type=checkbox] + label:before { letter-spacing: 10px; } /* space between checkbox and label */
-/*input[type=checkbox]:checked + label:before { content: "\f046"; } /* checked icon */
-input[type=checkbox]:checked + label:before { color: green; } /* checked icon */
-/*input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
-
-#new-agent-form input[type=submit] {
- /* margin: 1em;
-  float: right;*/
-}
-
-/**
  * Footer
  */
 #info {
@@ -529,9 +547,202 @@ input[type=checkbox]:checked + label:before { color: green; } /* checked icon */
   width: 100%;
   text-align: center;
 }
-.deep-link img {
+.upload-link img,
+.deep-link img,
+.deep-link input[type=image] {
   width: 30%;
   border-radius: 1em;
   box-shadow: .25em .25em rgb(0,0,0,0.2);
 }
 
+.deep-link input + p {
+  color: #00B7FF;
+  font-size: 0.8em;
+}
+
+/**
+ * Splash screen
+ */
+.splash {
+  width: 80%;
+  background-image: url("/images/merman-or-triton-3.png");
+  background-color: #151515;
+  color: white;
+  background-position: right;
+  background-repeat: no-repeat; 
+  background-size: contain;
+}
+
+@media (min-width: 750px) {
+  .splash {
+    width: 20%;
+    margin: 1em;
+  }
+}
+
+/**
+ * Copy item 
+ */
+.copy {
+  width: 100%;
+  background-color: #151515;
+  color: white;
+  padding: 2em 0 2em 0;
+}
+
+.copy h1,
+.copy h2 {
+  margin-left: auto;
+  margin-right: auto;
+  width: 70%;
+  text-align: center;
+}
+.copy h1 {
+  font-size: 1.5em;
+  line-height: 2.25em;
+}
+.copy h2 {
+  line-height: 1.75em;
+}
+
+.copy ul {
+  line-height: 1.5em;
+}
+
+.copy h1 em{
+  font-size: 2em;
+}
+
+.copy img.true-size {
+  width: auto;
+  min-width: 0;
+}
+
+.copy img.small-size {
+  width: 40%;
+  min-width: 0;
+}
+
+.copy ul {
+  margin-left: auto;
+  margin-right: auto;
+  width: 70%;
+  font-size: 1.25em;
+
+}
+
+
+/**
+ * 2019-8-1
+ * Adapted from: https://coderwall.com/p/uer3ow/total-input-type-file-style-control-with-pure-css
+ */
+.fileContainer {
+  overflow: hidden;
+  position: relative;
+  color: #00B7FF;
+  font-size: .8em;
+  text-align: center;
+  width: 100%;
+}
+
+.fileContainer [type=file] {
+  cursor: inherit;
+  display: block;
+  /* font-size: 999px; */
+  filter: alpha(opacity=0);
+  min-height: 100%;
+  min-width: 100%;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  text-align: right;
+  top: 0;
+}
+
+#file-upload-button{
+  display: none;
+}
+
+/**
+ * 2019-8-8 Styles swiped from here
+ * https://css-tricks.com/styling-a-select-like-its-2019/
+ */
+.dropdown {
+  display: block;
+  font-size: 1em;
+  font-family: sans-serif;
+  font-weight: 700;
+  color: #444;
+  line-height: 1.3;
+  padding-left: .6em;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 1.5em 0 1.5em 0;
+  border: 1px solid #aaa;
+  box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+  border-radius: .5em;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'),
+    linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+  background-repeat: no-repeat, repeat;
+  background-position: right .7em top 50%, 0 0;
+  background-size: .65em auto, 100%;
+  text-align: center;
+}
+.dropdown::-ms-expand {
+  display: none;
+}
+.dropdown:hover {
+  border-color: #888;
+}
+.dropdown:focus {
+  border-color: #aaa;
+  box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+  box-shadow: 0 0 0 3px -moz-mac-focusring;
+  color: #222; 
+  outline: none;
+}
+.dropdown option {
+  font-weight: normal;
+}
+
+#exchange-rate input {
+  width: 3em;
+}
+#currency-dropdown {
+  width: 5em;
+}
+#exchange-rate,
+#currency-dropdown {
+  margin-left: auto;
+}
+
+.image {
+  position: relative;
+}
+
+.edit-mark,
+.check-mark {
+  font-size: 3em;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  background-color: #fff;
+  border-radius: 50%;
+}
+.check-mark {
+  color: rgba(0,255,0,0.5);
+  border: .1em solid rgba(0,255,0,0.5);
+}
+.edit-mark {
+  color: rgba(24,24,24,0.25);
+  border: .1em solid rgba(24,24,24,0.25);
+}
+
+.center {
+  width: 100%;
+  text-align: center;
+}

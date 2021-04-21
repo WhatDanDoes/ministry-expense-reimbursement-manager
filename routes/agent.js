@@ -15,13 +15,24 @@ router.get('/', function(req, res) {
     req.flash('error', 'You need to login first');
     return res.redirect('/');
   }
-  req.user.getReadables(function(err, readables) {
+  req.user.getReadablesAndFiles(function(err, readables) {
+    if (err) {
+      req.flash('error', err.message);
+      return res.redirect('/');
+    }
 
-    // To open deep link with auth token
-    const payload = { email: req.user.email };
-    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
-
-    res.render('agent/index', { messages: req.flash(), agent: req.user, readables: readables, token: token});
+    req.user.getWritablesAndFiles(function(err, writables) {
+      if (err) {
+        req.flash('error', err.message);
+        return res.redirect('/');
+      }
+  
+      // To open deep link with auth token
+      const payload = { email: req.user.email };
+      const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '1h' });
+  
+      res.render('agent/index', { messages: req.flash(), agent: req.user, readables: readables, token: token, writables: writables});
+    });
   });
 });
 

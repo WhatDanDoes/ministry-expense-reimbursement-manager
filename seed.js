@@ -1,8 +1,7 @@
 'use strict';
 
-const mongoose = require('mongoose');
 const models = require('./models');
-const seeder = require('mais-mongoose-seeder')(mongoose),
+const seeder = require('mais-mongoose-seeder')(models.mongoose),
       data = require('./migrations/data.json');
 
 models.once('open', function() {

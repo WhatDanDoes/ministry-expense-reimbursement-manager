@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const fs = require('fs');
+const filterFiles = require('../lib/filterFiles');
 
 /* GET home page. */
 const MAX_IMGS = 30;
@@ -11,7 +12,8 @@ router.get('/', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+    files = filterFiles(files);
+
     let nextPage = 0;
     if (files.length > MAX_IMGS) {
       nextPage = 2;
@@ -28,7 +30,8 @@ router.get('/page/:num', function(req, res, next) {
       return res.render('error', { error: err });
     }
 
-    files = files.filter(item => (/\.(gif|jpg|jpeg|tiff|png)$/i).test(item)).reverse();
+    files = filterFiles(files);
+
     let page = parseInt(req.params.num),
         nextPage = 0,
         prevPage = page - 1;

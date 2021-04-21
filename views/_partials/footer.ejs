@@ -4,15 +4,21 @@
 </section>
   <footer id="info">
     <span>
-      <% if (!agent) { %>
-        <a href="/app/app-release.apk">Download the Android app</a>
-      <% } %>
-    </span>
-    <span>
+      <% if (process.env.NODE_ENV === 'production') { %>
+        <a href="https://www.patreon.com/bePatron?u=16503382" data-patreon-widget-type="become-patron-button">Become a Patron!</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+      <% } %> 
     </span>
     <span>
     </span>
   </footer>                    
+  <script src="/js/handleFileSelect.js"></script>
+  <script src="/js/jquery.js"></script>
+  <script src="/js/datepicker.js"></script>
+  <script>
+    $(function() {
+      $("#datepicker").datepicker({ dateFormat: 'yy-mm-dd' });
+    });
+  </script>
 </body> 
 </html> 
 

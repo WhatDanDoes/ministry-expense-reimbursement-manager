@@ -4,14 +4,46 @@
     <% if (!agent) { %>
       <% include _partials/login %>
     <% } %>
-    <% if (!images.length) { %>
-      <h2>No images</h2>
-    <% } else { %>
+    <section class="copy">
+      <h1>
+        <em>merman</em> simplifies ministry expense claims
+      </h1>
+      <h2>
+         It is a web application for Wycliffe Bible Translators
+      </h2>
+
+    </section>
+    <section class="copy">
+      <h1>
+        Use merman to:
+      </h1>
+      <ul>
+        <li>Upload receipt images and files</li>
+        <li>Fill in expense details</li>
+        <li>Download receipts and spreadsheet in a single Zip file</li>
+      </ul>
+      <h2>
+        Submit your zipped bundle by email to your supervisor and the MER team.
+      </h2>
+    </section>
+    <section class="copy">
+      <h1>No image scanner?</h1>
+      <h2>
+        <a href="/bep">Learn about</a> the BasicPhotoEconomizer Android app
+      </h2>
+    </section>
+    <% if (images.length) { %>
       <% include _partials/pager %>
       <% for (let image of images) { %>
-        <section class="image">
-          <img src="/images/uploads/<%= image %>" />
-        </section>
+        <% if (image.type === 'image') { %>
+          <section class="image">
+            <img src="/images/uploads/<%= image.file %>" />
+          </section>
+        <% } else { %>
+          <section class="link">
+            <a href="/images/uploads/<%= image.file %>"></a>
+          </section>
+        <% } %>
       <% } %>
       <% include _partials/pager %>
     <% } %>

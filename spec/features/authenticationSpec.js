@@ -14,7 +14,7 @@ const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
 Browser.localhost('example.com', PORT);
-      
+
 // For when system resources are scarce
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
@@ -39,7 +39,7 @@ describe('authentication', function() {
         });
       });
     });
-  
+
     afterEach(function(done) {
       models.mongoose.connection.db.dropDatabase().then(function(err, result) {
         done();
@@ -47,19 +47,19 @@ describe('authentication', function() {
         done.fail(err);         
       });
     });
-  
+
     it('shows the home page', function() {
-      browser.assert.text('#page h1 a', process.env.TITLE);
+      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
     });
-  
+
     it('displays the login form if not logged in', function() {
       browser.assert.attribute('form', 'action', '/login');
     });
-  
+
     it('does not display the logout button if not logged in', function() {
       expect(browser.query("a[href='/logout']")).toBeNull();
     });
-  
+
   //  it('does not display any images if not logged in', function() {
   //    expect(browser.queryAll('.image').length).toEqual(0);
   //  });
@@ -75,7 +75,7 @@ describe('authentication', function() {
             done();
           });
         });
-  
+
         it('shows an error message when email is omitted', function(done) {
           browser.fill('password', agent.password);
           browser.pressButton('Login', function(err) {
@@ -155,7 +155,16 @@ describe('authentication', function() {
         });
 
         it('displays link to the agent\'s images', function() {
-          browser.assert.link('nav ul li a', 'Images', `/image/${agent.getAgentDirectory()}`);
+          browser.assert.link('nav ul li a', 'Invoices', `/image/${agent.getAgentDirectory()}`);
+        });
+
+        it('does not display the login form on the landing page', function(done) {
+          browser.visit('/', err => {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            browser.assert.elements('form[action="/login"]', 0);
+            done();
+          });
         });
 
 
@@ -187,7 +196,7 @@ describe('authentication', function() {
                 .expect(302)
                 .end(function(err, res) {
                   if (err) done.fail(err);
-      
+
                   models.db.collection('sessions').find().toArray(function(err, sessions) {
                     if (err) {
                       return done.fail(err);
@@ -215,7 +224,7 @@ describe('authentication', function() {
         });
       });
     });
-  
+
     afterEach(function(done) {
       models.mongoose.connection.db.dropDatabase().then(function(err, result) {
         done();

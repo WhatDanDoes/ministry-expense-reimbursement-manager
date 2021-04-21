@@ -29,7 +29,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
 describe('DELETE /image/:domain/:agentId/:imageId', function() {
 
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -39,10 +39,15 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -87,9 +92,12 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
           'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
           'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
         },
+        [`uploads/${troy.getAgentDirectory()}`]: {
+          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+        },
         'public/images/uploads': {}
       });
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -98,7 +106,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
         done();
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -122,35 +130,107 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
             done();
           });
         });
-  
-        it('redirects to the origin album if the delete is successful', function(done) {
-          browser.pressButton('Delete', function(err) {
-            if (err) return done.fail(err);
-  
-            browser.assert.success();
-            browser.assert.text('.alert.alert-info', 'Image deleted');
-            browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
-            done();
-          });
-        });
-  
-        it('deletes the image from the file system', function(done) {
-          fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-            if (err) return done.fail(err);
-            expect(files.length).toEqual(3);
-            expect(files.includes('image1.jpg')).toBe(true);
-  
+
+        describe('with no associated invoice', () => {
+          it('redirects to the origin album if the delete is successful', function(done) {
             browser.pressButton('Delete', function(err) {
               if (err) return done.fail(err);
+
               browser.assert.success();
-  
-              fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+              done();
+            });
+          });
+
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(3);
+              expect(files.includes('image1.jpg')).toBe(true);
+
+              browser.pressButton('Delete', function(err) {
                 if (err) return done.fail(err);
-                expect(files.length).toEqual(2);
-                expect(files.includes('image1.jpg')).toBe(false);
-      
-                done();
+                browser.assert.success();
+
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(2);
+                  expect(files.includes('image1.jpg')).toBe(false);
+
+                  done();
+                });
               });
+            });
+          });
+        });
+
+        describe('with associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${agent.getAgentDirectory()}/image1.jpg`,
+              total: '12.69',
+              agent: agent._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+
+          it('redirects to the origin album if the delete is successful', function(done) {
+            browser.pressButton('Delete', function(err) {
+              if (err) return done.fail(err);
+
+              browser.assert.success();
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}` });
+              done();
+            });
+          });
+
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(3);
+              expect(files.includes('image1.jpg')).toBe(true);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+
+                fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(2);
+                  expect(files.includes('image1.jpg')).toBe(false);
+
+                  done();
+                });
+              });
+            });
+          });
+
+          it('deletes the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                models.Invoice.find({}).then((invoices) => {
+                  expect(invoices.length).toEqual(0);
+                  done();
+                }).catch(error => {
+                  done.fail(error);
+                });
+              });
+            }).catch(error => {
+              done.fail(error);
             });
           });
         });
@@ -193,17 +273,59 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
               });
           });
         });
+
+        describe('associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${lanny.getAgentDirectory()}/lanny1.jpg`,
+              total: '12.69',
+              agent: lanny._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });       
+
+          it('does not delete the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+
+              request(app)
+                .delete(`/image/${lanny.getAgentDirectory()}/lanny1.jpg`)
+                .set('Cookie', browser.cookies)
+                .end(function(err, res) {
+                  if (err) return done.fail(err);
+                  expect(res.status).toEqual(302);
+                  expect(res.header.location).toEqual(`/image/${lanny.getAgentDirectory()}`);
+
+                  models.Invoice.find({}).then((invoices) => {
+                    expect(invoices.length).toEqual(1);
+                    done();
+                  }).catch(error => {
+                    done.fail(error);
+                  });
+                });
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+        });
       });
 
       describe('unauthorized resource', function() {
-        let troy;
         beforeEach(function(done) {
-          models.Agent.findOne({ email: 'troy@example.com' }).then(function(result) {
-            troy = result;
-
+          agent.canWrite.pop();
+          agent.save().then(result => {
             expect(agent.canRead.length).toEqual(1);
             expect(agent.canRead[0]).not.toEqual(troy._id);
-  
+            expect(agent.canWrite.length).toEqual(0);
+
             browser.visit(`/image/${troy.getAgentDirectory()}/somepic.jpg`, function(err) {
               if (err) return done.fail(err);
               done();
@@ -227,7 +349,7 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
               if (err) return done.fail(err);
               expect(files.length).toEqual(1);
               expect(files.includes('troy1.jpg')).toBe(true);
-  
+
               request(app)
                 .delete(`/image/${troy.getAgentDirectory()}/troy1.jpg`)
                 .set('Cookie', browser.cookies)
@@ -235,15 +357,171 @@ describe('DELETE /image/:domain/:agentId/:imageId', function() {
                   if (err) return done.fail(err);
                   expect(res.status).toEqual(302);
                   expect(res.header.location).toEqual('/');
-  
+
                   fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.length).toEqual(1);
                     expect(files.includes('troy1.jpg')).toBe(true);
-  
+
                     done();
                   });
                 });
+            });
+          });
+        });
+
+        describe('associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${troy.getAgentDirectory()}/troy.jpg`,
+              total: '12.69',
+              agent: troy._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+
+          it('does not delete the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+
+              request(app)
+                .delete(`/image/${troy.getAgentDirectory()}/troy.jpg`)
+                .set('Cookie', browser.cookies)
+                .end(function(err, res) {
+                  if (err) return done.fail(err);
+                  expect(res.status).toEqual(302);
+                  expect(res.header.location).toEqual(`/`);
+
+                  models.Invoice.find({}).then((invoices) => {
+                    expect(invoices.length).toEqual(1);
+                    done();
+                  }).catch(error => {
+                    done.fail(error);
+                  });
+                });
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+        });
+      });
+
+      describe('writable resource', function() {
+        beforeEach(function(done) {
+          browser.visit(`/image/${troy.getAgentDirectory()}/troy1.jpg`, function(err) {
+            if (err) return done.fail(err);
+            done();
+          });
+        });
+
+        describe('with no associated invoice', () => {
+          it('redirects to the origin album if the delete is successful', function(done) {
+            browser.pressButton('Delete', function(err) {
+              if (err) return done.fail(err);
+
+              browser.assert.success();
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+              done();
+            });
+          });
+
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(1);
+              expect(files.includes('troy1.jpg')).toBe(true);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+
+                fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(0);
+                  expect(files.includes('troy1.jpg')).toBe(false);
+
+                  done();
+                });
+              });
+            });
+          });
+        });
+
+        describe('with associated invoice', () => {
+          let invoice;
+          beforeEach(done => {
+            models.Invoice.create({
+              category: 110,
+              purchaseDate: new Date('2019-09-02'),
+              reason: 'Thank supporters',
+              doc: `${troy.getAgentDirectory()}/troy1.jpg`,
+              total: '12.69',
+              agent: troy._id,
+            }).then((results) => {
+              invoice = results;
+              done()
+            }).catch(error => {
+              done.fail(error);
+            });
+          });
+
+          it('redirects to the origin album if the delete is successful', function(done) {
+            browser.pressButton('Delete', function(err) {
+              if (err) return done.fail(err);
+
+              browser.assert.success();
+              browser.assert.text('.alert.alert-info', 'Image deleted');
+              browser.assert.url({ pathname: `/image/${troy.getAgentDirectory()}` });
+              done();
+            });
+          });
+
+          it('deletes the image from the file system', function(done) {
+            fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+              if (err) return done.fail(err);
+              expect(files.length).toEqual(1);
+              expect(files.includes('troy1.jpg')).toBe(true);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+
+                fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
+                  if (err) return done.fail(err);
+                  expect(files.length).toEqual(0);
+                  expect(files.includes('troy1.jpg')).toBe(false);
+
+                  done();
+                });
+              });
+            });
+          });
+
+          it('deletes the invoice from the database', function(done) {
+            models.Invoice.find({}).then((invoices) => {
+              expect(invoices.length).toEqual(1);
+
+              browser.pressButton('Delete', function(err) {
+                if (err) return done.fail(err);
+                browser.assert.success();
+                models.Invoice.find({}).then((invoices) => {
+                  expect(invoices.length).toEqual(0);
+                  done();
+                }).catch(error => {
+                  done.fail(error);
+                });
+              });
+            }).catch(error => {
+              done.fail(error);
             });
           });
         });

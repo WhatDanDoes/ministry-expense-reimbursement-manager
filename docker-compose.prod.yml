@@ -18,6 +18,9 @@ services:
     restart: unless-stopped
     volumes:
       - basic_photo_server_data:/data/db
+      - ./backups:/backups
+volumes:
+  basic_photo_server_data:
 networks:
   default:
     external:

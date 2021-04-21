@@ -18,7 +18,7 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('agentIndexSpec', () => {
-  let browser, agent, lanny;
+  let browser, agent, lanny, troy;
 
   beforeEach(function(done) {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
@@ -28,10 +28,15 @@ describe('agentIndexSpec', () => {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
           lanny = results; 
-          browser.visit('/', function(err) {
-            if (err) return done.fail(err);
-            browser.assert.success();
-            done();
+          models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
+            troy = results; 
+            browser.visit('/', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
+          }).catch(function(error) {
+            done.fail(error);
           });
         }).catch(function(error) {
           done.fail(error);
@@ -62,7 +67,7 @@ describe('agentIndexSpec', () => {
       });
 
       spyOn(jwt, 'sign').and.returnValue('somejwtstring');
- 
+
       browser.fill('email', agent.email);
       browser.fill('password', 'secret');
       browser.pressButton('Login', function(err) {
@@ -76,7 +81,7 @@ describe('agentIndexSpec', () => {
         });
       });
     });
-  
+
     afterEach(() => {
       mock.restore();
     });
@@ -87,23 +92,55 @@ describe('agentIndexSpec', () => {
         browser.assert.text('h2', `Hello, ${agent.email}`);
       });
 
-      it('displays an Android deep link with JWT', () => {
-        browser.assert.element('a[href="bpe://somejwtstring"]');
+      describe('readables', () => {
+        it('shows a list of albums the agent can read', () => {
+          expect(agent.canRead.length).toEqual(1);
+          expect(agent.canRead[0]).toEqual(lanny._id);
+          browser.assert.elements('.readables .agent a', 2);
+          browser.assert.link('.readables .agent a', lanny.getAgentDirectory(), `/image/${lanny.getAgentDirectory()}`);
+          browser.assert.link('.readables .agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
+        });
+
+        it('counts the number of unprocessed invoices in a readable account', () => {
+          expect(agent.canRead.length).toEqual(1);
+          expect(agent.canRead[0]).toEqual(lanny._id);
+          browser.assert.elements('.readables .agent .count', 2);
+          browser.assert.text('.readables section.agent:nth-of-type(1) .count', '');
+          browser.assert.text('.readables section.agent:nth-of-type(2) .count', '(3)');
+        });
+
+        it('lets the agent click and view a link he can read', done => {
+          browser.clickLink(lanny.getAgentDirectory(), function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
+        });
       });
 
-      it('shows a list of albums the agent can read', () => {
-        expect(agent.canRead.length).toEqual(1);
-        expect(agent.canRead[0]).toEqual(lanny._id);
-        browser.assert.elements('.agent a', 2);
-        browser.assert.link('.agent a', lanny.getAgentDirectory(), `/image/${lanny.getAgentDirectory()}`);
-        browser.assert.link('.agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
-      });
+      describe('writables', () => {
+        it('shows a list of albums to which the agent can write', () => {
+          expect(agent.canWrite.length).toEqual(1);
+          expect(agent.canWrite[0]).toEqual(troy._id);
+          browser.assert.elements('.writables .agent a', 2);
+          browser.assert.link('.writables .agent a', troy.getAgentDirectory(), `/image/${troy.getAgentDirectory()}`);
+          browser.assert.link('.writables .agent a', agent.getAgentDirectory(), `/image/${agent.getAgentDirectory()}`);
+        });
 
-      it('lets the agent click and view a link he can read', done => {
-        browser.clickLink(lanny.getAgentDirectory(), function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-          done();
+        it('counts the number of unprocessed invoices in a writable account', () => {
+          expect(agent.canWrite.length).toEqual(1);
+          expect(agent.canWrite[0]).toEqual(troy._id);
+          browser.assert.elements('.writables .agent .count', 2);
+          browser.assert.text('.writables section.agent:nth-of-type(1) .count', '');
+          browser.assert.text('.writables section.agent:nth-of-type(2) .count', '(3)');
+        });
+
+        it('lets the agent click and view a link he can read', done => {
+          browser.clickLink(troy.getAgentDirectory(), function(err) {
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
+          });
         });
       });
     });

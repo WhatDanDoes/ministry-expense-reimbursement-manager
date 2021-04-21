@@ -5,6 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const models = require('./models');
+const ensureAuthorized = require('./lib/ensureAuthorized');
 
 const app = express();
 
@@ -114,9 +115,27 @@ app.use(`/uploads`, [function(req, res, next) {
         return next();
       }
     }
-    return res.sendStatus(403);
+
+    req.user.getWritables((err, writables) => {
+      if (err) {
+        return next(err);
+      }
+      for (let writable of writables) {
+        if (RegExp(writable).test(req.path)) {
+          return next();
+        }
+      }
+      return res.sendStatus(403);
+    });
   });
 }, express.static(path.join(__dirname, `/uploads`))]);
+
+/**
+ * BasicPhotoEconomizer About page
+ */
+app.use('/bep', (req, res) => {
+  res.render('bep', { messages: req.flash(), agent: req.user });
+});
 
 /**
  * For PUT/PATCH/DELETE
@@ -142,6 +161,10 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  if (res.headersSent) {
+    return next(err);
+  }
+
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

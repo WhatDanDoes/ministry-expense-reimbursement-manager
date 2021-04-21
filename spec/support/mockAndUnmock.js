@@ -14,6 +14,7 @@ module.exports = function(mock) {
       ...mocks,
       'spec/files/troll.jpg': fs.readFileSync('spec/files/troll.jpg'),
       'spec/files/troll.png': fs.readFileSync('spec/files/troll.png'),
+      'spec/files/MER-template.ods': fs.readFileSync('spec/files/MER-template.ods'),
       'views/index.ejs': fs.readFileSync('views/index.ejs'),
       'views/_partials/appLink.ejs': fs.readFileSync('views/_partials/appLink.ejs'),
       'views/_partials/head.ejs': fs.readFileSync('views/_partials/head.ejs'),
@@ -29,6 +30,9 @@ module.exports = function(mock) {
       'views/image/_pager.ejs': fs.readFileSync('views/image/_pager.ejs'),
       'views/error.ejs': fs.readFileSync('views/error.ejs'),
       'views/reset.ejs': fs.readFileSync('views/reset.ejs'),
+      'public/js/datepicker.js': fs.readFileSync('public/js/datepicker.js'),
+      'public/js/handleFileSelect.js': fs.readFileSync('public/js/handleFileSelect.js'),
+      'public/js/jquery.js': fs.readFileSync('public/js/jquery.js'),
     });
   };
 };

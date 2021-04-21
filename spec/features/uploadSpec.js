@@ -13,20 +13,11 @@ const jwt = require('jsonwebtoken');
 
 describe('POST image/', () => {
 
-  afterEach(function(done) {
-    models.mongoose.connection.db.dropDatabase().then(function(err, result) {
-      done();
-    }).catch(function(err) {
-      done.fail(err);         
-    });
-  });
- 
   describe('unauthenticated access', () => {
     beforeEach(done => {
       mockAndUnmock({ 
         'uploads': mock.directory({}),
       });
-
       done();
     });
 
@@ -34,10 +25,10 @@ describe('POST image/', () => {
       mock.restore();
     });
 
-
     it('returns 401 error', done => {
       request(app)
         .post('/image')
+        .set('Accept', 'application/json')
         .attach('docs', 'spec/files/troll.jpg')
         .expect('Content-Type', /json/)
         .expect(401)
@@ -58,6 +49,7 @@ describe('POST image/', () => {
         expect(files.length).toEqual(0);
         request(app)
           .post('/image')
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect('Content-Type', /json/)
           .expect(401)
@@ -81,7 +73,6 @@ describe('POST image/', () => {
   describe('authenticated access', () => {
 
     let agent, token;
-
     beforeEach(done => {
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
         if (err) {
@@ -102,8 +93,13 @@ describe('POST image/', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
+    afterEach(function(done) {
+      models.mongoose.connection.db.dropDatabase().then(function(err, result) {
+        mock.restore();
+        done();
+      }).catch(function(err) {
+        done.fail(err);         
+      });
     });
 
     it('responds with 201 on successful receipt of file', done => {
@@ -122,17 +118,18 @@ describe('POST image/', () => {
           done();
         });
     });
-  
+
     it('writes the file to the disk on agent\'s first access', done => {
       fs.readdir(`uploads/`, (err, files) => {
         if (err) {
           return done.fail(err);
         }
         expect(files.length).toEqual(0);
- 
+
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -140,14 +137,14 @@ describe('POST image/', () => {
               return done.fail(err);
             }
             expect(res.body.message).toEqual('Image received');
-    
+
             fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-    
+
               if (err) {
                 return done.fail(err);
               }
               expect(files.length).toEqual(1);
-    
+
               done();
             });
         });
@@ -163,6 +160,7 @@ describe('POST image/', () => {
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .attach('docs', 'spec/files/troll.png')
           .expect('Content-Type', /json/)
@@ -189,10 +187,11 @@ describe('POST image/', () => {
           return done.fail(err);
         }
         expect(files.length).toEqual(0);
- 
+
         request(app)
           .post('/image')
           .field('token', token)
+          .set('Accept', 'application/json')
           .attach('docs', 'spec/files/troll.jpg')
           .expect(201)
           .end(function(err, res) {
@@ -200,9 +199,9 @@ describe('POST image/', () => {
               return done.fail(err);
             }
             expect(res.body.message).toEqual('Image received');
-    
+
             fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-    
+
               if (err) {
                 return done.fail(err);
               }
@@ -211,6 +210,7 @@ describe('POST image/', () => {
               request(app)
                 .post('/image')
                 .field('token', token)
+                .set('Accept', 'application/json')
                 .attach('docs', 'spec/files/troll.jpg')
                 .expect(201)
                 .end(function(err, res) {
@@ -218,14 +218,14 @@ describe('POST image/', () => {
                     return done.fail(err);
                   }
                   expect(res.body.message).toEqual('Image received');
-          
+
                   fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
-          
+
                     if (err) {
                       return done.fail(err);
                     }
                     expect(files.length).toEqual(2);
-          
+
                     done();
                   });
                 });
@@ -238,6 +238,7 @@ describe('POST image/', () => {
       request(app)
         .post('/image')
         .field('token', token)
+        .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400)
         .end(function(err, res) {

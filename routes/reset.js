@@ -44,7 +44,7 @@ router.post('/', (req, res) => {
         let mailOptions = {
           to: agent.email,
           from: process.env.FROM,
-          subject: 'Accountant Password Reset',
+          subject: 'merman Password Reset',
           text: 'You are receiving this because you (or someone else) has requested a password reset.\n\n' +
                 'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
                 'https://' + req.headers.host + '/reset/' + agent.resetPasswordToken + '\n\n' +
