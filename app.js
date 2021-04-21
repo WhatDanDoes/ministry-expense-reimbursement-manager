@@ -25,47 +25,60 @@ const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/config/config.json')[env];
 
 const sessionConfig = {
-  secret: 'supersecretkey',
+  name: 'merman',
+  secret: process.env.AUTH0_CLIENT_SECRET,
   resave: false,
   saveUninitialized: false,
   unset: 'destroy',
+  cookie: {
+    maxAge: 1000 * 60 * 60,
+  },
   store: new MongoStore({ mongooseConnection: models }),
 };
 
-//if (env == 'production') {
-//  sessionConfig.store = new MongoStore({ mongooseConnection: models });
-//}
-
 app.use(session(sessionConfig));
 
-
 /**
- * Passport authentication
+ * passport-auth0
  */
+const Auth0Strategy = require('passport-auth0');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(new LocalStrategy({
-    usernameField: 'email'
+const strategy = new Auth0Strategy(
+  {
+    domain: process.env.AUTH0_DOMAIN,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    clientSecret: process.env.AUTH0_CLIENT_SECRET,
+    callbackURL: process.env.CALLBACK_URL
   },
-  function(email, password, done) {
-    models.Agent.findOne({ email: email }).then(function(agent) {
-      if (!agent) {
-        return done(null, false);
-      }
-      models.Agent.validPassword(password, agent.password, function(err, res) {
-        if (err) {
-          console.log(err);
-        }
-        return done(err, res);
-      }, agent);
-    }).catch(function(err) {
-      return done(err);
-    });
+  function(accessToken, refreshToken, extraParams, profile, done) {
+    // accessToken is the token to call Auth0 API (not needed in most cases)
+    // extraParams.id_token has the JSON Web Token
+    // profile has all the information from the user
 
-  }));
+    models.Agent.findOne({ email: profile._json.email }).then(result => {
+      if (!result) {
+        let newAgent = new models.Agent(profile._json);
+
+        newAgent.save().then(result => {
+          done(null, result);
+        }).catch(err => {
+          done(err);
+        });
+      } else {
+        models.Agent.findOneAndUpdate({ email: result.email }, profile._json, { new: true }).then(result => {
+          return done(null, result);
+        }).catch(err => {
+          res.json(err);
+        });
+      }
+    }).catch(err => {
+      res.json(err);
+    });
+  }
+);
+
+passport.use(strategy);
 
 passport.serializeUser(function(agent, done) {
   done(null, agent._id);
@@ -79,12 +92,14 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 /**
  * Flash messages
  */
 const flash = require('connect-flash');
 app.use(flash());
-
 
 /**
  * view engine setup
@@ -147,6 +162,8 @@ app.use(methodOverride('_method'));
  * Routes
  */
 app.use('/', require('./routes/index'));
+app.use('/', require('./routes/auth'));
+
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
 app.use('/reset', require('./routes/reset'));
@@ -176,8 +193,7 @@ app.use(function(err, req, res, next) {
 
 let port = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'tor' ? 3000 : 3001;
 app.listen(port, '0.0.0.0', () => {
-  console.log('basic-photo-server listening on ' + port + '!');
+  console.log('ministry-expense-reimbursement-manager listening on ' + port + '!');
 });
-
 
 module.exports = app;
