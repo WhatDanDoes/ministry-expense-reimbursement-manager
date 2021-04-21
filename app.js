@@ -163,13 +163,10 @@ app.use(methodOverride('_method'));
  */
 app.use('/', require('./routes/index'));
 app.use('/', require('./routes/auth'));
-
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
-app.use('/reset', require('./routes/reset'));
 app.use('/image', require('./routes/image'));
 app.use('/agent', require('./routes/agent'));
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
