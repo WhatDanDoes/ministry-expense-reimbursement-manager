@@ -6,22 +6,7 @@ const filterFiles = require('../lib/filterFiles');
 const MAX_IMGS = 30;
 
 router.get('/', function(req, res, next) {
-
-  fs.readdir('public/images/uploads', (err, files) => {
-    if (err) {
-      return res.render('error', { error: err });
-    }
-
-    files = filterFiles(files);
-
-    let nextPage = 0;
-    if (files.length > MAX_IMGS) {
-      nextPage = 2;
-      files = files.slice(0, MAX_IMGS);
-    }
-
-    res.render('index', { images: files, messages: req.flash(), agent: req.user, nextPage: nextPage, prevPage: 0 });
-  });
+  res.render('index', { messages: req.flash(), agent: req.user });
 });
 
 router.get('/page/:num', function(req, res, next) {
