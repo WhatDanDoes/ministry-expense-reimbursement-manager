@@ -29,7 +29,7 @@ describe('BasicPhotoEconomizer about page', () => {
     browser.visit('/bep', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
+      browser.assert.text('#page a .splash', 'Ministry Expense Reimbursement Manager');
       done();
     });
   });
