@@ -1,19 +1,23 @@
 const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
-Browser.localhost('example.com', PORT);
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
+const DOMAIN = 'example.com';
+Browser.localhost(DOMAIN, PORT);
+
 const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
-const models = require('../../models'); 
+const models = require('../../models');
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 const AdmZip = require('adm-zip');
 
+const stubAuth0Sessions = require('../support/stubAuth0Sessions');
+
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
- * already been `require`d the tests will fail because the 
+ * already been `require`d the tests will fail because the
  * module doesn't exist in the mocked file system. `ejs` and
- * `iconv-lite/encodings` are required here to solve that 
+ * `iconv-lite/encodings` are required here to solve that
  * problem.
  */
 const mock = require('mock-fs');
@@ -48,9 +52,9 @@ describe('imageZipSpec', () => {
         models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
           agent = results;
           models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
-            lanny = results; 
+            lanny = results;
             models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
-              troy = results; 
+              troy = results;
               browser.visit('/', function(err) {
                 if (err) return done.fail(err);
                 browser.assert.success();
@@ -80,37 +84,44 @@ describe('imageZipSpec', () => {
 
   describe('authenticated', () => {
     beforeEach(done => {
-      mockAndUnmock({ 
-        [`uploads/${agent.getAgentDirectory()}`]: {
-          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-          'image4': fs.readFileSync('spec/files/troll.jpg'),
-          'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        [`uploads/${lanny.getAgentDirectory()}`]: {
-          'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        [`uploads/${troy.getAgentDirectory()}`]: {
-          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-          'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-          'troy4': fs.readFileSync('spec/files/troll.jpg'),
-          'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        'public/images/uploads': {},
-      });
-
-      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
-
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
+      stubAuth0Sessions(agent.email, DOMAIN, err => {
         if (err) done.fail(err);
-        browser.assert.success();
-        done();
+
+        mockAndUnmock({
+          [`uploads/${agent.getAgentDirectory()}`]: {
+            'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+            'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+            'image4': fs.readFileSync('spec/files/troll.jpg'),
+            'image5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${lanny.getAgentDirectory()}`]: {
+            'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${troy.getAgentDirectory()}`]: {
+            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+            'troy3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+            'troy4': fs.readFileSync('spec/files/troll.jpg'),
+            'troy5.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          'public/images/uploads': {},
+        });
+
+        browser.clickLink('Login', err => {
+          if (err) done.fail(err);
+          browser.assert.success();
+
+          models.Agent.findOne({ email: 'daniel@example.com' }).then(results => {
+            agent = results;
+
+            done();
+          }).catch(err => {
+            done.fail(err);
+          });
+        });
       });
     });
 
@@ -204,8 +215,8 @@ describe('imageZipSpec', () => {
             // The `gif` has no associated invoice (cf., `fixtures/invoices.js`)
             it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
               expect(zipEntries.length).toEqual(5);
-              expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-              expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.xlsx`);
+              expect(zipEntries[0].name).toEqual(`${agent._doc.name.split(' ').pop()} MER.csv`);
+              expect(zipEntries[1].name).toEqual(`${agent._doc.name.split(' ').pop()} MER.xlsx`);
               expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.pdf`);
               expect(zipEntries[3].name).toEqual(`${agent.getBaseFilename()} #2`);
               expect(zipEntries[4].name).toEqual(`${agent.getBaseFilename()} #3.jpg`);
@@ -250,19 +261,19 @@ describe('imageZipSpec', () => {
                     .parse(binaryParser)
                     .end(function(err, res) {
                       if (err) done.fail(err);
-    
+
                       expect(Buffer.isBuffer(res.body)).toBe(true);
-    
+
                       let zip = new AdmZip(res.body);
                       zipEntries = zip.getEntries();
-    
+
                       // One file in zipEntries is the CSV and the other is an ODS (not to be counted in the image count)
                       expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
                       expect(zipEntries.length).toEqual(3);
-                      expect(zipEntries[0].name).toEqual(`${agent.name.split(' ').pop()} MER.csv`);
-                      expect(zipEntries[1].name).toEqual(`${agent.name.split(' ').pop()} MER.xlsx`);
+                      expect(zipEntries[0].name).toEqual(`${agent._doc.name.split(' ').pop()} MER.csv`);
+                      expect(zipEntries[1].name).toEqual(`${agent._doc.name.split(' ').pop()} MER.xlsx`);
                       expect(zipEntries[2].name).toEqual(`${agent.getBaseFilename()} #1.jpg`);
- 
+
                       done();
                     });
                 }).catch(err => {
@@ -300,15 +311,15 @@ describe('imageZipSpec', () => {
                       .parse(binaryParser)
                       .end(function(err, res) {
                         if (err) done.fail(err);
-      
+
                         expect(Buffer.isBuffer(res.body)).toBe(true);
-      
+
                         let zip = new AdmZip(res.body);
                         zipEntries = zip.getEntries();
-      
+
                         // One file in zipEntries is the CSV and another the ODS (not to be counted in the image count)
                         expect(res.header['content-disposition']).toMatch(`${agent.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
-      
+
                         done();
                       });
                   }
@@ -323,7 +334,7 @@ describe('imageZipSpec', () => {
                 saveInvoices();
               }).catch(function(err) {
                 done.fail(err);
-              });           
+              });
             });
 
             it('splits item/reason on for/to', done => {
@@ -361,7 +372,7 @@ describe('imageZipSpec', () => {
           describe('custom spreadsheet generation', () => {
             beforeEach(done => {
               mock.restore();
-              mockAndUnmock({ 
+              mockAndUnmock({
                 [`uploads/${agent.getAgentDirectory()}`]: {
                   'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
                   'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
@@ -378,7 +389,7 @@ describe('imageZipSpec', () => {
             it('does not list the agent\'s templates/ directory in the photo roll', done => {
               browser.visit(`/image/${agent.getAgentDirectory()}`, err => {
                 if (err) return done.fail(err);
-                browser.assert.success(); 
+                browser.assert.success();
                 browser.assert.elements('section.image img', 3);
                 browser.assert.elements('section.link', 2);
                 done();
@@ -544,8 +555,8 @@ describe('imageZipSpec', () => {
             // The `gif` has no associated invoice (cf., `fixtures/invoices.js`)
             it('compresses the image directory and returns a zip file containing images processed as receipts', () => {
               expect(zipEntries.length).toEqual(5);
-              expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
-              expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
+              expect(zipEntries[0].name).toEqual(`${troy._doc.name.split(' ').pop()} MER.csv`);
+              expect(zipEntries[1].name).toEqual(`${troy._doc.name.split(' ').pop()} MER.xlsx`);
               expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.pdf`);
               expect(zipEntries[3].name).toEqual(`${troy.getBaseFilename()} #2`);
               expect(zipEntries[4].name).toEqual(`${troy.getBaseFilename()} #3.jpg`);
@@ -589,19 +600,19 @@ describe('imageZipSpec', () => {
                     .parse(binaryParser)
                     .end(function(err, res) {
                       if (err) done.fail(err);
-    
+
                       expect(Buffer.isBuffer(res.body)).toBe(true);
-    
+
                       let zip = new AdmZip(res.body);
                       zipEntries = zip.getEntries();
-    
+
                       // One file in zipEntries is the CSV and the other is an ODS (not to be counted in the image count)
                       expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
                       expect(zipEntries.length).toEqual(3);
-                      expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
-                      expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
+                      expect(zipEntries[0].name).toEqual(`${troy._doc.name.split(' ').pop()} MER.csv`);
+                      expect(zipEntries[1].name).toEqual(`${troy._doc.name.split(' ').pop()} MER.xlsx`);
                       expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.jpg`);
- 
+
                       done();
                     });
                 }).catch(err => {
@@ -638,15 +649,15 @@ describe('imageZipSpec', () => {
                       .parse(binaryParser)
                       .end(function(err, res) {
                         if (err) done.fail(err);
-      
+
                         expect(Buffer.isBuffer(res.body)).toBe(true);
-      
+
                         let zip = new AdmZip(res.body);
                         zipEntries = zip.getEntries();
-      
+
                         // One file in zipEntries is the CSV and the other an ODS (not to be counted in the image count)
                         expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
-      
+
                         done();
                       });
                   }
@@ -661,7 +672,7 @@ describe('imageZipSpec', () => {
                 saveInvoices();
               }).catch(function(err) {
                 done.fail(err);
-              });           
+              });
             });
 
             it('splits item/reason on for/to', done => {
@@ -699,7 +710,7 @@ describe('imageZipSpec', () => {
           describe('custom spreadsheet generation', () => {
             beforeEach(done => {
               mock.restore();
-              mockAndUnmock({ 
+              mockAndUnmock({
                 [`uploads/${troy.getAgentDirectory()}`]: {
                   'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
                   'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
@@ -716,12 +727,12 @@ describe('imageZipSpec', () => {
             it('does not list the agent\'s templates/ directory in the photo roll', done => {
               browser.visit(`/image/${troy.getAgentDirectory()}`, err => {
                 if (err) return done.fail(err);
-                browser.assert.success(); 
+                browser.assert.success();
                 browser.assert.elements('section.image img', 3);
                 browser.assert.elements('section.link', 2);
                 done();
               });
-            }); 
+            });
 
           /**
            * `child_process.spawn` does not access the mocked file system
@@ -738,7 +749,7 @@ describe('imageZipSpec', () => {
 //                  callback(null, Buffer.from(res.data, 'binary'));
 //                });
 //              }
-//  
+//
 //              request(app)
 //                .get(`/image/${troy.getAgentDirectory()}/zip`)
 //                .set('Cookie', browser.cookies)
@@ -747,22 +758,22 @@ describe('imageZipSpec', () => {
 //                .parse(binaryParser)
 //                .end(function(err, res) {
 //                  if (err) done.fail(err);
-//  
+//
 //                  expect(Buffer.isBuffer(res.body)).toBe(true);
-//  
+//
 //                  let zip = new AdmZip(res.body);
 //                  zipEntries = zip.getEntries();
-//  
+//
 //                  // One file in zipEntries is the CSV and the other an ODS (not to be counted in the image count)
 //                  expect(res.header['content-disposition']).toMatch(`${troy.getBaseFilename()} #1-${zipEntries.length-2}.zip`);
-//  
+//
 //                  expect(zipEntries.length).toEqual(5);
 //                  expect(zipEntries[0].name).toEqual(`${troy.name.split(' ').pop()} MER.csv`);
 //                  expect(zipEntries[1].name).toEqual(`${troy.name.split(' ').pop()} MER.xlsx`);
 //                  expect(zipEntries[2].name).toEqual(`${troy.getBaseFilename()} #1.pdf`);
 //                  expect(zipEntries[3].name).toEqual(`${troy.getBaseFilename()} #2`);
 //                  expect(zipEntries[4].name).toEqual(`${troy.getBaseFilename()} #3.jpg`);
-//  
+//
 //                  done();
 //                });
 //            });
