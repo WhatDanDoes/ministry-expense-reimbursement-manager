@@ -32,21 +32,6 @@
         <a href="/bep">Learn about</a> the BasicPhotoEconomizer Android app
       </h2>
     </section>
-    <% if (images.length) { %>
-      <% include _partials/pager %>
-      <% for (let image of images) { %>
-        <% if (image.type === 'image') { %>
-          <section class="image">
-            <img src="/images/uploads/<%= image.file %>" />
-          </section>
-        <% } else { %>
-          <section class="link">
-            <a href="/images/uploads/<%= image.file %>"></a>
-          </section>
-        <% } %>
-      <% } %>
-      <% include _partials/pager %>
-    <% } %>
   </main> 
 <% include _partials/footer %>
 
