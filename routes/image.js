@@ -474,6 +474,7 @@ function saveUploads(req, res, done) {
       if (err) {
         return done(err);
       }
+
       recursiveSave(done);
     });
   };
@@ -513,7 +514,7 @@ router.post('/', upload.array('docs'), (req, res, next) => {
     if (/json/.test(req.headers['accept'])) {
       return res.status(201).json({ message: 'Image received' });
     }
-    req.flash('success', 'Received');
+    req.flash('success', 'Invoice received');
     return res.redirect(`/image`);
   });
 });
