@@ -323,6 +323,7 @@ describe('authSpec', () => {
 
     it('displays the correct interface', done => {
       browser.visit('/', (err) => {
+        if (err) return done.fail(err);
         browser.assert.element('a[href="/login"]');
         browser.assert.elements('a[href="/logout"]', 0);
         done();
