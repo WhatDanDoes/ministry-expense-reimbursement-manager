@@ -1,19 +1,23 @@
 const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
-Browser.localhost('example.com', PORT);
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
+const DOMAIN = 'example.com';
+Browser.localhost(DOMAIN, PORT);
+
 const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
-const models = require('../../models'); 
+const models = require('../../models');
 const jwt = require('jsonwebtoken');
 const isMobile = require('is-mobile');
 const request = require('supertest');
 
+const stubAuth0Sessions = require('../support/stubAuth0Sessions');
+
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
- * already been `require`d the tests will fail because the 
+ * already been `require`d the tests will fail because the
  * module doesn't exist in the mocked file system. `ejs` and
- * `iconv-lite/encodings` are required here to solve that 
+ * `iconv-lite/encodings` are required here to solve that
  * problem.
  */
 const mock = require('mock-fs');
@@ -31,9 +35,9 @@ describe('imageIndexSpec', () => {
       models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
-          lanny = results; 
+          lanny = results;
           models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
-            troy = results; 
+            troy = results;
             browser.visit('/', function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
@@ -61,26 +65,26 @@ describe('imageIndexSpec', () => {
 
   describe('authenticated', () => {
     beforeEach(done => {
-      mockAndUnmock({ 
-        [`uploads/${agent.getAgentDirectory()}`]: {
-          'image1.pdf': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.doc': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        [`uploads/${troy.getAgentDirectory()}`]: {
-          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        'public/images/uploads': {}
-      });
+      stubAuth0Sessions(agent.email, DOMAIN, err => {
+        if (err) return done.fail(err);
 
-      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
+        mockAndUnmock({
+          [`uploads/${agent.getAgentDirectory()}`]: {
+            'image1.pdf': fs.readFileSync('spec/files/troll.jpg'),
+            'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'image3.doc': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${troy.getAgentDirectory()}`]: {
+            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          'public/images/uploads': {}
+        });
 
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        done();
+        browser.clickLink('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          done();
+        });
       });
     });
 
@@ -216,8 +220,10 @@ describe('imageIndexSpec', () => {
           browser.assert.elements(`form[action='/image/${agent.getAgentDirectory()}/archive']`, 0);
         });
 
-        it('does not display jwt link if agent can read', () => {
+        // 2021-4-21 keep an eye on this
+        it('does not display a camera button if agent can read', () => {
           browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
+          browser.assert.elements('#camera-button', 0);
         });
 
         it('does not write a file upload to disk', done => {
@@ -270,7 +276,7 @@ describe('imageIndexSpec', () => {
 
         it('creates an agent directory if it does not exist already', done => {
           mock.restore();
-          mockAndUnmock({ 
+          mockAndUnmock({
             'uploads/': {}
           });
           expect(fs.existsSync(`uploads/${troy.getAgentDirectory()}`)).toBe(false);
@@ -290,8 +296,11 @@ describe('imageIndexSpec', () => {
           browser.assert.element(`form[action='/image/${troy.getAgentDirectory()}/archive']`);
         });
 
-        it('does not display jwt link if agent can write', () => {
+        // 2021-4-21 keep an eye on this
+        // Also, this seems opposite. If the agent can write, shouldn't he have a button? 
+        it('does not display a camera button if agent can write', () => {
           browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
+          browser.assert.elements('#camera-button', 0);
         });
 
         it('writes a file upload to disk', done => {
@@ -301,8 +310,7 @@ describe('imageIndexSpec', () => {
             }
             expect(files.length).toEqual(1);
 
-            request(app)
-              .post(`/image/${troy.getAgentDirectory()}`)
+            request(app) .post(`/image/${troy.getAgentDirectory()}`)
               .set('Accept', 'text/html')
               .set('Cookie', browser.cookies)
               .attach('docs', 'spec/files/troll.jpg')
@@ -378,18 +386,20 @@ describe('imageIndexSpec', () => {
 
   describe('pagination', () => {
     beforeEach(done => {
-      let files = {};
-      for (let i = 0; i < 70; i++) {
-        files[`image${i}.jpg`] = fs.readFileSync('spec/files/troll.jpg');
-      }
-      mockAndUnmock({ [`uploads/${agent.getAgentDirectory()}`]: files });
+      stubAuth0Sessions(agent.email, DOMAIN, err => {
+        if (err) return done.fail(err);
 
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        done();
+        let files = {};
+        for (let i = 0; i < 70; i++) {
+          files[`image${i}.jpg`] = fs.readFileSync('spec/files/troll.jpg');
+        }
+        mockAndUnmock({ [`uploads/${agent.getAgentDirectory()}`]: files });
+
+        browser.clickLink('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          done();
+        });
       });
     });
 
@@ -449,129 +459,6 @@ describe('imageIndexSpec', () => {
 
           done();
           // Negative page params work, kinda
-        });
-      });
-    });
-  });
-
-  describe('mobile detection', () => {
-    beforeEach(done => {
-      mockAndUnmock({ 
-        [`uploads/${agent.getAgentDirectory()}`]: {
-          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        'public/images/uploads': {}
-      });
-
-      spyOn(jwt, 'sign').and.returnValue('somejwtstring');
-
-      browser = new Browser({ waitDuration: '30s', loadCss: false });
-
-      done();
-    });
-
-    afterEach(() => {
-      mock.restore();
-    });
-
-    it('displays an Android deep link with JWT if browser is mobile', done => {
-      browser.headers = {'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36'};
-      browser.visit('/', function(err) {
-        if (err) return done.fail(err);
-        browser.assert.success();
-
-        browser.fill('email', agent.email);
-        browser.fill('password', 'secret');
-        browser.pressButton('Login', function(err) {
-          if (err) done.fail(err);
-          browser.assert.success();
-          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-          browser.assert.element(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`);
-          done();
-        });
-      });
-    });
-
-    it('does not display an Android deep link if browser is not mobile', done => {
-      browser.visit('/', function(err) {
-        if (err) return done.fail(err);
-        browser.assert.success();
-
-        browser.fill('email', agent.email);
-        browser.fill('password', 'secret');
-        browser.pressButton('Login', function(err) {
-          if (err) done.fail(err);
-          browser.assert.success();
-          browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}`});
-          browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
-
-          done();
-        });
-      });
-    });
-
-    describe('pagination', () => {
-      beforeEach(done => {
-        let files = {};
-        for (let i = 0; i < 70; i++) {
-          files[`image${i}.jpg`] = fs.readFileSync('spec/files/troll.jpg');
-        }
-        mockAndUnmock({ 
-          [`uploads/${agent.getAgentDirectory()}`]: files,
-          'public/images/uploads': {}
-        });
-        done();
-      });
-
-      afterEach(() => {
-        mock.restore();
-      });
-
-      it('displays an Android deep link with JWT if browser is mobile', done => {
-        browser.headers = {'user-agent': 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36'};
-        browser.visit('/', function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-
-          browser.fill('email', agent.email);
-          browser.fill('password', 'secret');
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.success();
-
-            browser.clickLink('#next-page', function(err) {
-              if (err) done.fail(err);
-              browser.assert.success();
-              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
-              browser.assert.element(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`);
-              done();
-            });
-          });
-        });
-      });
-
-      it('displays a file upload form if browser is not mobile', done => {
-        browser.visit('/', function(err) {
-          if (err) return done.fail(err);
-          browser.assert.success();
-
-          browser.fill('email', agent.email);
-          browser.fill('password', 'secret');
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.success();
-
-            browser.clickLink('#next-page', function(err) {
-              if (err) done.fail(err);
-              browser.assert.success();
-              browser.assert.url({ pathname: `/image/${agent.getAgentDirectory()}/page/2`});
-              browser.assert.elements(`a[href="bpe://bpe?token=somejwtstring&domain=${encodeURIComponent(process.env.DOMAIN)}"]`, 0);
-
-              done();
-            });
-          });
         });
       });
     });
