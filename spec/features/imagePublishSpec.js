@@ -1,23 +1,26 @@
 'use strict';
 
 const fixtures = require('pow-mongoose-fixtures');
-const models = require('../../models'); 
+const models = require('../../models');
 
-const app = require('../../app'); 
+const app = require('../../app');
 const request = require('supertest');
 
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 
 const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
-Browser.localhost('example.com', PORT);
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
+const DOMAIN = 'example.com';
+Browser.localhost(DOMAIN, PORT);
+
+const stubAuth0Sessions = require('../support/stubAuth0Sessions');
 
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
- * already been `require`d the tests will fail because the 
+ * already been `require`d the tests will fail because the
  * module doesn't exist in the mocked file system. `ejs` and
- * `iconv-lite/encodings` are required here to solve that 
+ * `iconv-lite/encodings` are required here to solve that
  * problem.
  */
 const mock = require('mock-fs');
@@ -37,9 +40,9 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
       models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
-          lanny = results; 
+          lanny = results;
           models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
-            troy = results; 
+            troy = results;
             browser.visit('/', function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
@@ -80,30 +83,32 @@ describe('imagePublish - POST /image/:domain/:agentId/:imageId', function() {
 
   describe('authenticated', function() {
     beforeEach(done => {
-      mockAndUnmock({ 
-        [`uploads/${agent.getAgentDirectory()}`]: {
-          'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-          'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        [`uploads/${lanny.getAgentDirectory()}`]: {
-          'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        [`uploads/${troy.getAgentDirectory()}`]: {
-          'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-        },
-        'public/images/uploads': {}
-      });
+      stubAuth0Sessions(agent.email, DOMAIN, err => {
+        if (err) return done.fail(err);
 
-      browser.fill('email', agent.email);
-      browser.fill('password', 'secret');
-      browser.pressButton('Login', function(err) {
-        if (err) done.fail(err);
-        browser.assert.success();
-        done();
+        mockAndUnmock({
+          [`uploads/${agent.getAgentDirectory()}`]: {
+            'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+            'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${lanny.getAgentDirectory()}`]: {
+            'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          [`uploads/${troy.getAgentDirectory()}`]: {
+            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+          },
+          'public/images/uploads': {}
+        });
+
+        browser.clickLink('Login', function(err) {
+          if (err) done.fail(err);
+          browser.assert.success();
+          done();
+        });
       });
     });
 
