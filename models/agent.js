@@ -157,7 +157,7 @@ module.exports = function(mongoose) {
   // This is a brute force solution.
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   AgentSchema.methods.getBaseFilename = function() {
-    let name = this.name.split(/ (.+)/);
+    let name = this._doc.name.split(/ (.+)/);
     name = name.filter(n => n.length > 0);
     let firstname = name[0],
         lastname = name[1];
