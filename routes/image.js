@@ -13,9 +13,9 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const isMobile = require('is-mobile');
 const archiver = require('archiver');
-const moment = require('moment'); 
-const parseAsync = require('json2csv').parseAsync; 
-const child_process = require('child_process'); 
+const moment = require('moment');
+const parseAsync = require('json2csv').parseAsync;
+const child_process = require('child_process');
 const stream = require('stream');
 
 // Set upload destination directory
@@ -253,12 +253,12 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
           if (forMatch && toMatch) {
             if (forMatch.index > toMatch.index) {
               parts = item.split('to');
-              item = parts.shift().trim(); 
+              item = parts.shift().trim();
               purpose = parts.join('to').trim();
             }
             else {
               parts = item.split('for');
-              item = parts.shift().trim(); 
+              item = parts.shift().trim();
               purpose = parts.join('for').trim();
             }
             purpose = purpose.charAt(0).toUpperCase() + purpose.slice(1);
@@ -295,7 +295,7 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
             return res.redirect('/image');
           }
 
-          archive.append(csv, { name: `${agent.name.split(' ').pop()} MER.csv` });
+          archive.append(csv, { name: `${agent._doc.name.split(' ').pop()} MER.csv` });
 
           /**
            * ODS template
@@ -338,10 +338,10 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
               }
             });
 
-            archive.append(proc.stdout, { name: `${agent.name.split(' ').pop()} MER.xlsx` });
+            archive.append(proc.stdout, { name: `${agent._doc.name.split(' ').pop()} MER.xlsx` });
           });
-        }).catch(err => {
-          req.flash('error', err.message);
+        }).catch(error => {
+          req.flash('error', error.message);
           res.redirect(`/image/${req.user.getAgentDirectory()}`);
         });
       }).catch((error) => {
@@ -475,7 +475,7 @@ function saveUploads(req, res, done) {
         return done(err);
       }
       recursiveSave(done);
-    });   
+    });
   };
 
   recursiveSave((err) => {
@@ -494,7 +494,7 @@ router.post('/', upload.array('docs'), (req, res, next) => {
   if (/json/.test(req.headers['accept'])) {
     return jwtAuth(req, res, next);
   }
-  if (!req.isAuthenticated()) { 
+  if (!req.isAuthenticated()) {
     req.flash('error', 'You need to login first');
     return res.redirect('/');
   }
