@@ -30,6 +30,7 @@ module.exports = function(mock) {
       'public/js/datepicker.js': fs.readFileSync('public/js/datepicker.js'),
       'public/js/handleFileSelect.js': fs.readFileSync('public/js/handleFileSelect.js'),
       'public/js/jquery.js': fs.readFileSync('public/js/jquery.js'),
+      'public/js/camera.js': fs.readFileSync('public/js/camera.js'),
     });
   };
 };
