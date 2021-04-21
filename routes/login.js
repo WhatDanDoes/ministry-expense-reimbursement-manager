@@ -48,7 +48,7 @@ router.post('/api', function(req, res, next) {
 
     }, agent);
   }).catch(function(err) {
-    return done(err);
+    return res.status(500).json({message: err.message });
   });
 });
 
