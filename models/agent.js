@@ -1,6 +1,5 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
 const fs = require('fs');
 
 module.exports = function(mongoose) {
@@ -31,19 +30,6 @@ module.exports = function(mongoose) {
     timestamps: true,
     strict: false
   });
-
-  const saltRounds = 10;
-
-  AgentSchema.statics.validPassword = function(password, hash, done, agent) {
-    bcrypt.compare(password, hash, function(err, isMatch) {
-      if (err) console.log(err);
-      if (isMatch) {
-        return done(null, agent);
-      } else {
-        return done(null, false);
-      }
-    });
-  };
 
   AgentSchema.methods.getAgentDirectory = function() {
     let parts = this.email.split('@');
