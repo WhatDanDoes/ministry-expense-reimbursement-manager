@@ -1,10 +1,13 @@
 'use strict';
-const app = require('../../app'); 
+const app = require('../../app');
 
 const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
+const DOMAIN = 'example.com';
+Browser.localhost(DOMAIN, PORT);
+
 const fixtures = require('pow-mongoose-fixtures');
-const models = require('../../models'); 
+const models = require('../../models');
 
 const fs = require('fs');
 const mock = require('mock-fs');
@@ -13,7 +16,7 @@ const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
-Browser.localhost('example.com', PORT);
+const stubAuth0Sessions = require('../support/stubAuth0Sessions');
 
 // For when system resources are scarce
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -30,9 +33,9 @@ describe('authentication', function() {
         models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
           agent = results;
           browser.visit('/', function(err) {
-            if (err) return done.fail(err);        
-            browser.assert.success();       
-            done();      
+            if (err) return done.fail(err);
+            browser.assert.success();
+            done();
           });
         }).catch(function(error) {
           done.fail(error);
@@ -44,12 +47,12 @@ describe('authentication', function() {
       models.mongoose.connection.db.dropDatabase().then(function(err, result) {
         done();
       }).catch(function(err) {
-        done.fail(err);         
+        done.fail(err);
       });
     });
 
     it('shows the home page', function() {
-      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
+      browser.assert.text('#page a .splash', 'Ministry Expense Reimbursement Manager');
     });
 
     it('displays the login form if not logged in', function() {
@@ -60,77 +63,27 @@ describe('authentication', function() {
       expect(browser.query("a[href='/logout']")).toBeNull();
     });
 
-  //  it('does not display any images if not logged in', function() {
-  //    expect(browser.queryAll('.image').length).toEqual(0);
-  //  });
-
     describe('login process', function() {
-
-      describe('unsuccessful', function () {
-        it('shows an error message when password omitted', function(done) {
-          browser.fill('email', agent.email);
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.text('.alert.alert-danger', 'Invalid email or password');
-            done();
-          });
-        });
-
-        it('shows an error message when email is omitted', function(done) {
-          browser.fill('password', agent.password);
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.text('.alert.alert-danger', 'Invalid email or password');
-            done();
-          });
-        });
-
-        it('shows an error message when password and email are omitted', function(done) {
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.text('.alert.alert-danger', 'Invalid email or password');
-            done();
-          });
-        });
-
-        it('shows an error message when password is wrong', function(done) {
-          browser.fill('email', agent.email);
-          browser.fill('password', 'wrong');
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.text('.alert.alert-danger', 'Invalid email or password');
-            done();
-          });
-        });
-
-        it('shows an error message when email doesn\'t exist', function(done) {
-          browser.fill('email', 'nosuchguy@example.com');
-          browser.fill('password', 'wrong');
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.text('.alert.alert-danger', 'Invalid email or password');
-            done();
-          });
-        });
-      });
 
       describe('successful', function () {
         beforeEach(function(done) {
-          mockAndUnmock({ 
-            [`uploads/${agent.getAgentDirectory()}`]: {
-              'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-              'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-              'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            },
-            'public/images/uploads': {}
-          });
+          stubAuth0Sessions(agent.email, DOMAIN, err => {
+            if (err) return done.fail(err);
 
-          browser.fill('email', agent.email);
-          browser.fill('password', 'secret');
-          browser.pressButton('Login', function(err) {
-            if (err) done.fail(err);
-            browser.assert.success();
-            done();
+            mockAndUnmock({
+              [`uploads/${agent.getAgentDirectory()}`]: {
+                'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                'image2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+                'image3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+              },
+              'public/images/uploads': {}
+            });
+
+            browser.clickLink('Login', function(err) {
+              if (err) return done.fail(err);
+              browser.assert.success();
+              done();
+            });
           });
         });
 
@@ -138,8 +91,8 @@ describe('authentication', function() {
           mock.restore();
         });
 
-        it('does not display the login form', function() {
-          expect(browser.query("form[action='/login']")).toBeNull();
+        it('does not display the login link', function() {
+          expect(browser.query("a[href='/login']")).toBeNull();
         });
 
         it('displays a friendly greeting', function() {
@@ -158,15 +111,14 @@ describe('authentication', function() {
           browser.assert.link('nav ul li a', 'Invoices', `/image/${agent.getAgentDirectory()}`);
         });
 
-        it('does not display the login form on the landing page', function(done) {
+        it('does not display the login link on the landing page', function(done) {
           browser.visit('/', err => {
             if (err) return done.fail(err);
             browser.assert.success();
-            browser.assert.elements('form[action="/login"]', 0);
+            browser.assert.elements('a[href="/login"]', 0);
             done();
           });
         });
-
 
         describe('logout', function() {
           it('does not display the logout button if not logged in', function(done) {
@@ -212,13 +164,22 @@ describe('authentication', function() {
     });
   });
 
+  /**
+   * 2021-4-21
+   *
+   * Apart from two tests (commented below), this all works as prescribed
+   * _post_ Auth0 integration. This is only relevant to the native app old
+   * passport-local stuff.
+   *
+   * I leave it here because that JWT refresh stuff may come in handy some day
+   */
   describe('api', () => {
 
     beforeEach(function(done) {
       fixtures.load(__dirname + '/../fixtures/agents.js', models.mongoose, function(err) {
         models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
           agent = results;
-          done();      
+          done();
         }).catch(function(error) {
           done.fail(error);
         });
@@ -229,40 +190,40 @@ describe('authentication', function() {
       models.mongoose.connection.db.dropDatabase().then(function(err, result) {
         done();
       }).catch(function(err) {
-        done.fail(err);         
+        done.fail(err);
       });
     });
 
     describe('login', () => {
-      it('returns a jwt on successful sign in', (done) => {
-        request(app)
-          .post('/login/api')
-          .send({ email: agent.email, password: 'secret' })
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .expect(201)
-          .end(function(err, res) {
-            if (err) done.fail(err);
-            expect(res.body.message).toEqual('Hello, ' + agent.email + '!');
-            expect(res.body.token).toBeDefined();
-            done();
-          });
-      });
+      //it('returns a jwt on successful sign in', (done) => {
+      //  request(app)
+      //    .post('/login/api')
+      //    .send({ email: agent.email, password: 'secret' })
+      //    .set('Accept', 'application/json')
+      //    .expect('Content-Type', /json/)
+      //    .expect(201)
+      //    .end(function(err, res) {
+      //      if (err) done.fail(err);
+      //      expect(res.body.message).toEqual('Hello, ' + agent.email + '!');
+      //      expect(res.body.token).toBeDefined();
+      //      done();
+      //    });
+      //});
 
-      it('returns a 403 json message on unsuccessful sign in', (done) => {
-        request(app)
-          .post('/login/api')
-          .send({ email: agent.email, password: 'wrong' })
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .expect(401)
-          .end(function(err, res) {
-            if (err) done.fail(err);
-            expect(res.body.message).toEqual('Invalid email or password');
-            expect(res.headers['set-cookie']).toBeUndefined();
-            done();
-          });
-      });
+      //it('returns a 403 json message on unsuccessful sign in', (done) => {
+      //  request(app)
+      //    .post('/login/api')
+      //    .send({ email: agent.email, password: 'wrong' })
+      //    .set('Accept', 'application/json')
+      //    .expect('Content-Type', /json/)
+      //    .expect(401)
+      //    .end(function(err, res) {
+      //      if (err) done.fail(err);
+      //      expect(res.body.message).toEqual('Invalid email or password');
+      //      expect(res.headers['set-cookie']).toBeUndefined();
+      //      done();
+      //    });
+      //});
     });
 
     describe('token refresh', () => {
