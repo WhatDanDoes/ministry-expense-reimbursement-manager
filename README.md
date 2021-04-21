@@ -1,7 +1,7 @@
-basic-photo-server
-==================
+ministry-expense-reimbursement-manager
+======================================
 
-`node`/`express` backend for receiving photos sent by the [BasicPhotoEconomizer](https://github.com/WhatDanDoes/basic-photo-economizer) (my first `react-native` Android app).
+`node`/`express` backend for receiving and cataloguing receipt photos sent by the in-built progressive camera application. Authentication is handled by [Auth0](https://auth0.com).
 
 ## System dependencies:
 
@@ -101,7 +101,7 @@ npm start
 In the application directory:
 
 ```
-cd basic-photo-server 
+cd ministry-expense-reimbursement-manager
 NODE_ENV=production npm install
 ```
 
@@ -110,10 +110,6 @@ The _Dockerized_ production is meant to be deployed behind an `nginx-proxy`/`let
 ```
 docker-compose -f docker-compose.prod.yml up -d
 ```
-
-### Upload APK
-
-Put the BasicPhotoEconomizer app in `public/app/app-release.apk`.
 
 ### Seed database:
 
@@ -142,7 +138,7 @@ docker-compose -f docker-compose.prod.yml exec merman_mongo mongorestore --gzip 
 Restore to dev:
 
 ```
-docker exec -it dev-mongo mongorestore -d basic_photo_server_development --gzip backups/merman_production
+docker exec -it dev-mongo mongorestore -d ministry-expense-reimbursement-manager_development --gzip backups/merman_production
 ```
 
 #### Database Operations
@@ -150,7 +146,7 @@ docker exec -it dev-mongo mongorestore -d basic_photo_server_development --gzip 
 Connect to DB container like this:
 
 ```
-docker-compose -f docker-compose.prod.yml exec mongo mongo basic_photo_server_production
+docker-compose -f docker-compose.prod.yml exec mongo mongo ministry-expense-reimbursement-manager_production
 ```
 
 Show databases:
