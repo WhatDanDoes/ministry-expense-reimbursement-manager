@@ -13,11 +13,11 @@
       <% } %>
       <% include ../_partials/appLink %>
       <section>
-        <form role="form" action="/image<%= agent.isOwner ? '' : path %>" method="post" enctype="multipart/form-data">
+        <form id="photos-form" role="form" action="/image<%= agent.isOwner ? '' : path %>" method="post" enctype="multipart/form-data">
           <label class="fileContainer upload-link">
             <p><img src="/images/file-upload.png"></p>
             <p>Upload invoice file</p>
-            <input type="file" id="docs" name="docs" multiple=true>
+            <input id="photos-input" type="file" id="docs" name="docs" multiple=true>
           </label>
           <div class="form-group">
             <ol id="selected-files"></ol>
