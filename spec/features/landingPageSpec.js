@@ -29,7 +29,7 @@ describe('landing page', () => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('#page a', 'Ministry Expense Reimbursement Manager');
+      browser.assert.text('#page a .splash', 'Ministry Expense Reimbursement Manager');
       done();
     });
   });
