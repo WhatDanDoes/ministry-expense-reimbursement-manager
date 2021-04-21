@@ -108,7 +108,7 @@ describe('Invoice', function() {
         done.fail('This should not have saved');
       }).catch(function(error) {
         expect(Object.keys(error.errors).length).toEqual(1);
-        expect(error.errors['purchaseDate'].message).toMatch('Cast to Date failed for value');
+        expect(error.errors['purchaseDate'].message).toMatch('this is not a date');
         done();
       });
     });
