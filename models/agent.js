@@ -24,49 +24,15 @@ module.exports = function(mongoose) {
         message: 'That email is already registered'
       }
     },
-    password: {
-      type: String,
-      trim: true,
-      required: [true, 'No password supplied'],
-      empty: [false, 'No password supplied'],
-    },
-    name: {
-      type: String,
-      trim: true,
-      required: [true, 'No name supplied'],
-      empty: [false, 'No name supplied'],
-    },
-
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
     // use $addToSet to ensure not duplicates
     canRead: [{ type: Schema.Types.ObjectId, ref: 'Agent' }],
     canWrite: [{ type: Schema.Types.ObjectId, ref: 'Agent' }],
   }, {
-    timestamps: true
+    timestamps: true,
+    strict: false
   });
 
   const saltRounds = 10;
-
-  AgentSchema.pre('save', function(next) {
-    // Check if document is new or a new password has been set
-    if (this.isNew || this.isModified('password')) {
-      // Saving reference to this because of changing scopes
-      const document = this;
-      bcrypt.hash(document.password, saltRounds,
-        function(err, hashedPassword) {
-        if (err) {
-          next(err);
-        }
-        else {
-          document.password = hashedPassword;
-          next();
-        }
-      });
-    } else {
-      next();
-    }
-  });
 
   AgentSchema.statics.validPassword = function(password, hash, done, agent) {
     bcrypt.compare(password, hash, function(err, isMatch) {
@@ -83,7 +49,6 @@ module.exports = function(mongoose) {
     let parts = this.email.split('@');
     return `${parts[1]}/${parts[0]}` ;
   };
-
 
   /**
    * Function to count files in directories provided
