@@ -4,6 +4,8 @@
 const fs = require('fs');
 
 require('../../node_modules/negotiator/lib/mediaType');
+require('../../node_modules//iconv-lite/encodings');
+require('ejs');
 
 module.exports = function(mock) {
   return function(mocks) {
