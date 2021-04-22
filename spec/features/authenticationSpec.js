@@ -55,11 +55,11 @@ describe('authentication', function() {
       browser.assert.text('#page a .splash', 'Ministry Expense Reimbursement Manager');
     });
 
-    it('displays the login form if not logged in', function() {
-      browser.assert.attribute('form', 'action', '/login');
+    it('displays the login link if not logged in', function() {
+      browser.assert.link('nav ul li a', 'Login', '/login');
     });
 
-    it('does not display the logout button if not logged in', function() {
+    it('does not display the logout link if not logged in', function() {
       expect(browser.query("a[href='/logout']")).toBeNull();
     });
 
@@ -128,7 +128,7 @@ describe('authentication', function() {
               }
               browser.assert.success();
               expect(browser.query("a[href='/logout']")).toBeNull();
-              browser.assert.attribute('form', 'action', '/login');
+              browser.assert.link('nav ul li a', 'Login', '/login');
               done();
             });
           });
