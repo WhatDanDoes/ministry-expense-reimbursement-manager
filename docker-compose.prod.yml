@@ -5,26 +5,25 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - VIRTUAL_HOST=example.com
-      - LETSENCRYPT_HOST=example.com
-      - LETSENCRYPT_EMAIL=daniel@example.com
+      - VIRTUAL_HOST=merman.whatdandoes.info
+      - LETSENCRYPT_HOST=merman.whatdandoes.info
+      - LETSENCRYPT_EMAIL=daniel@whatdandoes.info
     volumes:
       - .:/home/node
       - /home/node/node_modules
     depends_on:
-      - mongo
-  mongo:
+      - merman_mongo
+  # Note to future self: containers keep tripping over one another
+  # This mongo composition is named merman_mongo which seems to keep it
+  # from bothering with other mongo instances
+  merman_mongo:
     image: mongo
     restart: unless-stopped
     volumes:
-      - basic_photo_server_data:/data/db
-      - ./backups:/backups
+      - merman_data:/data/db
 volumes:
-  basic_photo_server_data:
+  merman_data:
 networks:
   default:
     external:
       name: nginx-proxy
-volumes:
-  basic_photo_server_data:
-
