@@ -1,7 +1,4 @@
 {
-  "_dependencies": {
-    "bcrypt": "bcrypt"
-  },
   "agents": {
     "_model": "Agent",
     "dan": {
