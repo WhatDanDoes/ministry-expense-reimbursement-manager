@@ -1,8 +1,4 @@
-  <% if (isMobile && agent.isOwner) { %>
-    <section class="deep-link">
-      <a href="bpe://bpe?token=<%= token %>&domain=<%= encodeURIComponent(process.env.DOMAIN) %>">
-        <img src="/images/bpe-logo.png">
-        <p>Take invoice picture</p>
-      </a>
-    </section>
-  <% } %>
+  <script src="/js/camera.js"></script>
+  <section id="camera-app" class="deep-link">
+  </section>
+

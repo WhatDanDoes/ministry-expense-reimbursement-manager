@@ -12,18 +12,15 @@ const mock = require('mock-fs');
 const mockAndUnmock = require('../support/mockAndUnmock')(mock);
 
 describe('Agent', function() {
+
+  const _profile = require('../fixtures/sample-auth0-profile-response');
+
   const db = require('../../models');
   const Agent = db.Agent;
 
   let agent;
-
-  const _valid = {};
-  beforeEach(function(done) {
-    _valid.name = 'Some Guy';
-    _valid.email = 'someguy@example.com';
-    _valid.password = 'secret';
-
-    agent = new Agent(_valid);
+  beforeEach(done => {
+    agent = new Agent(_profile);
     done();
   });
 
@@ -36,11 +33,6 @@ describe('Agent', function() {
   });
  
   describe('basic validation', function() {
-    const valid = {};
-    beforeEach(function(done) {
-        done();
-    });
-
     it('sets the createdAt and updatedAt fields', function(done) {
       expect(agent.createdAt).toBe(undefined);
       expect(agent.updatedAt).toBe(undefined);
@@ -53,23 +45,9 @@ describe('Agent', function() {
       });
     });
   
-    it("encrypts the agent's password", function(done) {
-      expect(agent.password).toEqual('secret');
-      agent.save().then(function(obj) {
-        Agent.findById(obj._id).then(function(results) {
-          expect(results.password).not.toEqual('secret');
-          done();
-        }).catch(err => {
-          done.fail(err);
-        });
-      }).catch(err => {
-        done.fail(err);
-      });
-    });
-
     it('does not allow two identical emails', function(done) {
       agent.save().then(function(obj) {
-        Agent.create(_valid).then(function(obj) {
+        Agent.create(_profile).then(function(obj) {
           done.fail('This should not have saved');
         }).catch(function(error) {
           expect(Object.keys(error.errors).length).toEqual(1);
@@ -82,8 +60,7 @@ describe('Agent', function() {
     });
 
     it('does not allow an empty email field', function(done) {
-      _valid.email = '    ';
-      Agent.create(_valid).then(function(obj) {
+      Agent.create({ ..._profile, email: ' ' }).then(function(obj) {
         done.fail('This should not have saved');
       }).catch(function(error) {
         expect(Object.keys(error.errors).length).toEqual(1);
@@ -93,8 +70,7 @@ describe('Agent', function() {
     });
 
     it('does not allow an undefined email field', function(done) {
-      delete _valid.email;
-      Agent.create(_valid).then(function(obj) {
+      Agent.create({}).then(function(obj) {
         done.fail('This should not have saved');
       }).catch(function(error) {
         expect(Object.keys(error.errors).length).toEqual(1);
@@ -103,58 +79,19 @@ describe('Agent', function() {
       });
     });
 
-    it('does not allow an empty password field', function(done) {
-      _valid.password = '    ';
-      Agent.create(_valid).then(function(obj) {
-        done.fail('This should not have saved');
-      }).catch(function(error) {
-        expect(Object.keys(error.errors).length).toEqual(1);
-        expect(error.errors['password'].message).toEqual('No password supplied');
+    it('saves the unstructured Auth0 data', done => {
+      const profile = { ..._profile, email: 'someotherguy@example.com' };
+      expect(Object.keys(profile).length).toEqual(15);
+      Agent.create(profile).then(obj => {
+        let asserted = false;
+        for (let key in profile) {
+          expect(obj[key]).toEqual(profile[key]);
+          asserted = true;
+        }
+        expect(asserted).toBe(true);
         done();
-      });
-    });
-
-    it('does not allow an undefined password field', function(done) {
-      delete _valid.password;
-      Agent.create(_valid).then(function(obj) {
-        done.fail('This should not have saved');
-      }).catch(function(error) {
-        expect(Object.keys(error.errors).length).toEqual(1);
-        expect(error.errors['password'].message).toEqual('No password supplied');
-        done();
-      });
-    });
-
-    it('does not re-hash a password on update', function(done) {
-      agent.save().then(function(obj) {
-        var passwordHash = agent.password;
-        agent.email = 'newemail@example.com';
-        agent.save().then(function(obj) {
-          expect(agent.password).toEqual(passwordHash); 
-          done();
-        });
-      });
-    });
-
-    it('does not allow an empty name field', function(done) {
-      _valid.name = '      ';
-      Agent.create(_valid).then(function(obj) {
-        done.fail('This should not have saved');
-      }).catch(function(error) {
-        expect(Object.keys(error.errors).length).toEqual(1);
-        expect(error.errors['name'].message).toEqual('No name supplied');
-        done();
-      });
-    });
-
-    it('does not allow an undefined name field', function(done) {
-      delete _valid.name;
-      Agent.create(_valid).then(function(obj) {
-        done.fail('This should not have saved');
-      }).catch(function(error) {
-        expect(Object.keys(error.errors).length).toEqual(1);
-        expect(error.errors['name'].message).toEqual('No name supplied');
-        done();
+      }).catch(error => {
+        done.fail(error);
       });
     });
 
@@ -165,7 +102,7 @@ describe('Agent', function() {
       let newAgent;
       beforeEach(function(done) {
         agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {;
+          new Agent({ ..._profile, email: 'anotherguy@example.com' }).save().then(obj => {
             newAgent = obj;
             done();
           }).catch(err => {
@@ -199,7 +136,7 @@ describe('Agent', function() {
         expect (agent.canRead.length).toEqual(0);
         expect (newAgent.canRead.length).toEqual(0);
 
-        let viewableAgent = new Agent({ email: 'viewableAgent@example.com', password: 'secret', name: 'Viewable Agent' });
+        let viewableAgent = new Agent({ ..._profile, email: 'viewableAgent@example.com' });
         viewableAgent.save().then(function(result) {
           db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
             db.Agent.findByIdAndUpdate(newAgent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(newAgent) {
@@ -226,7 +163,7 @@ describe('Agent', function() {
         expect (agent.canRead.length).toEqual(0);
         expect (newAgent.canRead.length).toEqual(0);
 
-        let viewableAgent = new Agent({ email: 'viewableAgent@example.com', password: 'secret', name: 'Viewable Agent' });
+        let viewableAgent = new Agent({ ..._profile, email: 'viewableAgent@example.com' });
         viewableAgent.save().then(function(result) {
           db.Agent.findByIdAndUpdate(agent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(agent) {
             db.Agent.findByIdAndUpdate(newAgent._id, { $addToSet: { canRead: viewableAgent._id } }, { new: true, useFindAndModify: true }).then(function(newAgent) {
@@ -256,7 +193,7 @@ describe('Agent', function() {
       let newAgent;
       beforeEach(function(done) {
         agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+          new Agent({ ..._profile, email: 'anotherguy@example.com' }).save().then(function(obj) {
             newAgent = obj;
             agent.canRead.push(newAgent._id);
             agent.save().then(function(result) {
@@ -285,7 +222,6 @@ describe('Agent', function() {
       });
     });
 
-
     /**
      * #getReadablesAndFiles
      */
@@ -293,7 +229,7 @@ describe('Agent', function() {
       let newAgent;
       beforeEach(function(done) {
         agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+          new Agent({ ..._profile, email: 'anotherguy@example.com' }).save().then(function(obj) {
             newAgent = obj;
             agent.canRead.push(newAgent._id);
             agent.save().then(function(result) {
@@ -340,7 +276,7 @@ describe('Agent', function() {
       });
 
       it('doesn\'t barf if readable agent doesn\'t have a directory yet', function(done) {
-        new Agent({ email: 'brandnewagent@example.com', password: 'secret', name: 'Brand New Agent' }).save().then(function(brandNewAgent) {
+        new Agent({ ..._profile, email: 'brandnewagent@example.com' }).save().then(function(brandNewAgent) {
           agent.canRead.push(brandNewAgent._id);
           agent.save().then(function(result) {
 
@@ -367,41 +303,6 @@ describe('Agent', function() {
     });
 
     /**
-     * .validPassword
-     */
-    describe('.validPassword', function() {
-      beforeEach(function(done) {
-        agent.save().then(function(obj) {
-          done();
-        });
-      });
-
-      it('returns true if the password is a match', function(done) {
-        Agent.validPassword('secret', agent.password, function(err, res) {
-          expect(res).toEqual(agent);
-          done();
-        }, agent);
-      });
-
-      it('returns false if the password is not a match', function(done) {
-        Agent.validPassword('wrongsecretpassword', agent.password, function(err, res) {
-          expect(res).toBe(false);
-          done();
-        }, agent);
-      });
-    });
-
-    /**
-     * .getAgentDirectory
-     */
-    describe('.getAgentDirectory', function() {
-      it('returns a directory path based on the agent\'s email address', () => {
-        expect(agent.email).toEqual('someguy@example.com');
-        expect(agent.getAgentDirectory()).toEqual('example.com/someguy');
-      });
-    });
-
-    /**
      * #getBaseFilename
      */
     describe('#getBaseFilename', function() {
@@ -424,22 +325,25 @@ describe('Agent', function() {
 
     /**
      * canWrite relationship
+     *
+     *
+     * 2021-4-21 Why don't I have any tests here?
      */
-    describe('canWrite', function() {
-      let newAgent;
-      beforeEach(function(done) {
-        agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {;
-            newAgent = obj;
-            done();
-          }).catch(err => {
-            done.fail(err);
-          });
-        }).catch(err => {
-          done.fail(err);
-        });
-      });
-    });
+//    describe('canWrite', function() {
+//      let newAgent;
+//      beforeEach(function(done) {
+//        agent.save().then(function(obj) {
+//          new Agent({..._profile, email: 'anotherguy@example.com' }).save().then(function(obj) {;
+//            newAgent = obj;
+//            done();
+//          }).catch(err => {
+//            done.fail(err);
+//          });
+//        }).catch(err => {
+//          done.fail(err);
+//        });
+//      });
+//    });
 
     /**
      * #getWritables
@@ -449,7 +353,7 @@ describe('Agent', function() {
       beforeEach(function(done) {
 
         agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+          new Agent({ ..._profile, email: 'anotherguy@example.com' }).save().then(function(obj) {
             newAgent = obj;
             agent.canWrite.push(newAgent._id);
             agent.save().then(function(result) {
@@ -478,7 +382,6 @@ describe('Agent', function() {
       });
     });
 
-
     /**
      * #getWritablesAndFiles
      */
@@ -486,9 +389,8 @@ describe('Agent', function() {
       let newAgent;
       beforeEach(function(done) {
 
-
         agent.save().then(function(obj) {
-          new Agent({ email: 'anotherguy@example.com', password: 'secret', name: 'Another Guy' }).save().then(function(obj) {
+          new Agent({ ..._profile, email: 'anotherguy@example.com' }).save().then(function(obj) {
             newAgent = obj;
             agent.canWrite.push(newAgent._id);
             agent.save().then(function(result) {

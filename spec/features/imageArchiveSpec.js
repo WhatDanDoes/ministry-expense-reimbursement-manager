@@ -1,18 +1,22 @@
 const Browser = require('zombie');
-const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001; 
-Browser.localhost('example.com', PORT);
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
+const DOMAIN = 'example.com';
+Browser.localhost(DOMAIN, PORT);
+
 const fs = require('fs');
 const app = require('../../app');
 const fixtures = require('pow-mongoose-fixtures');
-const models = require('../../models'); 
+const models = require('../../models');
 const jwt = require('jsonwebtoken');
 const request = require('supertest');
 
+const stubAuth0Sessions = require('../support/stubAuth0Sessions');
+
 /**
  * `mock-fs` stubs the entire file system. So if a module hasn't
- * already been `require`d the tests will fail because the 
+ * already been `require`d the tests will fail because the
  * module doesn't exist in the mocked file system. `ejs` and
- * `iconv-lite/encodings` are required here to solve that 
+ * `iconv-lite/encodings` are required here to solve that
  * problem.
  */
 const mock = require('mock-fs');
@@ -29,9 +33,9 @@ describe('imageArchiveSpec', () => {
       models.Agent.findOne({ email: 'daniel@example.com' }).then(function(results) {
         agent = results;
         models.Agent.findOne({ email: 'lanny@example.com' }).then(function(results) {
-          lanny = results; 
+          lanny = results;
           models.Agent.findOne({ email: 'troy@example.com' }).then(function(results) {
-            troy = results; 
+            troy = results;
             browser.visit('/', function(err) {
               if (err) return done.fail(err);
               browser.assert.success();
@@ -59,37 +63,37 @@ describe('imageArchiveSpec', () => {
 
   describe('authenticated', () => {
     beforeEach(done => {
-      fixtures.load(__dirname + '/../fixtures/invoices.js', models.mongoose, function(err) {
+      stubAuth0Sessions(agent.email, DOMAIN, err => {
         if (err) return done.fail(err);
-        mockAndUnmock({ 
-          [`uploads/${agent.getAgentDirectory()}`]: {
-            'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-            'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
-            'image4': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          [`uploads/${lanny.getAgentDirectory()}`]: {
-            'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          [`uploads/${troy.getAgentDirectory()}`]: {
-            'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
-            'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
-            'troy3.Gif': fs.readFileSync('spec/files/troll.jpg'),
-            'troy4': fs.readFileSync('spec/files/troll.jpg'),
-          },
-          'public/images/uploads': {}
-        });
 
-        spyOn(jwt, 'sign').and.returnValue('somejwtstring');
+        fixtures.load(__dirname + '/../fixtures/invoices.js', models.mongoose, function(err) {
+          if (err) return done.fail(err);
+          mockAndUnmock({
+            [`uploads/${agent.getAgentDirectory()}`]: {
+              'image1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+              'image2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+              'image3.GiF': fs.readFileSync('spec/files/troll.jpg'),
+              'image4': fs.readFileSync('spec/files/troll.jpg'),
+            },
+            [`uploads/${lanny.getAgentDirectory()}`]: {
+              'lanny1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+              'lanny2.jpg': fs.readFileSync('spec/files/troll.jpg'),
+              'lanny3.jpg': fs.readFileSync('spec/files/troll.jpg'),
+            },
+            [`uploads/${troy.getAgentDirectory()}`]: {
+              'troy1.jpg': fs.readFileSync('spec/files/troll.jpg'),
+              'troy2.pdf': fs.readFileSync('spec/files/troll.jpg'),
+              'troy3.Gif': fs.readFileSync('spec/files/troll.jpg'),
+              'troy4': fs.readFileSync('spec/files/troll.jpg'),
+            },
+            'public/images/uploads': {}
+          });
 
-        browser.fill('email', agent.email);
-        browser.fill('password', 'secret');
-        browser.pressButton('Login', function(err) {
-          if (err) done.fail(err);
-          browser.assert.success();
-          done();
+          browser.clickLink('Login', function(err) {
+            if (err) done.fail(err);
+            browser.assert.success();
+            done();
+          });
         });
       });
     });
@@ -232,26 +236,26 @@ describe('imageArchiveSpec', () => {
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.indexOf('archive') >= 0).toBe(true);
-  
+
                     done();
                   });
                 });
               });
             });
-  
+
             it('moves all an agent\'s images to the archive directory', done => {
               fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                 if (err) return done.fail(err);
                 expect(files.length).toEqual(4);
-  
+
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.indexOf('archive') >= 0).toBe(true);
@@ -260,14 +264,14 @@ describe('imageArchiveSpec', () => {
                       if (err) return done.fail(err);
                       expect(files.indexOf('archive') >= 0).toBe(false);
                       expect(files.length).toEqual(4);
-  
+
                       done();
                     });
                   });
                 });
               });
             });
-  
+
             it('updates all invoice doc paths to point to archive directory', done => {
               models.Invoice.find({}).then(invoices => {
                 expect(invoices.length).toEqual(3);
@@ -277,7 +281,7 @@ describe('imageArchiveSpec', () => {
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   models.Invoice.find({}).then(invoices => {
                     expect(invoices.length).toEqual(3);
                     for (let invoice of invoices) {
@@ -290,16 +294,16 @@ describe('imageArchiveSpec', () => {
                 done.fail(err);
               });
             });
-  
+
             it('redirects to agent\'s images with message', done => {
               browser.pressButton('#archive-button', function(err) {
                 if (err) done.fail(err);
                 browser.assert.success();
-  
+
                 browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
                 browser.assert.elements('section.image img', 0);
                 browser.assert.elements('section.link a', 0);
-   
+
                 done();
               });
             });
@@ -319,7 +323,7 @@ describe('imageArchiveSpec', () => {
 
                   fs.readdir(`uploads/${agent.getAgentDirectory()}`, (err, files) => {
                     if (err) done.fail(err);
-    
+
                     expect(files.length).toEqual(2);
                     expect(files[0]).toEqual('archive');
                     expect(files[1]).toEqual('templates');
@@ -380,26 +384,26 @@ describe('imageArchiveSpec', () => {
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.indexOf('archive') >= 0).toBe(true);
-  
+
                     done();
                   });
                 });
               });
             });
-  
+
             it('moves all an agent\'s images to the archive directory', done => {
               fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                 if (err) return done.fail(err);
                 expect(files.length).toEqual(4);
-  
+
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   fs.readdir(`uploads/${troy.getAgentDirectory()}`, (err, files) => {
                     if (err) return done.fail(err);
                     expect(files.indexOf('archive') >= 0).toBe(true);
@@ -408,14 +412,14 @@ describe('imageArchiveSpec', () => {
                       if (err) return done.fail(err);
                       expect(files.indexOf('archive') >= 0).toBe(false);
                       expect(files.length).toEqual(4);
-  
+
                       done();
                     });
                   });
                 });
               });
             });
-  
+
             it('updates all invoice doc paths to point to archive directory', done => {
               models.Invoice.find({ agent: troy._id }).then(invoices => {
                 expect(invoices.length).toEqual(3);
@@ -425,7 +429,7 @@ describe('imageArchiveSpec', () => {
                 browser.pressButton('#archive-button', function(err) {
                   if (err) done.fail(err);
                   browser.assert.success();
-  
+
                   models.Invoice.find({ agent: troy._id }).then(invoices => {
                     expect(invoices.length).toEqual(3);
                     for (let invoice of invoices) {
@@ -438,16 +442,16 @@ describe('imageArchiveSpec', () => {
                 done.fail(err);
               });
             });
-  
+
             it('redirects to agent\'s images with message', done => {
               browser.pressButton('#archive-button', function(err) {
                 if (err) done.fail(err);
                 browser.assert.success();
-  
+
                 browser.assert.text('.alert.alert-success', 'You can now start a new expense claim');
                 browser.assert.elements('section.image img', 0);
                 browser.assert.elements('section.link a', 0);
-   
+
                 done();
               });
             });

@@ -1,52 +1,64 @@
 <% include _partials/head %>
   <% include _partials/messages %>
   <main>
-    <% if (!agent) { %>
-      <% include _partials/login %>
-    <% } %>
     <section class="copy">
       <h1>
-        <em>merman</em> simplifies ministry expense claims
+        <em>merman</em>
+        <p>Simplifies ministry expense claims</p>
       </h1>
-      <h2>
-         It is a web application for Wycliffe Bible Translators
-      </h2>
-
+    </section>
+    <section class="copy">
+      <h1>
+         A web app for missionaries, pastors, and church workers
+      </h1>
     </section>
     <section class="copy">
       <h1>
         Use merman to:
       </h1>
       <ul>
-        <li>Upload receipt images and files</li>
+        <li>Take pictures of receipts</li>
+        <li>Upload and manage receipt images and files</li>
         <li>Fill in expense details</li>
-        <li>Download receipts and spreadsheet in a single Zip file</li>
+        <li>Bundle receipts and spreadsheet into a single zip file</li>
       </ul>
-      <h2>
-        Submit your zipped bundle by email to your supervisor and the MER team.
-      </h2>
     </section>
     <section class="copy">
-      <h1>No image scanner?</h1>
+      <h1>
+        merman is customizable
+      </h1>
+      <ul>
+        <li>Do you require Excel spreadsheets or plain CSV?</li>
+        <li>Does your bookkeeping software have an API?</li>
+        <li>Do you outsource to an online provider?</li>
+      </ul>
       <h2>
-        <a href="/bep">Learn about</a> the BasicPhotoEconomizer Android app
+        merman can be tailor-made to interface with your organization's exisiting software and human processes
+      </h2>
+      <h1>
+        Cut overhead costs by improving administrative efficiency
+      </h1>
+    </section>
+     <section class="copy">
+      <h1>
+        merman is worker-focused
+      </h1>
+      <h2>
+        Expense claims are <em>expensive</em>
+      </h2>
+      <h2>
+        They cost money and time
+      </h2>
+      <h1>
+        Ministry workers have better things to do
+      </h1>
+    </section>
+    <section class="copy">
+      <h1>Is merman right for you?</h1>
+      <h2>
+        <a href="mailto:daniel@whatdandoes.info">Let's find out</a>
       </h2>
     </section>
-    <% if (images.length) { %>
-      <% include _partials/pager %>
-      <% for (let image of images) { %>
-        <% if (image.type === 'image') { %>
-          <section class="image">
-            <img src="/images/uploads/<%= image.file %>" />
-          </section>
-        <% } else { %>
-          <section class="link">
-            <a href="/images/uploads/<%= image.file %>"></a>
-          </section>
-        <% } %>
-      <% } %>
-      <% include _partials/pager %>
-    <% } %>
-  </main> 
+  </main>
 <% include _partials/footer %>
 
