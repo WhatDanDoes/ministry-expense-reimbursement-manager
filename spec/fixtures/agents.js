@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const bcrypt = require('bcrypt');
 
 /**
  * These fixtures don't play nice with the 
@@ -19,23 +18,17 @@ exports.Agent = {
   dan: {
     _id: danId,
     email: 'daniel@example.com',
-    password: 'secret',
-    name: 'Dan',
     canRead: [lannyId],
     canWrite: [troyId],
   },
   troy: {
     _id: troyId,
     email: 'troy@example.com',
-    password: 'topsecret',
-    name: 'Troy',
     canRead: [danId],
   },
   lanny: {
     _id: lannyId,
     email: 'lanny@example.com',
-    password: 'supersecret',
-    name: 'Lanny',
     canRead: [troyId],
     canWrite: [danId], // this gets a dup key error if not set
   }
