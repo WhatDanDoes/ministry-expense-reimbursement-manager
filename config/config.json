@@ -1,28 +1,28 @@
 {
   "development": {
-    "username": "basic_photo_server",
+    "username": "merman",
     "password": "secret",
-    "database": "basic_photo_server_development",
+    "database": "merman_development",
     "host": "localhost"
   },
   "test": {
-    "username": "basic_photo_server",
+    "username": "merman",
     "password": "secret",
-    "database": "basic_photo_server_test",
+    "database": "merman_test",
     "host": "localhost"
   },
   "staging": {
-    "username": "basic_photo_server",
+    "username": "merman",
     "password": "secret",
-    "database": "basic_photo_server_staging",
+    "database": "merman_staging",
     "host": "mongo",
     "dialect": "mongodb"
   },
   "production": {
-    "username": "basic_photo_server",
+    "username": "merman",
     "password": "secret",
-    "database": "basic_photo_server_production",
-    "host": "mongo",
+    "database": "merman_production",
+    "host": "merman_mongo",
     "dialect": "mongodb"
   }
 }
