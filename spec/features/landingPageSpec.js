@@ -15,11 +15,11 @@ describe('landing page', () => {
     });
   });
 
-  it('displays a message if there are no images to view', done => {
+  it('displays a message', done => {
     browser.visit('/', (err) => {
       if (err) return done.fail(err);
       browser.assert.success();
-      browser.assert.text('.copy:last-of-type h1', 'No image scanner?');
+      browser.assert.text('.copy:last-of-type h1', 'Is merman right for you?');
       done();
     });
   });
