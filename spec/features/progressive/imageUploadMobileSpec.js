@@ -946,7 +946,7 @@ describe('image mobile upload', () => {
 
                     try {
                       puppetBrowser = await puppeteer.launch({
-                        headless: false,
+                        headless: true,
                         args: [
                           '--use-fake-ui-for-media-stream',
                           '--use-fake-device-for-media-stream',
