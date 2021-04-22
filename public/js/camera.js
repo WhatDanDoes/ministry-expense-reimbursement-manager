@@ -1,13 +1,10 @@
 document.addEventListener('DOMContentLoaded', function(event) {
   const supported = 'mediaDevices' in navigator;
 
-console.log("THIS IS THE CAMERA APP");
   if (supported) {
     // Does this device have a camera?
     navigator.mediaDevices.enumerateDevices().then(function(devices) {
 
-console.log("SUPPORTED");
-console.log(devices);
       // If mobile, it probably has at least a front and back camera
       devices = devices.filter(d => d.kind === 'videoinput');
       if (devices.length) {
@@ -22,9 +19,9 @@ console.log(devices);
         };
 
         /**
-         * Swap out basic image upload form for camera and launcher
+         * Add camera and launcher
          */
-        const section = document.querySelector('.deep-link');
+        const section = document.getElementById('camera-app');
         const defaultImageForm = section.innerHTML;
         section.innerHTML = `
           <div id="camera-button">
