@@ -18,17 +18,20 @@ exports.Agent = {
   dan: {
     _id: danId,
     email: 'daniel@example.com',
+    name: 'Dan',
     canRead: [lannyId],
     canWrite: [troyId],
   },
   troy: {
     _id: troyId,
     email: 'troy@example.com',
+    name: 'Troy',
     canRead: [danId],
   },
   lanny: {
     _id: lannyId,
     email: 'lanny@example.com',
+    name: 'Lanny',
     canRead: [troyId],
     canWrite: [danId], // this gets a dup key error if not set
   }
