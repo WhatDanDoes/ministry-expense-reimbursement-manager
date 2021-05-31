@@ -298,7 +298,7 @@ router.get('/:domain/:agentId/zip', ensureAuthorized, (req, res, next) => {
           archive.append(csv, { name: `${agent._doc.name.split(' ').pop()} MER.csv` });
 
           /**
-           * ODS template
+           * XLSX template
            */
           let templatePath = `uploads/${agent.getAgentDirectory()}/templates/MER-template.xlsx`;
           fs.access(templatePath, fs.constants.R_OK, err => {
