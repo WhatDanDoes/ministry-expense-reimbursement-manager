@@ -8,8 +8,11 @@ EXPOSE 3000
 #
 RUN usermod -u 1001 node
 
+RUN apt-get update -y
+RUN apt-get install python-dev -y
 RUN wget -O csv2odf_2.09-1.deb https://sourceforge.net/projects/csv2odf/files/csv2odf-2.09/csv2odf_2.09-1.deb/download
 RUN dpkg -i csv2odf_2.09-1.deb
+RUN apt-get --fix-broken install
 
 USER node
 ENV HOME=/home/node
@@ -21,6 +24,6 @@ WORKDIR $HOME
 ENV PATH $HOME/app/node_modules/.bin:$PATH
 
 ADD package.json $HOME
-RUN NODE_ENV=production npm install
+RUN NODE_ENV=production npm install --legacy-peer-deps
 
 CMD ["node", "./app.js"]
