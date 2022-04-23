@@ -173,7 +173,25 @@ show collections
 db.agents.update({ email: 'daniel@example.com' }, { $addToSet: { "canRead": db.agents.findOne({ email: 'lyndsay@example.com' })._id } })
 ```
 
+# Backup/Restore
+
+## Backup
+
+```
+docker run --volumes-from ministryexpensereimbursementmanager_merman_mongo_1 -v $(pwd):/backup busybox tar cvf /backup/backup.tar /data/db
+sudo chown user:user backup.tar
+```
+
+## Restore
+
+```
+tar -zxvf uploads.tar.gz
+docker run --volumes-from ministryexpensereimbursementmanager_merman_mongo_1 -v $(pwd):/backup busybox tar xvf /backup/backup.tar
+```
+
 ## Notes
 
 `Merman` logo obtained from [here](http://heraldicart.org/merman/) on 2019-8-26. Artist unknown.
+
+
 
