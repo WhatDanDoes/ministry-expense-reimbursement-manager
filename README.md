@@ -9,7 +9,7 @@ ministry-expense-reimbursement-manager
 
 ```
 sudo apt update
-sudo apt install python3
+sudo apt install python-dev
 ```
 
 ### csv2odf
